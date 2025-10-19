@@ -5,7 +5,8 @@ generator client {
 
 datasource db {
   provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  // url               = env("DATABASE_URL")
+  url               = env("DIRECT_URL")
   directUrl         = env("DIRECT_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
   extensions        = [uuid_ossp(map: "uuid-ossp", schema: "extensions")]
@@ -46,6 +47,8 @@ model Product {
   category    Category      @relation(fields: [categoryId], references: [id])
   items       ProductItem[]
   ingredients Ingredient[]  @relation("IngredientToProduct")
+  
+  @@index([categoryId])
 }
 
 model ProductItem {
@@ -58,6 +61,8 @@ model ProductItem {
   updatedAt DateTime   @updatedAt
   cartItems CartItem[]
   product   Product    @relation(fields: [productId], references: [id])
+  
+  @@index([productId])
 }
 
 model Ingredient {
@@ -80,6 +85,8 @@ model Cart {
   updatedAt   DateTime   @updatedAt
   user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   items       CartItem[]
+  
+  @@index([tokenId])
 }
 
 model CartItem {
@@ -96,6 +103,9 @@ model CartItem {
   productItem   ProductItem  @relation(fields: [productItemId], references: [id])
   User          User?        @relation(fields: [userId], references: [id])
   ingredients   Ingredient[] @relation("CartItemToIngredient")
+  
+  @@index([cartId])
+  @@index([productItemId])
 }
 
 model Order {
@@ -143,6 +153,8 @@ model StoryItem {
   sourceUrl String
   createdAt DateTime @default(now())
   story     Story    @relation(fields: [storyId], references: [id])
+  
+  @@index([storyId])
 }
 
 enum OrderStatus {

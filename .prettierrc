@@ -5,11 +5,10 @@
 	"tabWidth": 2,
 	"trailingComma": "all",
 	"arrowParens": "avoid",
-
 	"bracketSpacing": true,
 	"insertPragma": false,
 	"proseWrap": "preserve",
 	"requirePragma": false,
-	"useTabs": true,
+	"useTabs": false,
 	"vueIndentScriptAndStyle": false
 }
