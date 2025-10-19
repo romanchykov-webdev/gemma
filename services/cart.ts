@@ -1,26 +1,26 @@
-import { CartDTO, CreateCartItemValues } from "./dto/cart.dto";
-import { axiosInstance } from "./instance";
+import { CartDTO, CreateCartItemValues } from './dto/cart.dto';
+import { axiosInstance } from './instance';
 
 export const getCart = async (): Promise<CartDTO> => {
-	const { data } = await axiosInstance.get<CartDTO>("/cart");
+  const { data } = await axiosInstance.get<CartDTO>('/cart');
 
-	return data;
+  return data;
 };
 
 export const updateItemQuantity = async (itemId: string, quantity: number): Promise<CartDTO> => {
-	const { data } = await axiosInstance.patch<CartDTO>("/cart/" + itemId, { quantity });
+  const { data } = await axiosInstance.patch<CartDTO>('/cart/' + itemId, { quantity });
 
-	return data;
+  return data;
 };
 
 export const removeCartItem = async (itemId: string): Promise<CartDTO> => {
-	const { data } = await axiosInstance.delete<CartDTO>("/cart/" + itemId);
+  const { data } = await axiosInstance.delete<CartDTO>('/cart/' + itemId);
 
-	return data;
+  return data;
 };
 
 export const addCartItem = async (values: CreateCartItemValues): Promise<CartDTO> => {
-	const { data } = await axiosInstance.post<CartDTO>("/cart", values);
+  const { data } = await axiosInstance.post<CartDTO>('/cart', values);
 
-	return data;
+  return data;
 };
