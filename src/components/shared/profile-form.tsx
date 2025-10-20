@@ -108,7 +108,7 @@ export const ProfileForm: React.FC<Props> = ({ className, data }): JSX.Element =
 						className="text-base"
 						type="button"
 					>
-						Esci dall'account
+						{"Esci dall'account"}
 					</Button>
 				</form>
 			</FormProvider>

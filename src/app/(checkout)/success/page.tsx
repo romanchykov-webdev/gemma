@@ -35,7 +35,7 @@ const SuccessContent = () => {
 
 	return (
 		<div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-			<h1 className="text-3xl font-bold mb-4">Grazie per l&apos;ordine🎉</h1>
+			<h1 className="text-3xl font-bold mb-4">{"Grazie per l'ordine"} 🎉</h1>
 			{sessionId ? (
 				<div>
 					<p className="text-lg text-neutral-600 mb-4">
