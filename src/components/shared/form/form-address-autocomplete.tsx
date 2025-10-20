@@ -20,7 +20,7 @@ export const FormAddressAutocomplete: React.FC<Props> = ({
 	name,
 	label,
 	required,
-	placeholder = "Введите адрес ...",
+	placeholder = "Inserisci l'indirizzo ...",
 	onPlaceSelect,
 	...props
 }) => {

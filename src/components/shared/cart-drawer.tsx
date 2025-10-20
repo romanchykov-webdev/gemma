@@ -40,7 +40,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 					<SheetTitle>
 						{items.length > 0 && (
 							<span>
-								В корзине <span className="font-bold">{items.length} товаров</span>
+								Nel cestino <span className="font-bold">{items.length} merce</span>
 							</span>
 						)}
 					</SheetTitle>
@@ -70,13 +70,13 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 						))
 					) : (
 						<div className="flex flex-1 flex-col p-4 items-center justify-center min-h-[300px]">
-							<Image src={EmptyCartSvg} alt="Пустая корзина" width={300} height={300} />
-							<p className="mt-4 text-gray-500 text-center mb-10">Ваша корзина пуста</p>
+							<Image src={EmptyCartSvg} alt="Cestino vuoto" width={300} height={300} />
+							<p className="mt-4 text-gray-500 text-center mb-10">Il tuo cestino è vuoto</p>
 
 							<SheetClose asChild>
 								<Button className="w-full h-12 text-base">
 									<ArrowLeft className="w-5 mr-5" />
-									Вернуться назад
+									Indietro
 								</Button>
 							</SheetClose>
 						</div>
@@ -88,7 +88,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 						<div className="w-full">
 							<div className="flex mb-4">
 								<span className="flex flex-1 text-lg text-neutral-500">
-									Итого
+									Totale
 									<div className="flex-1 border-b border-dashed border-b-neutral-200 relative -top-1 mx-2" />
 								</span>
 
@@ -106,7 +106,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 									loading={loading || redirecting}
 									className="w-full h-12 text-base"
 								>
-									Оформить заказ <ArrowRight className="w-5 ml-2" />
+									Effettua un ordine <ArrowRight className="w-5 ml-2" />
 								</Button>
 							</Link>
 							{/* </SheetClose> */}

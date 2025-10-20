@@ -39,7 +39,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 	return (
 		<>
 			<Container className="mt-10 flex items-center justify-between ">
-				<Title text="Все пиццы" size="lg" className="font-extrabold" />
+				<Title text="Tutte le pizze" size="lg" className="font-extrabold" />
 
 				<Suspense fallback={<Skeleton className="w-10 h-10 rounded-sm bg-gray-200" />}>
 					<FilterDrawer />
