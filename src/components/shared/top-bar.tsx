@@ -4,7 +4,6 @@ import { Container } from "@/components/shared/container";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
 import React, { JSX } from "react";
-import { SortPopup } from "./sort-popup";
 
 interface ITopBarProps {
 	className?: string;
@@ -21,9 +20,7 @@ export const TopBar: React.FC<ITopBarProps> = ({ categories, className }): JSX.E
 		>
 			<Container className="flex items-center justify-between ">
 				<Categories items={categories} />
-				<div className="flex items-center">
-					<SortPopup value="none" onChange={() => {}} />
-				</div>
+				<div className="flex items-center">{/* <SortPopup value="none" onChange={() => {}} /> */}</div>
 			</Container>
 		</div>
 	);
