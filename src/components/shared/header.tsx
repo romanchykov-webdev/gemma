@@ -23,7 +23,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, hasSearch = true, ha
 		<Link href="/" className="flex items-center gap-3 flex-col md:flex-row">
 			<Image src="/logo.png" alt="logo" width={40} height={40} />
 			<div className="text-center md:text-left">
-				<h1 className="text-xl md:text-2xl uppercase font-black">Pizzeria</h1>
+				<h1 className="text-xl md:text-2xl uppercase font-black">Gemma</h1>
 				<p className="text-xs md:text-sm text-gray-400 leading-3">
 					non potrebbe essere <br /> più delizioso
 				</p>
