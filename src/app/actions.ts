@@ -165,7 +165,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
 		for (const it of cart.items) {
 			const qty = it.quantity ?? 1;
 			const name = it.productItem?.product?.name ?? "Prodotto";
-			const size = (it.pizzaSize ?? it.productItem?.size) ? ` (${it.pizzaSize ?? it.productItem?.size} см)` : "";
+			const size = (it.pizzaSize ?? it.productItem?.size) ? ` (${it.pizzaSize ?? it.productItem?.size} cm)` : "";
 
 			// тип теста: берём из item.type, если нет — из productItem.pizzaType
 			const doughType = it.type ?? it.productItem?.pizzaType;

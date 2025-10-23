@@ -1,3 +1,6 @@
+export const DEFAULT_MIN_PRICE = 0 as const;
+export const DEFAULT_MAX_PRICE = 20 as const;
+
 export const mapPizzaSize = {
 	20: "Piccola",
 	30: "Media",
