@@ -4,6 +4,7 @@ import { CheckboxFiltersGroup } from "@/components/shared/checkbox-filters-group
 import { RangeSlider } from "@/components/shared/range-slider";
 import { Title } from "@/components/shared/title";
 import { Input } from "@/components/ui";
+import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from "@/constants/pizza";
 import { useFilters, useIngredients, useQueryFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
@@ -56,9 +57,9 @@ export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => 
 					className="mt-5"
 					name="size"
 					items={[
-						{ text: "20 sm", value: "20" },
-						{ text: "30 sm", value: "30" },
-						{ text: "40 sm", value: "40" },
+						{ text: "20 cm", value: "20" },
+						{ text: "30 cm", value: "30" },
+						{ text: "40 cm", value: "40" },
 					]}
 					onClickCheckbox={filters.setSizes}
 					selected={filters.sizes}
@@ -72,16 +73,16 @@ export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => 
 					<Input
 						type="number"
 						placeholder="0"
-						min={100}
-						max={1000}
+						min={DEFAULT_MIN_PRICE}
+						max={DEFAULT_MAX_PRICE}
 						value={String(filters.prices.priceFrom)}
 						onChange={(e) => filters.setPrices("priceFrom", Number(e.target.value))}
 					/>
 					<Input
 						type="number"
 						placeholder="0"
-						min={100}
-						max={1000}
+						min={DEFAULT_MIN_PRICE}
+						max={DEFAULT_MAX_PRICE}
 						value={String(filters.prices.priceTo)}
 						onChange={(e) => filters.setPrices("priceTo", Number(e.target.value))}
 					/>
@@ -89,10 +90,10 @@ export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => 
 
 				<RangeSlider
 					min={0}
-					max={1000}
-					step={10}
+					max={DEFAULT_MAX_PRICE}
+					step={1}
 					// value={[0, 5000]}
-					value={[filters.prices.priceFrom || 0, filters.prices.priceTo || 1000]}
+					value={[filters.prices.priceFrom || 0, filters.prices.priceTo || 20]}
 					onValueChange={updatePrices}
 				/>
 			</div>
