@@ -21,7 +21,7 @@ interface Props {
 	className?: string;
 }
 
-export const ProfileForm: React.FC<Props> = ({ className, data }): JSX.Element => {
+export const ProfileForm: React.FC<Props> = ({ data }): JSX.Element => {
 	//
 
 	const [isUpdating, setIsUpdating] = useState(false);

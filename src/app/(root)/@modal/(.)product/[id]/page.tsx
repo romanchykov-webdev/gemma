@@ -1,47 +1,61 @@
-import { prisma } from '../../../../../../prisma/prisma-client';
-import { notFound } from 'next/navigation';
-import { ChooseProductModal } from '@/components/shared';
+import { ChooseProductModal } from "@/components/shared";
+import { notFound } from "next/navigation";
+import { prisma } from "../../../../../../prisma/prisma-client";
 
 type ProductPageProps = {
-  params: Promise<{ id: string }>;
+	params: Promise<{ id: string }>;
 };
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
+	const { id } = await params;
 
-  const product = await prisma.product.findFirst({
-    where: {
-      id: Number(id),
-    },
-    include: {
-      ingredients: true,
-      category: {
-        include: {
-          products: {
-            include: {
-              items: true,
-            },
-          },
-        },
-      },
-      items: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          product: {
-            include: {
-              items: true,
-            },
-          },
-        },
-      },
-    },
-  });
+	// const product = await prisma.product.findFirst({
+	//   where: {
+	//     id: Number(id),
+	//   },
+	//   include: {
+	//     ingredients: true,
+	//     category: {
+	//       include: {
+	//         products: {
+	//           include: {
+	//             items: true,
+	//           },
+	//         },
+	//       },
+	//     },
+	//     items: {
+	//       orderBy: {
+	//         createdAt: 'desc',
+	//       },
+	//       include: {
+	//         product: {
+	//           include: {
+	//             items: true,
+	//           },
+	//         },
+	//       },
+	//     },
+	//   },
+	// });
 
-  if (!product) {
-    return notFound();
-  }
+	const product = await prisma.product.findFirst({
+		where: {
+			id: Number(id),
+		},
+		include: {
+			ingredients: true,
+			items: {
+				orderBy: {
+					createdAt: "desc",
+				},
+			},
+		},
+	});
 
-  return <ChooseProductModal product={product} />;
+	if (!product) {
+		return notFound();
+	}
+
+	return <ChooseProductModal product={product} />;
 }

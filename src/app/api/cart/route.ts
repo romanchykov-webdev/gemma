@@ -5,6 +5,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
 
+// export async function GET(req: NextRequest) {
+// 	try {
+// 		const token = req.cookies.get("cartToken")?.value;
+
+// 		if (!token) {
+// 			return NextResponse.json({ totalAmount: 0, items: [] });
+// 		}
+
+// 		const userCart = await prisma.cart.findFirst({
+// 			where: {
+// 				OR: [{ tokenId: token }],
+// 			},
+// 			include: {
+// 				items: {
+// 					orderBy: {
+// 						createdAt: "desc",
+// 					},
+// 					include: {
+// 						productItem: {
+// 							include: {
+// 								product: true,
+// 							},
+// 						},
+// 						ingredients: true,
+// 					},
+// 				},
+// 			},
+// 		});
+
+// 		return NextResponse.json(userCart);
+// 	} catch (error) {
+// 		console.error("[CART_GET] Server error", error);
+// 		return NextResponse.json({ message: "Impossibile recuperare il carrello" }, { status: 500 });
+// 	}
+// }
+
 export async function GET(req: NextRequest) {
 	try {
 		const token = req.cookies.get("cartToken")?.value;
@@ -15,20 +51,48 @@ export async function GET(req: NextRequest) {
 
 		const userCart = await prisma.cart.findFirst({
 			where: {
-				OR: [{ tokenId: token }],
+				tokenId: token,
 			},
-			include: {
+			select: {
+				id: true,
+				userId: true,
+				tokenId: true,
+				totalAmount: true,
+				createdAt: true,
+				updatedAt: true,
 				items: {
 					orderBy: {
 						createdAt: "desc",
 					},
-					include: {
+					select: {
+						id: true,
+						quantity: true,
+						pizzaSize: true,
+						type: true,
+						createdAt: true,
 						productItem: {
-							include: {
-								product: true,
+							select: {
+								id: true,
+								price: true,
+								size: true,
+								pizzaType: true,
+								product: {
+									select: {
+										id: true,
+										name: true,
+										imageUrl: true,
+									},
+								},
 							},
 						},
-						ingredients: true,
+						ingredients: {
+							select: {
+								id: true,
+								name: true,
+								price: true,
+								imageUrl: true,
+							},
+						},
 					},
 				},
 			},
