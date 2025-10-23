@@ -52,7 +52,7 @@ export default function CheckoutPage() {
 		if (session) {
 			fetchUserInfo();
 		}
-		//
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [session]);
 
 	const onSubmit: SubmitHandler<CheckoutFormValues> = async (data: CheckoutFormValues) => {
