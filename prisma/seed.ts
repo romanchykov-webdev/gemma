@@ -267,14 +267,7 @@ async function up() {
 		},
 	});
 
-	const cart2 = await prisma.cart.create({
-		data: {
-			userId: user2.id,
-			totalAmount: 0,
-			tokenId: "222222",
-		},
-	});
-
+	// Добавляем товар в корзину первого пользователя
 	await prisma.cartItem.create({
 		data: {
 			productItemId: 1,
@@ -282,6 +275,25 @@ async function up() {
 			quantity: 2,
 			ingredients: {
 				connect: [{ id: 1 }, { id: 2 }, { id: 3 }],
+			},
+		},
+	});
+
+	const cart2 = await prisma.cart.create({
+		data: {
+			userId: user2.id,
+			totalAmount: 0,
+			tokenId: "222222",
+		},
+	});
+	// Добавляем товар в корзину второго пользователя (НОВОЕ!)
+	await prisma.cartItem.create({
+		data: {
+			productItemId: 2,
+			cartId: cart2.id,
+			quantity: 1,
+			ingredients: {
+				connect: [{ id: 4 }, { id: 5 }],
 			},
 		},
 	});
