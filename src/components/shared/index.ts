@@ -39,5 +39,6 @@ export { Title } from "./title";
 export { TopBar } from "./top-bar";
 export { WhiteBlock } from "./white-block";
 
+export { LazyCartDrawer } from "./lazy-cart-drawer";
 export { ProfileForm } from "./profile-form";
 export { Stories } from "./stories";
