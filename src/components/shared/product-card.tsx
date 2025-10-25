@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 import { Ingredient } from "@prisma/client";
 import { Plus } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "../ui";
+import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
 
 // import { Ingredient } from '@prisma/client';
@@ -62,7 +62,7 @@ export const ProductCard: React.FC<Props> = ({
 						loading={priority ? "eager" : "lazy"}
 						decoding="async"
 					/> */}
-					<Image
+					{/* <Image
 						src={imageUrl}
 						alt={name}
 						width={215}
@@ -72,6 +72,15 @@ export const ProductCard: React.FC<Props> = ({
 						quality={75}
 						placeholder="blur" // Blur эффект при загрузке
 						blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
+					/> */}
+					<LazyImage
+						src={imageUrl}
+						alt={name}
+						width={215}
+						height={215}
+						className="transition-transform duration-300 group-hover:scale-101"
+						priority={priority}
+						quality={75}
 					/>
 				</div>
 				<div className="flex flex-col flex-1 justify-between">

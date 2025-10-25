@@ -1,7 +1,6 @@
 import {
 	Container,
 	FilterDrawer,
-	Filters,
 	ProductsGroupList,
 	SkeletonFollbackFilters,
 	SkeletonFollbackTopBar,
@@ -11,6 +10,7 @@ import {
 } from "@/components/shared";
 import { Suspense } from "react";
 
+import { LazyFilters } from "@/components/shared/lazy-filters";
 import { Skeleton } from "@/components/ui";
 import { findPizzas } from "@/lib";
 import { GetSearchParams } from "@/lib/find-pizza";
@@ -66,7 +66,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 								/>
 							}
 						>
-							<Filters />
+							<LazyFilters />
 						</Suspense>
 					</div>
 

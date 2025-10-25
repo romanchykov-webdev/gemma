@@ -5,10 +5,10 @@ import { Container } from "./container";
 
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
-import Image from "next/image";
 import ReactStories from "react-insta-stories";
 import { Api } from "../../../services/api-client";
 import { IStory } from "../../../services/stories";
+import { LazyImage } from "./lazy-image";
 
 interface Props {
 	className?: string;
@@ -19,23 +19,14 @@ export const Stories: React.FC<Props> = ({ className }) => {
 	const [open, setOpen] = useState(false);
 	const [selectedStory, setSelectedStory] = useState<IStory>();
 
-	const [shouldLoad, setShouldLoad] = useState(false);
-
-	// Загружаем Stories только после mount (не блокируем SSR)
 	useEffect(() => {
-		const timer = setTimeout(() => setShouldLoad(true), 500); // Задержка 500ms
-		return () => clearTimeout(timer);
-	}, []);
-
-	useEffect(() => {
-		if (!shouldLoad) return;
-		async function fetchStories() {
+		const timer = setTimeout(async () => {
 			const data = await Api.stories.getAll();
 			setStories(data);
-		}
+		}, 2000);
 
-		fetchStories();
-	}, [shouldLoad]);
+		return () => clearTimeout(timer);
+	}, []);
 
 	const onClickStory = (story: IStory) => {
 		setSelectedStory(story);
@@ -50,27 +41,19 @@ export const Stories: React.FC<Props> = ({ className }) => {
 				))}
 
 			{stories.map((story) => (
-				// <img
-				// 	key={story.id}
-				// 	onClick={() => onClickStory(story)}
-				// 	className="rounded-md cursor-pointer"
-				// 	height={250}
-				// 	width={200}
-				// 	src={story.previewImageUrl}
-				// 	alt={`Story ${story.id}`}
-				// 	loading="lazy"
-				// />
-				<Image
-					key={story.id}
-					onClick={() => onClickStory(story)}
-					className="rounded-md cursor-pointer"
-					height={250}
-					width={200}
-					src={story.previewImageUrl}
-					alt={`Story ${story.id}`}
-					priority={false}
-					quality={70}
-				/>
+				<div key={story.id} className="py-5">
+					<LazyImage
+						key={story.id}
+						src={story.previewImageUrl}
+						alt={`Story ${story.id}`}
+						width={200}
+						height={250}
+						className=" cursor-pointer rounded-md overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+						priority={false}
+						quality={70}
+						onClick={() => onClickStory(story)}
+					/>
+				</div>
 			))}
 
 			{open && (

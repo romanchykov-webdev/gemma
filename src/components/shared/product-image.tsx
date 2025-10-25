@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 import React, { JSX } from "react";
+import { LazyImage } from "./lazy-image";
 
 export type CSSVariables = React.CSSProperties & { ["--img"]?: string };
 interface Props {
@@ -29,7 +29,7 @@ export const ProductImage: React.FC<Props> = ({ imageUrl, className, size }): JS
 				loading="lazy"
 				decoding="async"
 			/> */}
-			<Image
+			{/* <Image
 				src={imageUrl}
 				alt="Пицца"
 				width={imgSize}
@@ -40,6 +40,15 @@ export const ProductImage: React.FC<Props> = ({ imageUrl, className, size }): JS
 				quality={80}
 				placeholder="blur"
 				blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
+			/> */}
+			<LazyImage
+				src={imageUrl}
+				alt="Пицца"
+				width={imgSize}
+				height={imgSize}
+				className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain transition-all duration-500"
+				priority={false}
+				quality={80}
 			/>
 
 			{/* внешний круг */}

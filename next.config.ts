@@ -12,8 +12,9 @@ const nextConfig: NextConfig = {
 				pathname: "/storage/v1/object/public/**",
 			},
 		],
-		// Форматы оптимизации
+		// Форматы
 		formats: ["image/webp", "image/avif"],
+		qualities: [70, 75, 80, 90],
 	},
 };
 

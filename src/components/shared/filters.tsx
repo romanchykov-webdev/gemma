@@ -12,10 +12,15 @@ import React, { JSX } from "react";
 
 interface IFiltersProps {
 	className?: string;
+	enabled?: boolean;
 }
 
-export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => {
-	const { ingredients, loading } = useIngredients();
+export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }): JSX.Element => {
+	// console.log("Filters enabled", enabled);
+
+	const priority = enabled ? "immediate" : "idle";
+
+	const { ingredients, loading } = useIngredients(enabled, "idle");
 
 	const filters = useFilters();
 

@@ -13,7 +13,7 @@ interface Props {
 export const ProfileButton: React.FC<Props> = ({ className, onClockSignIn }): JSX.Element => {
 	//
 	const { data: session, status } = useSession();
-	console.log(session);
+	// console.log(session);
 
 	if (status === "loading") {
 		return <Skeleton className={cn("h-10 w-[110px] rounded-md", className)} />;
