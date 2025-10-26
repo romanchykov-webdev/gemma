@@ -12,15 +12,18 @@ interface Props {
 }
 
 export const ChooseProductModal: React.FC<Props> = ({ product }) => {
-	//
 	const router = useRouter();
 
+	const handleClose = React.useCallback(() => {
+		router.back();
+	}, [router]);
+
 	return (
-		<Dialog open={Boolean(product)} onOpenChange={() => router.back()}>
-			<DialogContent className="p-0 w-full max-w-[1060px] bg-white overflow-auto   lg:w-[1060px] h-[90vh] lg:h-auto rounded-lg">
+		<Dialog open onOpenChange={handleClose}>
+			<DialogContent className="p-0 w-full max-w-[1060px] bg-white overflow-auto lg:w-[1060px] h-[90vh] lg:h-auto rounded-lg">
 				<VisuallyHidden>
-					<DialogTitle>{"dialog title"}</DialogTitle>
-					<DialogDescription>{"Choose product options"}</DialogDescription>
+					<DialogTitle>Product Details</DialogTitle>
+					<DialogDescription>Choose product options and add to cart</DialogDescription>
 				</VisuallyHidden>
 				<ProductFormClient product={product} />
 			</DialogContent>

@@ -4,6 +4,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "../../../../../prisma/prisma-client";
 
+// ✅ Генерируем все страницы продуктов на BUILD TIME (Pure SSG)
+export async function generateStaticParams() {
+	const products = await prisma.product.findMany({
+		select: { id: true },
+	});
+
+	return products.map((product) => ({
+		id: product.id.toString(),
+	}));
+}
+
+// ✅ Страницы полностью статичные (не меняются после билда)
+export const dynamic = "force-static";
+export const dynamicParams = false; // 404 для несуществующих продуктов
+
 type ProductPageProps = {
 	params: Promise<{ id: string }>;
 };

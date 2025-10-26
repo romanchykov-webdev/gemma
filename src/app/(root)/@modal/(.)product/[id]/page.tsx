@@ -1,6 +1,21 @@
-import { LazyChooseProductModal } from "@/components/shared/modals/lazy-choose-product-modal";
+import { ChooseProductModal } from "@/components/shared/modals/choose-product-modal";
 import { notFound } from "next/navigation";
 import { prisma } from "../../../../../../prisma/prisma-client";
+
+// ✅ Генерируем все страницы продуктов на BUILD TIME (Pure SSG)
+export async function generateStaticParams() {
+	const products = await prisma.product.findMany({
+		select: { id: true },
+	});
+
+	return products.map((product) => ({
+		id: product.id.toString(),
+	}));
+}
+
+// ✅ Страницы полностью статичные (не меняются после билда)
+export const dynamic = "force-static";
+export const dynamicParams = false; // 404 для несуществующих продуктов
 
 type ProductPageProps = {
 	params: Promise<{ id: string }>;
@@ -8,36 +23,6 @@ type ProductPageProps = {
 
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { id } = await params;
-
-	// const product = await prisma.product.findFirst({
-	//   where: {
-	//     id: Number(id),
-	//   },
-	//   include: {
-	//     ingredients: true,
-	//     category: {
-	//       include: {
-	//         products: {
-	//           include: {
-	//             items: true,
-	//           },
-	//         },
-	//       },
-	//     },
-	//     items: {
-	//       orderBy: {
-	//         createdAt: 'desc',
-	//       },
-	//       include: {
-	//         product: {
-	//           include: {
-	//             items: true,
-	//           },
-	//         },
-	//       },
-	//     },
-	//   },
-	// });
 
 	// ✅ Оптимизация: используем select вместо include для загрузки только нужных полей
 	const product = await prisma.product.findFirst({
@@ -77,6 +62,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		return notFound();
 	}
 
-	// return <ChooseProductModal product={product} />;
-	return <LazyChooseProductModal product={product} />;
+	// ✅ Используем прямой импорт без lazy loading для быстрого открытия
+	return <ChooseProductModal product={product} />;
 }
