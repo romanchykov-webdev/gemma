@@ -40,7 +40,7 @@ export const Stories: React.FC<Props> = ({ className }) => {
 					<div key={index} className="w-[200px] h-[250px] bg-gray-200 rounded-md animate-pulse" />
 				))}
 
-			{stories.map((story) => (
+			{stories.map((story, index) => (
 				<div key={story.id} className="py-5">
 					<LazyImage
 						key={story.id}
@@ -49,7 +49,7 @@ export const Stories: React.FC<Props> = ({ className }) => {
 						width={200}
 						height={250}
 						className=" cursor-pointer rounded-md overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
-						priority={false}
+						priority={index === 0}
 						quality={70}
 						onClick={() => onClickStory(story)}
 					/>

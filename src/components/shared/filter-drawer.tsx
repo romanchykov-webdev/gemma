@@ -1,6 +1,7 @@
 "use client";
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { SlidersHorizontal } from "lucide-react";
 import React, { JSX, useState } from "react";
 import { Button } from "../ui";
@@ -34,6 +35,9 @@ export const FilterDrawer: React.FC<React.PropsWithChildren<IFilterDrawerProps>>
 			>
 				<SheetHeader>
 					<SheetTitle></SheetTitle>
+					<VisuallyHidden>
+						<SheetDescription>Filter products by ingredients, sizes, and price</SheetDescription>
+					</VisuallyHidden>
 				</SheetHeader>
 
 				<div className="flex-1 overflow-y-auto scrollbar pr-12 pb-6">

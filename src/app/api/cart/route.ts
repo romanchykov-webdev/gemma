@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
 
+// ✅ Кеширование для корзины (5 секунд)
+export const revalidate = 5;
+
 export async function GET(req: NextRequest) {
 	try {
 		const token = req.cookies.get("cartToken")?.value;
@@ -13,77 +16,46 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
 
-		// ⚡ Убрали DISTINCT для ускорения
-		const result = await prisma.$queryRawUnsafe<any[]>(
-			`
-			SELECT 
-				c.id,
-				c."userId",
-				c."tokenId",
-				c."totalAmount",
-				c."createdAt",
-				c."updatedAt",
-				COALESCE(
-					json_agg(
-						jsonb_build_object(
-							'id', ci.id,
-							'quantity', ci.quantity,
-							'pizzaSize', ci."pizzaSize",
-							'type', ci.type,
-							'createdAt', ci."createdAt",
-							'productItem', jsonb_build_object(
-								'id', pi.id,
-								'price', pi.price,
-								'size', pi.size,
-								'pizzaType', pi."pizzaType",
-								'product', jsonb_build_object(
-									'id', p.id,
-									'name', p.name,
-									'imageUrl', p."imageUrl"
-								)
-							),
-							'ingredients', COALESCE(
-								(
-									SELECT json_agg(
-										jsonb_build_object(
-											'id', ing.id,
-											'name', ing.name,
-											'price', ing.price,
-											'imageUrl', ing."imageUrl"
-										)
-									)
-									FROM "_CartItemToIngredient" m
-									JOIN "Ingredient" ing ON ing.id = m."B"
-									WHERE m."A" = ci.id
-								),
-								'[]'::json
-							)
-						)
-						ORDER BY ci."createdAt" DESC
-					) FILTER (WHERE ci.id IS NOT NULL),
-					'[]'::json
-				) as items
-			FROM "Cart" c
-			LEFT JOIN "CartItem" ci ON ci."cartId" = c.id
-			LEFT JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-			LEFT JOIN "Product" p ON p.id = pi."productId"
-			WHERE c."tokenId" = $1
-			GROUP BY c.id
-			`,
-			token,
-		);
+		// ✅ Оптимизированный Prisma запрос с include для вложенных связей
+		// Include может быть эффективнее для глубоких связей в Supabase
+		const cart = await prisma.cart.findFirst({
+			where: {
+				tokenId: token,
+			},
+			include: {
+				items: {
+					orderBy: {
+						createdAt: "desc",
+					},
+					include: {
+						productItem: {
+							include: {
+								product: true,
+							},
+						},
+						ingredients: true,
+					},
+				},
+			},
+		});
 
-		const cart = result[0] || { totalAmount: 0, items: [] };
-
-		// Дедупликация на клиенте (на всякий случай)
-		if (cart.items && Array.isArray(cart.items)) {
-			const seen = new Set();
-			cart.items = cart.items.filter((item: any) => {
-				if (seen.has(item.id)) return false;
-				seen.add(item.id);
-				return true;
-			});
+		if (!cart) {
+			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
+
+		// ✅ Дебаг: проверяем загруженные данные
+		console.log("[CART_GET] Cart items:", cart.items?.length || 0);
+		console.log(
+			"[CART_GET] First item:",
+			cart.items?.[0]
+				? {
+						id: cart.items[0].id,
+						hasProductItem: !!cart.items[0].productItem,
+						hasProduct: !!cart.items[0].productItem?.product,
+						hasIngredients: cart.items[0].ingredients?.length,
+					}
+				: "empty",
+		);
 
 		return NextResponse.json(cart);
 	} catch (error) {

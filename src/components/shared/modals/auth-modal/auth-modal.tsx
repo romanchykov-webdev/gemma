@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import React, { useState } from "react";
 
 import { LoginForm } from "./forms/login-form";
@@ -43,6 +43,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose }) => {
 
 				<VisuallyHidden>
 					<DialogTitle>{"dialog title"}</DialogTitle>
+					<DialogDescription>{"Login or register to your account"}</DialogDescription>
 				</VisuallyHidden>
 
 				{/* Формы */}

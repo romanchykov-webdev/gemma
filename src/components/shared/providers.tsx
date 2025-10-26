@@ -1,5 +1,6 @@
 "use client";
 
+import "@/lib/console-filter";
 import { Loader2 } from "lucide-react";
 import { SessionProvider, useSession } from "next-auth/react";
 import NextTopLoader from "nextjs-toploader";
