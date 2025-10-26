@@ -76,18 +76,29 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 					{/* Список товаров */}
 					<div className="flex-1">
 						<div className="flex flex-col gap-16">
-							{categories.map(
-								(category) =>
-									category.products.length > 0 && (
-										<div id={`category-${category.id}`} key={category.id}>
-											<ProductsGroupList
-												categoryId={category.id}
-												title={category.name}
-												items={category.products}
-											/>
-										</div>
-									),
-							)}
+							{(() => {
+								// ✅ Вычисляем индекс первой категории с продуктами ОДИН РАЗ (вне map)
+								const firstCategoryWithProductsIndex = categories.findIndex(
+									(cat) => cat.products.length > 0,
+								);
+
+								return categories.map((category, categoryIndex) => {
+									const isFirstCategory = categoryIndex === firstCategoryWithProductsIndex;
+
+									return (
+										category.products.length > 0 && (
+											<div id={`category-${category.id}`} key={category.id}>
+												<ProductsGroupList
+													categoryId={category.id}
+													title={category.name}
+													items={category.products}
+													isFirstCategory={isFirstCategory}
+												/>
+											</div>
+										)
+									);
+								});
+							})()}
 						</div>
 					</div>
 				</div>

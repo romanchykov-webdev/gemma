@@ -62,15 +62,15 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 			(entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						// УДАЛИТЬ console.log и setTimeout для продакшена!
-						setIsInView(true); // ⬅️ Сразу без задержки
+						setIsInView(true);
 						observer.disconnect();
 					}
 				});
 			},
 			{
-				rootMargin: "100px", // ⬅️ Положительное! Загружать ЗА 100px ДО viewport
-				threshold: 0.01, // ⬅️ Когда видно хотя бы 1%
+				// ✅ Настоящая ленивая загрузка: только когда изображение РЕАЛЬНО в viewport
+				rootMargin: "0px", // Загружать только когда изображение в viewport (без предзагрузки)
+				threshold: 0.01, // Начинать загрузку когда видно хотя бы 1% изображения
 			},
 		);
 

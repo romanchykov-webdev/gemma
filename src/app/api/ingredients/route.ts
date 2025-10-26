@@ -22,12 +22,10 @@ export async function GET() {
 
 	// ✅ Если кеш свежий - возвращаем сразу (экономия ~2 секунды)
 	if (cachedIngredients && now - cacheTime < CACHE_TTL) {
-		console.log("✅ Returning cached ingredients from memory");
 		return NextResponse.json(cachedIngredients);
 	}
 
 	// ✅ Иначе - загружаем из БД
-	console.log("🔄 Fetching ingredients from database...");
 	const ingredients = await prisma.ingredient.findMany({
 		select: {
 			id: true,

@@ -20,7 +20,7 @@ export const useIngredientsStore = create<IngredientsState>()(
 			fetchIngredients: async () => {
 				const state = get();
 				if (state.ingredients.length > 0) {
-					console.log("✅ Ingredients already cached, skipping fetch");
+					// ✅ Ingredients already cached, skipping fetch
 					return;
 				}
 
@@ -33,7 +33,6 @@ export const useIngredientsStore = create<IngredientsState>()(
 				// ✅ Отложенная загрузка: грузим когда браузер свободен
 				const loadWhenIdle = async () => {
 					try {
-						console.log("🔄 Fetching ingredients from API (idle)...");
 						const data = await Api.ingredients.getAll();
 						set({ ingredients: data, loading: false, error: false });
 					} catch (error) {
