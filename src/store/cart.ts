@@ -11,6 +11,7 @@ export interface CartState {
 	error: boolean;
 	totalAmount: number;
 	items: CartStateItem[];
+	isFetched: boolean; // ✅ Флаг для предотвращения повторных загрузок
 	fetchCartItems: () => Promise<void>;
 	updateItemQuantity: (id: string, quantity: number) => Promise<void>;
 	addCartItem: (values: CreateCartItemValues) => Promise<void>;
@@ -154,12 +155,24 @@ export const useCartStore = create<CartState>()(
 			error: false,
 			loading: true,
 			totalAmount: 0,
+			isFetched: false, // ✅ Изначально корзина не загружена
 
 			fetchCartItems: async () => {
+				const state = get();
+
+				// ✅ ПРОВЕРКА: если уже загружено - НЕ грузим повторно
+				if (state.isFetched) {
+					console.log("✅ Cart already fetched, skipping API call...");
+					return;
+				}
+
 				try {
 					set({ loading: true, error: false });
 					const data = await Api.cart.getCart();
-					set(getCartDetails(data));
+					set({
+						...getCartDetails(data),
+						isFetched: true, // ✅ Отмечаем что загрузили
+					});
 				} catch (error) {
 					console.error(error);
 					set({ error: true });
@@ -194,7 +207,11 @@ export const useCartStore = create<CartState>()(
 					await Api.cart.updateItemQuantity(id, quantity);
 
 					const data = await Api.cart.getCart();
-					set({ ...getCartDetails(data), error: false });
+					set({
+						...getCartDetails(data),
+						error: false,
+						isFetched: true, // ✅ Обновили - отмечаем что данные свежие
+					});
 				} catch (error) {
 					console.error(error);
 					set({
@@ -234,7 +251,11 @@ export const useCartStore = create<CartState>()(
 					await Api.cart.removeCartItem(id);
 
 					const data = await Api.cart.getCart();
-					set({ ...getCartDetails(data), error: false });
+					set({
+						...getCartDetails(data),
+						error: false,
+						isFetched: true, // ✅ Обновили - отмечаем что данные свежие
+					});
 				} catch (error) {
 					console.error(error);
 					set({

@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
-
+import Image from "next/image";
 import React, { JSX } from "react";
-import { LazyImage } from "./lazy-image";
 
 export type CSSVariables = React.CSSProperties & { ["--img"]?: string };
 interface Props {
@@ -21,33 +20,14 @@ export const ProductImage: React.FC<Props> = ({ imageUrl, className, size }): JS
 		// 	style={{ ["--img" as any]: imgPct }} // eslint-disable-line @typescript-eslint/no-explicit-any
 		// >
 		<div className={cn("relative aspect-square mx-auto", className)} style={{ ["--img"]: imgPct } as CSSVariables}>
-			{/* <img
-				src={imageUrl}
-				alt="Пицца"
-				className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain transition-all duration-500"
-				style={{ width: "var(--img)", height: "var(--img)" }}
-				loading="lazy"
-				decoding="async"
-			/> */}
-			{/* <Image
+			{/* ✅ Нативный lazy loading: HTML отдается мгновенно, изображение грузится на клиенте */}
+			<Image
 				src={imageUrl}
 				alt="Пицца"
 				width={imgSize}
 				height={imgSize}
 				className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain transition-all duration-500"
-				style={{ width: "var(--img)", height: "var(--img)" }}
-				priority={false} // В модалке не нужен priority
-				quality={80}
-				placeholder="blur"
-				blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
-			/> */}
-			<LazyImage
-				src={imageUrl}
-				alt="Пицца"
-				width={imgSize}
-				height={imgSize}
-				className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain transition-all duration-500"
-				priority={false}
+				loading="eager"
 				quality={80}
 			/>
 

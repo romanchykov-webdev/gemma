@@ -1,24 +1,33 @@
-import { ProfileForm } from '@/components/shared';
-import { getUserSession } from '@/lib/get-user-session';
-import { redirect } from 'next/navigation';
-import { prisma } from '../../../../prisma/prisma-client';
+import { ProfileForm } from "@/components/shared";
+import { getUserSession } from "@/lib/get-user-session";
+import { redirect } from "next/navigation";
+import { prisma } from "../../../../prisma/prisma-client";
 
 export default async function ProfilePage() {
-  //
-  const session = await getUserSession();
+	//
+	const session = await getUserSession();
 
-  if (!session) {
-    return redirect('/not-auth');
-  }
+	if (!session) {
+		return redirect("/not-auth");
+	}
 
-  const user = await prisma.user.findFirst({ where: { id: session?.id } });
-  //
+	// ✅ Валидация UUID: проверяем что id корректный (36 символов с дефисами или 32 без)
+	const isValidUUID = session.id && (session.id.length === 36 || session.id.length === 32);
 
-  if (!user) {
-    return redirect('/');
-  }
+	if (!isValidUUID) {
+		console.error("[PROFILE] Invalid UUID format:", session.id);
+		// Перенаправляем на главную для повторного логина
+		return redirect("/api/auth/signout?callbackUrl=/");
+	}
 
-  console.log('ProfilePage user', user);
+	const user = await prisma.user.findFirst({ where: { id: session.id } });
+	//
 
-  return <ProfileForm data={user} />;
+	if (!user) {
+		return redirect("/");
+	}
+
+	console.log("ProfilePage user", user);
+
+	return <ProfileForm data={user} />;
 }

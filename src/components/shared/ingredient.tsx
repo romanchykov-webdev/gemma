@@ -23,15 +23,16 @@ export const Ingredient: React.FC<Props> = ({ imageUrl, name, price, active, onC
 			)}
 		>
 			{active && <CircleCheck className="absolute top-2 right-2 text-brand-primary" />}
-			{/* ✅ Ленивая загрузка для ингредиентов (часто вне viewport) */}
+			{/* ✅ Ленивая загрузка + низкий приоритет для ингредиентов */}
 			<Image
 				src={imageUrl}
 				alt={name}
 				width={110}
 				height={110}
 				loading="lazy"
-				quality={75}
+				quality={70}
 				className="object-contain"
+				fetchPriority="low"
 			/>
 			<span className="text-xs mb-1">{name}</span>
 			<span className="font-bold">{price} €</span>
