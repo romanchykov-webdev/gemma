@@ -6,7 +6,7 @@
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 	const originalWarn = console.warn;
 
-	console.warn = (...args: any[]) => {
+	console.warn = (...args: unknown[]) => {
 		const message = args[0]?.toString() || "";
 
 		// 🔇 Список предупреждений для игнорирования
