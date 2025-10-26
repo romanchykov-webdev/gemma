@@ -98,6 +98,10 @@ model CartItem {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   userId        String?      @db.Uuid
+  
+  // Временно с дефолтом
+  compositionKey String @default("")
+  
   cart          Cart         @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productItem   ProductItem  @relation(fields: [productItemId], references: [id])
   User          User?        @relation(fields: [userId], references: [id])
@@ -105,6 +109,9 @@ model CartItem {
   
   @@index([cartId])
   @@index([productItemId])
+  @@index([cartId, productItemId])
+  @@index([compositionKey]) // ✅ Для ускорения поиска по compositionKey
+  @@unique([cartId, compositionKey])
 }
 
 model Order {

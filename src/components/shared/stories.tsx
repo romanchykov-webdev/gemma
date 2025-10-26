@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 import ReactStories from "react-insta-stories";
 import { Api } from "../../../services/api-client";
 import { IStory } from "../../../services/stories";
+import { LazyImage } from "./lazy-image";
 
 interface Props {
 	className?: string;
@@ -19,12 +20,12 @@ export const Stories: React.FC<Props> = ({ className }) => {
 	const [selectedStory, setSelectedStory] = useState<IStory>();
 
 	useEffect(() => {
-		async function fetchStories() {
+		const timer = setTimeout(async () => {
 			const data = await Api.stories.getAll();
 			setStories(data);
-		}
+		}, 2000);
 
-		fetchStories();
+		return () => clearTimeout(timer);
 	}, []);
 
 	const onClickStory = (story: IStory) => {
@@ -34,22 +35,25 @@ export const Stories: React.FC<Props> = ({ className }) => {
 
 	return (
 		<Container className={cn("flex items-center justify-between gap-2 my-10 overflow-x-auto", className)}>
-			{stories.length === 0 &&
+			{(!stories || stories.length === 0) &&
 				[...Array(6)].map((_, index) => (
 					<div key={index} className="w-[200px] h-[250px] bg-gray-200 rounded-md animate-pulse" />
 				))}
 
-			{stories.map((story) => (
-				<img
-					key={story.id}
-					onClick={() => onClickStory(story)}
-					className="rounded-md cursor-pointer"
-					height={250}
-					width={200}
-					src={story.previewImageUrl}
-					alt={`Story ${story.id}`}
-					loading="lazy"
-				/>
+			{stories.map((story, index) => (
+				<div key={story.id} className="py-5">
+					<LazyImage
+						key={story.id}
+						src={story.previewImageUrl}
+						alt={`Story ${story.id}`}
+						width={200}
+						height={250}
+						className=" cursor-pointer rounded-md overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+						priority={index === 0}
+						quality={70}
+						onClick={() => onClickStory(story)}
+					/>
+				</div>
 			))}
 
 			{open && (

@@ -6,6 +6,7 @@ import {
 	Sheet,
 	SheetClose,
 	SheetContent,
+	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
@@ -14,6 +15,7 @@ import {
 
 import { PizzaSize, PizzaType } from "@/constants/pizza";
 import { getCartItemDetails } from "@/lib";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui";
@@ -44,6 +46,9 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 							</span>
 						)}
 					</SheetTitle>
+					<VisuallyHidden>
+						<SheetDescription>Your shopping cart items</SheetDescription>
+					</VisuallyHidden>
 				</SheetHeader>
 
 				<div className="flex flex-1 h-full flex-col overflow-auto scrollbar gap-2 ">
@@ -70,7 +75,13 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 						))
 					) : (
 						<div className="flex flex-1 flex-col p-4 items-center justify-center min-h-[300px]">
-							<Image src={EmptyCartSvg} alt="Cestino vuoto" width={300} height={300} />
+							<Image
+								src={EmptyCartSvg}
+								alt="Cestino vuoto"
+								width={300}
+								height={300}
+								style={{ width: "auto", height: "auto" }}
+							/>
 							<p className="mt-4 text-gray-500 text-center mb-10">Il tuo cestino è vuoto</p>
 
 							<SheetClose asChild>

@@ -12,10 +12,15 @@ import React, { JSX } from "react";
 
 interface IFiltersProps {
 	className?: string;
+	enabled?: boolean;
 }
 
-export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => {
-	const { ingredients, loading } = useIngredients();
+export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }): JSX.Element => {
+	// console.log("Filters enabled", enabled);
+
+	const priority = enabled ? "immediate" : "idle";
+
+	const { ingredients, loading } = useIngredients(enabled, "idle");
 
 	const filters = useFilters();
 
@@ -75,7 +80,7 @@ export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => 
 						placeholder="0"
 						min={DEFAULT_MIN_PRICE}
 						max={DEFAULT_MAX_PRICE}
-						value={String(filters.prices.priceFrom)}
+						value={filters.prices.priceFrom ? String(filters.prices.priceFrom) : ""}
 						onChange={(e) => filters.setPrices("priceFrom", Number(e.target.value))}
 					/>
 					<Input
@@ -83,7 +88,7 @@ export const Filters: React.FC<IFiltersProps> = ({ className }): JSX.Element => 
 						placeholder="0"
 						min={DEFAULT_MIN_PRICE}
 						max={DEFAULT_MAX_PRICE}
-						value={String(filters.prices.priceTo)}
+						value={filters.prices.priceTo ? String(filters.prices.priceTo) : ""}
 						onChange={(e) => filters.setPrices("priceTo", Number(e.target.value))}
 					/>
 				</div>
