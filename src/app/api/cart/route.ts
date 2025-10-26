@@ -115,8 +115,29 @@ export async function POST(req: NextRequest) {
 			`;
 		});
 
-		// Возвращаем только success - клиент сам запросит GET /api/cart
-		const resp = NextResponse.json({ success: true });
+		// ✅ Возвращаем обновленную корзину с товарами
+		const updatedCart = await prisma.cart.findFirst({
+			where: {
+				tokenId: token,
+			},
+			include: {
+				items: {
+					orderBy: {
+						createdAt: "desc",
+					},
+					include: {
+						productItem: {
+							include: {
+								product: true,
+							},
+						},
+						ingredients: true,
+					},
+				},
+			},
+		});
+
+		const resp = NextResponse.json(updatedCart);
 		resp.cookies.set("cartToken", token);
 		return resp;
 	} catch (error) {

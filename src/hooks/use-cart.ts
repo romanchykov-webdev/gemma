@@ -2,8 +2,7 @@ import { CartStateItem } from "@/lib/get-cart-details";
 import { useCartStore } from "@/store/cart";
 // import { useEffect } from "react";
 import { useEffect, useRef } from "react";
-import { CreateCartItemValues } from "../../services/dto/cart.dto";
-
+import { CreateCartItemValuesOptimistic } from "../../services/dto/cart.dto";
 type CountType = "plus" | "minus";
 
 // type ReturnType = {
@@ -19,10 +18,12 @@ type UseCartReturn = {
 	totalAmount: number;
 	items: CartStateItem[];
 	loading: boolean;
+	syncing: boolean; // ✅ Флаг синхронизации с сервером
 	updateItemQuantity: (id: string, quantity: number) => void; // UUID
 	removeCartItem: (id: string) => void; // UUID
-	addCartItem: (values: CreateCartItemValues) => void;
+	addCartItem: (values: CreateCartItemValuesOptimistic) => void;
 	changeItemCount: (id: string, currentQty: number, type: CountType) => void; // UUID
+	refetchCart: () => Promise<void>; // ✅ Принудительная загрузка для checkout
 };
 export const useCart = (): UseCartReturn => {
 	//
@@ -38,9 +39,13 @@ export const useCart = (): UseCartReturn => {
 
 	const loading = useCartStore((state) => state.loading);
 
+	const syncing = useCartStore((state) => state.syncing); // ✅ Флаг синхронизации
+
 	const removeCartItem = useCartStore((state) => state.removeCartItem);
 
 	const addCartItem = useCartStore((state) => state.addCartItem);
+
+	const refetchCart = useCartStore((state) => state.refetchCart); // ✅ Принудительная загрузка
 	//
 
 	useEffect(() => {
@@ -102,8 +107,10 @@ export const useCart = (): UseCartReturn => {
 		items,
 		updateItemQuantity,
 		loading,
+		syncing, // ✅ Флаг синхронизации
 		removeCartItem,
 		addCartItem,
 		changeItemCount,
+		refetchCart, // ✅ Принудительная загрузка
 	};
 };

@@ -45,9 +45,17 @@ export const ProductCard: React.FC<Props> = ({
 	const handleAddToCart = (_e: React.MouseEvent) => {
 		// Параметр '_e' для будущего использования (preventDefault, stopPropagation)
 
-		// Мгновенно добавляем (оптимистично!)
+		// ⚡ Мгновенно добавляем с optimistic update!
 		addCartItem({
 			productItemId: itemId,
+			optimistic: {
+				name,
+				imageUrl,
+				price,
+				pizzaSize: null,
+				pizzaType: null,
+				ingredientsData: [],
+			},
 		});
 
 		// Мгновенный тост

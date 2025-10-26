@@ -31,7 +31,14 @@ interface Props {
 	ingredients: OptimizedIngredient[];
 	loading: boolean;
 	items: OptimizedProductItem[];
-	onSubmit: (itemId: number, ingredients: number[]) => void;
+	onSubmit: (
+		itemId: number,
+		ingredients: number[],
+		totalPrice?: number,
+		pizzaSize?: number | null,
+		pizzaType?: number | null,
+		ingredientsData?: Array<{ id: number; name: string; price: number }>,
+	) => void;
 	className?: string;
 }
 
@@ -60,18 +67,18 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 	const handleClickAdd = async () => {
 		//
 		if (currentItemId) {
-			// console.log("handleClickAdd currentItemId", currentItemId);
-			// console.log("handleClickAdd selectedIngredients", selectedIngredients);
-			onSubmit(currentItemId, Array.from(selectedIngredients));
+			// Получаем данные о выбранных ингредиентах для optimistic update
+			const selectedIngredientsData = ingredients
+				.filter((ing) => selectedIngredients.has(ing.id))
+				.map((ing) => ({
+					id: ing.id,
+					name: ing.name,
+					price: ing.price,
+				}));
+
+			// ⚡ Передаем все данные для мгновенного обновления UI
+			onSubmit(currentItemId, Array.from(selectedIngredients), totalPrice, size, type, selectedIngredientsData);
 		}
-		// console.log({ size, type, ingredients, selectedIngredients });
-		// try {
-		//   await addPizza();
-		//   onClickAdd?.();
-		// } catch (error) {
-		//   toast.error('Произошла ошибка при добавлении в корзину');
-		//   console.error(error);
-		// }
 	};
 	// console.log({ ingredients });
 
