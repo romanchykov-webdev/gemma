@@ -1,45 +1,12 @@
+import { buildCompositionKey } from "@/lib/build-composition-key";
 import { findOrCreateCart } from "@/lib/find-or-create-cart";
-import { updateCartTotalAmount } from "@/lib/update-cart-total-amount";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
 
-// export async function GET(req: NextRequest) {
-// 	try {
-// 		const token = req.cookies.get("cartToken")?.value;
-
-// 		if (!token) {
-// 			return NextResponse.json({ totalAmount: 0, items: [] });
-// 		}
-
-// 		const userCart = await prisma.cart.findFirst({
-// 			where: {
-// 				OR: [{ tokenId: token }],
-// 			},
-// 			include: {
-// 				items: {
-// 					orderBy: {
-// 						createdAt: "desc",
-// 					},
-// 					include: {
-// 						productItem: {
-// 							include: {
-// 								product: true,
-// 							},
-// 						},
-// 						ingredients: true,
-// 					},
-// 				},
-// 			},
-// 		});
-
-// 		return NextResponse.json(userCart);
-// 	} catch (error) {
-// 		console.error("[CART_GET] Server error", error);
-// 		return NextResponse.json({ message: "Impossibile recuperare il carrello" }, { status: 500 });
-// 	}
-// }
+// ✅ Кеширование для корзины (5 секунд)
+export const revalidate = 5;
 
 export async function GET(req: NextRequest) {
 	try {
@@ -49,56 +16,48 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
 
-		const userCart = await prisma.cart.findFirst({
+		// ✅ Оптимизированный Prisma запрос с include для вложенных связей
+		// Include может быть эффективнее для глубоких связей в Supabase
+		const cart = await prisma.cart.findFirst({
 			where: {
 				tokenId: token,
 			},
-			select: {
-				id: true,
-				userId: true,
-				tokenId: true,
-				totalAmount: true,
-				createdAt: true,
-				updatedAt: true,
+			include: {
 				items: {
 					orderBy: {
 						createdAt: "desc",
 					},
-					select: {
-						id: true,
-						quantity: true,
-						pizzaSize: true,
-						type: true,
-						createdAt: true,
+					include: {
 						productItem: {
-							select: {
-								id: true,
-								price: true,
-								size: true,
-								pizzaType: true,
-								product: {
-									select: {
-										id: true,
-										name: true,
-										imageUrl: true,
-									},
-								},
+							include: {
+								product: true,
 							},
 						},
-						ingredients: {
-							select: {
-								id: true,
-								name: true,
-								price: true,
-								imageUrl: true,
-							},
-						},
+						ingredients: true,
 					},
 				},
 			},
 		});
 
-		return NextResponse.json(userCart);
+		if (!cart) {
+			return NextResponse.json({ totalAmount: 0, items: [] });
+		}
+
+		// ✅ Дебаг: проверяем загруженные данные
+		console.log("[CART_GET] Cart items:", cart.items?.length || 0);
+		console.log(
+			"[CART_GET] First item:",
+			cart.items?.[0]
+				? {
+						id: cart.items[0].id,
+						hasProductItem: !!cart.items[0].productItem,
+						hasProduct: !!cart.items[0].productItem?.product,
+						hasIngredients: cart.items[0].ingredients?.length,
+					}
+				: "empty",
+		);
+
+		return NextResponse.json(cart);
 	} catch (error) {
 		console.error("[CART_GET] Server error", error);
 		return NextResponse.json({ message: "Impossibile recuperare il carrello" }, { status: 500 });
@@ -106,9 +65,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-	//
 	try {
-		//
 		let token = req.cookies.get("cartToken")?.value;
 
 		if (!token) {
@@ -116,64 +73,68 @@ export async function POST(req: NextRequest) {
 		}
 
 		const userCart = await findOrCreateCart(token);
-
 		const data = (await req.json()) as CreateCartItemValues;
 
-		// Ищем товары с таким же productItemId
-		const cartItems = await prisma.cartItem.findMany({
-			where: {
-				cartId: userCart.id,
-				productItemId: data.productItemId,
-			},
-			include: {
-				ingredients: true,
-			},
+		const compositionKey = buildCompositionKey({
+			productItemId: data.productItemId,
+			ingredientIds: data.ingredients,
 		});
 
-		// Ищем точное совпадение по ингредиентам
-		const findCartItem = cartItems.find((item) => {
-			// Если количество ингредиентов не совпадает, это разные товары
-			if (item.ingredients.length !== (data.ingredients?.length || 0)) {
-				return false;
-			}
-
-			// Проверяем, что все ингредиенты совпадают
-			const ingredientIds = item.ingredients.map((ing) => ing.id);
-			return data.ingredients?.every((id) => ingredientIds.includes(id)) || false;
-		});
-
-		// Если точно такой же товар найден - увеличиваем количество
-		if (findCartItem) {
-			await prisma.cartItem.update({
+		// ⚡ Быстрая транзакция: только upsert + update totalAmount одним SQL
+		await prisma.$transaction(async (tx) => {
+			// 1) upsert - создать или увеличить количество
+			await tx.cartItem.upsert({
 				where: {
-					id: findCartItem.id,
+					cartId_compositionKey: {
+						cartId: userCart.id,
+						compositionKey,
+					},
 				},
-				data: {
-					quantity: findCartItem.quantity + 1,
+				update: {
+					quantity: { increment: 1 },
 				},
-			});
-		} else {
-			// Иначе создаем новый товар
-			await prisma.cartItem.create({
-				data: {
+				create: {
 					cartId: userCart.id,
 					productItemId: data.productItemId,
 					quantity: 1,
-					ingredients: { connect: data.ingredients?.map((id) => ({ id })) || [] },
+					compositionKey,
+					ingredients: {
+						connect: (data.ingredients ?? []).map((id) => ({ id })),
+					},
 				},
 			});
-		}
 
-		const updateUserCart = await updateCartTotalAmount(token);
+			// ✅ 2) Быстрый пересчёт totalAmount одним оптимизированным SQL
+			await tx.$executeRaw`
+				UPDATE "Cart" c
+				SET 
+					"totalAmount" = COALESCE((
+						SELECT SUM(
+							(pi.price + COALESCE(ing.total_price, 0)) * ci.quantity
+						)::int
+						FROM "CartItem" ci
+						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
+						LEFT JOIN (
+							SELECT 
+								m."A" as cart_item_id,
+								SUM(i.price)::int as total_price
+							FROM "_CartItemToIngredient" m
+							JOIN "Ingredient" i ON i.id = m."B"
+							GROUP BY m."A"
+						) ing ON ing.cart_item_id = ci.id
+						WHERE ci."cartId" = c.id
+					), 0),
+					"updatedAt" = NOW()
+				WHERE c.id = ${userCart.id}::uuid
+			`;
+		});
 
-		const resp = NextResponse.json(updateUserCart);
-
+		// Возвращаем только success - клиент сам запросит GET /api/cart
+		const resp = NextResponse.json({ success: true });
 		resp.cookies.set("cartToken", token);
-
 		return resp;
-		//
 	} catch (error) {
-		console.log("[CART_POST] Server error", error);
+		console.error("[CART_POST] Server error", error);
 		return NextResponse.json({ message: "Impossibile aggiungere al carrello" }, { status: 500 });
 	}
 }

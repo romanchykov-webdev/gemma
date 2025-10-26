@@ -1,4 +1,4 @@
-import { ChooseProductModal } from "@/components/shared";
+import { LazyChooseProductModal } from "@/components/shared/modals/lazy-choose-product-modal";
 import { notFound } from "next/navigation";
 import { prisma } from "../../../../../../prisma/prisma-client";
 
@@ -39,13 +39,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	//   },
 	// });
 
+	// ✅ Оптимизация: используем select вместо include для загрузки только нужных полей
 	const product = await prisma.product.findFirst({
 		where: {
 			id: Number(id),
 		},
-		include: {
-			ingredients: true,
+		select: {
+			id: true,
+			name: true,
+			imageUrl: true,
+			categoryId: true,
+			// Убираем createdAt, updatedAt для ускорения
+			ingredients: {
+				select: {
+					id: true,
+					name: true,
+					price: true,
+					imageUrl: true,
+				},
+			},
 			items: {
+				select: {
+					id: true,
+					price: true,
+					size: true,
+					pizzaType: true,
+				},
 				orderBy: {
 					createdAt: "desc",
 				},
@@ -57,5 +76,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		return notFound();
 	}
 
-	return <ChooseProductModal product={product} />;
+	// return <ChooseProductModal product={product} />;
+	return <LazyChooseProductModal product={product} />;
 }

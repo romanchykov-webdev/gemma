@@ -1,25 +1,17 @@
-import { Ingredient } from '@prisma/client';
-import React, { useEffect } from 'react';
-import { Api } from '../../services/api-client';
+import { useIngredientsStore } from "@/store";
+import { useEffect, useRef } from "react";
 
-export const useIngredients = () => {
-  const [ingredients, setIngredients] = React.useState<Ingredient[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  useEffect(() => {
-    async function fetchIngredients() {
-      try {
-        setLoading(true);
-        const ingredients = await Api.ingredients.getAll();
-        setIngredients(ingredients);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    }
+export const useIngredients = (enabled: boolean = true) => {
+	const { ingredients, loading } = useIngredientsStore();
+	const hasCalledRef = useRef(false);
 
-    fetchIngredients();
-  }, []);
+	useEffect(() => {
+		// ✅ Вызываем ТОЛЬКО ОДИН РАЗ при enabled = true
+		if (enabled && !hasCalledRef.current) {
+			hasCalledRef.current = true;
+			useIngredientsStore.getState().fetchIngredients();
+		}
+	}, [enabled]);
 
-  return { ingredients, loading };
+	return { ingredients, loading };
 };

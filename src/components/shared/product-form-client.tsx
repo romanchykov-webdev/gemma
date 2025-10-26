@@ -2,7 +2,7 @@
 
 import { useCartStore } from "@/store";
 import { useRouter } from "next/navigation";
-import React, { JSX } from "react";
+import React, { JSX, useState } from "react";
 import toast from "react-hot-toast";
 import { ProductWithRelations } from "../../../@types/prisma";
 import { ChoosePizzaForm } from "./choose-pizza-form";
@@ -17,7 +17,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 
 	const addCartItem = useCartStore((state) => state.addCartItem);
 
-	const loading = useCartStore((state) => state.loading);
+	const [submitting, setSubmitting] = useState(false);
 
 	const firstItem = product.items[0];
 
@@ -25,22 +25,29 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 
 	const onSubmit = async (productItemId?: number, ingredients?: number[]) => {
 		try {
+			setSubmitting(true);
 			const itemId = productItemId ?? firstItem.id;
 
-			await addCartItem({
+			// 1) Мгновенно показываем тост
+			toast.success(product.name + " aggiunto al carrello");
+
+			// 2) Мгновенно закрываем окно
+			router.back();
+
+			// 3) Запрос идёт в фоне (пользователь не ждёт!)
+			addCartItem({
 				productItemId: itemId,
 				ingredients,
 			});
-
-			toast.success(product.name + " aggiunto al carrello");
-
-			router.back();
-			//
 		} catch (error) {
 			toast.error("Si è verificato un errore durante l'aggiunta al carrello");
 			console.error(error);
+		} finally {
+			setSubmitting(false);
 		}
 	};
+
+	// 🔥 Форма выбора пиццы
 	if (isPizzaForm) {
 		return (
 			<ChoosePizzaForm
@@ -49,17 +56,19 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 				ingredients={product.ingredients}
 				items={product.items ?? []}
 				onSubmit={onSubmit}
-				loading={loading}
+				loading={submitting}
 			/>
 		);
 	}
+
+	// 🔥 Форма выбора продукта
 	return (
 		<ChooseProductForm
 			imageUrl={product.imageUrl}
 			name={product.name}
 			price={firstItem.price}
 			onSubmit={onSubmit}
-			loading={loading}
+			loading={submitting}
 		/>
 	);
 };

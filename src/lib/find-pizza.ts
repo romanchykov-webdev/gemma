@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from "@/constants/pizza";
+import { cache } from "react";
 import { prisma } from "../../prisma/prisma-client";
 
 export interface GetSearchParams {
@@ -20,7 +21,8 @@ export interface GetSearchParams {
 // const DEFAULT_LIMIT = 12;
 // const DEFAULT_PAGE = 1;
 
-export const findPizzas = async (params: GetSearchParams) => {
+// ✅ Кешируем запрос для избежания дублирования
+export const findPizzas = cache(async (params: GetSearchParams) => {
 	//
 
 	// console.log("priceFilter", priceFilter);
@@ -39,12 +41,13 @@ export const findPizzas = async (params: GetSearchParams) => {
 	// if (Number.isFinite(maxPrice)) priceFilter = { ...priceFilter, lte: maxPrice };
 
 	const categories = await prisma.category.findMany({
-		include: {
+		select: {
+			id: true,
+			name: true,
 			products: {
 				orderBy: {
 					id: "desc",
 				},
-
 				where: {
 					// Фильтрация по ингредиентам
 					...(ingredientsIdArr && ingredientsIdArr.length > 0
@@ -72,20 +75,28 @@ export const findPizzas = async (params: GetSearchParams) => {
 						},
 					},
 				},
-				include: {
-					ingredients: true,
-					items: true,
-					// {
-					// 	where: {
-					// 		price: {
-					// 			gte: minPrice,
-					// 			lte: maxPrice,
-					// 		},
-					// 	},
-					// 	orderBy: {
-					// 		price: "asc",
-					// 	},
-					// },
+				select: {
+					id: true,
+					name: true,
+					imageUrl: true,
+					categoryId: true,
+					ingredients: {
+						select: {
+							id: true,
+							name: true,
+							price: true,
+							imageUrl: true,
+						},
+					},
+					items: {
+						select: {
+							id: true,
+							price: true,
+							size: true,
+							pizzaType: true,
+							productId: true,
+						},
+					},
 				},
 			},
 		},
@@ -93,4 +104,4 @@ export const findPizzas = async (params: GetSearchParams) => {
 
 	return categories;
 	//
-};
+});
