@@ -110,7 +110,7 @@ model CartItem {
   @@index([cartId])
   @@index([productItemId])
   @@index([cartId, productItemId])
-  @@index([compositionKey]) // ✅ Для ускорения поиска по compositionKey
+  @@index([compositionKey]) 
   @@unique([cartId, compositionKey])
 }
 
