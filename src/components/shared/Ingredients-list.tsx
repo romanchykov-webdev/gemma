@@ -1,7 +1,13 @@
 import { cn } from '@/lib/utils';
-import { Ingredient as IIngredient } from '@prisma/client';
+import { Ingredient as PrismaIngredient } from '@prisma/client';
 import React from 'react';
 import { Ingredient } from './ingredient';
+
+// ✅ Оптимизированный тип Ingredient (без обязательных createdAt/updatedAt)
+type IIngredient = Omit<PrismaIngredient, 'createdAt' | 'updatedAt'> & {
+  createdAt?: Date;
+  updatedAt?: Date;
+};
 
 interface Props {
   onClickAdd: (id: number) => void;
