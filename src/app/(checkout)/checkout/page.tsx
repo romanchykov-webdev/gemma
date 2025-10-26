@@ -22,7 +22,7 @@ export default function CheckoutPage() {
 
 	const { data: session } = useSession();
 
-	const { totalAmount, items, loading, removeCartItem, changeItemCount } = useCart();
+	const { totalAmount, items, loading, syncing, removeCartItem, changeItemCount, refetchCart } = useCart();
 
 	const form = useForm<CheckoutFormValues>({
 		resolver: zodResolver(checkoutFormSchema),
@@ -35,6 +35,12 @@ export default function CheckoutPage() {
 			comment: "",
 		},
 	});
+
+	// ✅ Синхронизация корзины с сервером при входе на checkout
+	useEffect(() => {
+		console.log("🔄 Checkout mounted - syncing cart with server...");
+		refetchCart();
+	}, [refetchCart]);
 
 	useEffect(() => {
 		//
@@ -148,6 +154,7 @@ export default function CheckoutPage() {
 								onSubmitCash={form.handleSubmit(onSubmitCash)}
 								totalAmount={totalAmount}
 								loading={loading || submitting}
+								syncing={syncing}
 								className={`${loading || (submitting && "opacity-40 pointer-events-none")}`}
 							/>
 							{/*  */}

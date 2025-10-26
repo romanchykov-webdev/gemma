@@ -69,3 +69,16 @@ export interface CreateCartItemValues {
 	productItemId: number;
 	ingredients?: number[];
 }
+
+// ✅  версия для optimistic updates
+export interface CreateCartItemValuesOptimistic extends CreateCartItemValues {
+	// Данные для мгновенного отображения в UI
+	optimistic?: {
+		name: string;
+		imageUrl: string;
+		price: number;
+		pizzaSize?: number | null;
+		pizzaType?: number | null;
+		ingredientsData?: Array<{ id: number; name: string; price: number }>;
+	};
+}

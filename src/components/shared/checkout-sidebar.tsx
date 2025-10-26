@@ -8,6 +8,7 @@ import { WhiteBlock } from "./white-block";
 interface ICheckoutSidebarProps {
 	totalAmount: number;
 	loading: boolean;
+	syncing?: boolean; // ✅ Флаг синхронизации с сервером
 	className?: string;
 	onSubmitCash: () => void;
 }
@@ -16,6 +17,7 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
 	className,
 	totalAmount,
 	loading,
+	syncing = false,
 	onSubmitCash,
 }): JSX.Element => {
 	const VAT = 5;
@@ -47,14 +49,20 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
 
 			{/* upload block */}
 			<div className="flex flex-col gap-2">
-				<Button loading={loading} type="submit" className="w-full h-14 rounded-2xl mt-6 text-base font-bold">
+				<Button
+					loading={loading || syncing}
+					disabled={syncing}
+					type="submit"
+					className="w-full h-14 rounded-2xl mt-6 text-base font-bold"
+				>
 					Vai al pagamento
 					<ArrowRightIcon className="w-5 ml-2" />
 				</Button>
 
 				{/* order without payment */}
 				<Button
-					loading={loading}
+					loading={loading || syncing}
+					disabled={syncing}
 					type="button"
 					onClick={onSubmitCash}
 					className="w-full h-14 rounded-2xl mt-6 text-base font-bold"

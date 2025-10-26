@@ -23,7 +23,14 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 
 	const isPizzaForm = Boolean(firstItem.pizzaType);
 
-	const onSubmit = async (productItemId?: number, ingredients?: number[]) => {
+	const onSubmit = async (
+		productItemId?: number,
+		ingredients?: number[],
+		totalPrice?: number,
+		pizzaSize?: number | null,
+		pizzaType?: number | null,
+		ingredientsData?: Array<{ id: number; name: string; price: number }>,
+	) => {
 		try {
 			setSubmitting(true);
 			const itemId = productItemId ?? firstItem.id;
@@ -34,10 +41,18 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 			// 2) Мгновенно закрываем окно
 			router.back();
 
-			// 3) Запрос идёт в фоне (пользователь не ждёт!)
+			// 3) ⚡ Запрос идёт в фоне с optimistic update!
 			addCartItem({
 				productItemId: itemId,
 				ingredients,
+				optimistic: {
+					name: product.name,
+					imageUrl: product.imageUrl,
+					price: totalPrice ?? firstItem.price,
+					pizzaSize,
+					pizzaType,
+					ingredientsData,
+				},
 			});
 		} catch (error) {
 			toast.error("Si è verificato un errore durante l'aggiunta al carrello");

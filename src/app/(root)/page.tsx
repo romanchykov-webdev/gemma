@@ -11,14 +11,18 @@ import {
 import { Suspense } from "react";
 
 import { LazyFilters } from "@/components/shared/lazy-filters";
+import { StructuredData } from "@/components/shared/structured-data";
 import { Skeleton } from "@/components/ui";
 import { findPizzas } from "@/lib";
 import { GetSearchParams } from "@/lib/find-pizza";
 
+// ✅ SEO: импорт metadata из отдельного файла
+export { generateMetadata } from "./metadata";
+
 const toStr = (v?: string | string[]) => (typeof v === "string" ? v : Array.isArray(v) ? v[0] : undefined);
 
 // ✅ Кеширование главной страницы на 60 секунд
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
 	// Дожидаемся разрешения промиса searchParams
@@ -41,6 +45,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 	//
 	return (
 		<>
+			<StructuredData products={categories.flatMap((cat) => cat.products)} categories={categories} />
 			<Container className="mt-10 flex items-center justify-between ">
 				<Title text="Tutte le pizze" size="lg" className="font-extrabold" />
 
@@ -87,14 +92,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
 									return (
 										category.products.length > 0 && (
-											<div id={`category-${category.id}`} key={category.id}>
+											<article id={`category-${category.id}`} key={category.id}>
 												<ProductsGroupList
 													categoryId={category.id}
 													title={category.name}
 													items={category.products}
 													isFirstCategory={isFirstCategory}
 												/>
-											</div>
+											</article>
 										)
 									);
 								});
