@@ -16,24 +16,41 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
 
-		// ✅ Оптимизированный Prisma запрос с include для вложенных связей
-		// Include может быть эффективнее для глубоких связей в Supabase
+		// ⚡ Оптимизированный запрос с select - загружаем только нужные поля
 		const cart = await prisma.cart.findFirst({
 			where: {
 				tokenId: token,
 			},
-			include: {
+			select: {
+				id: true,
+				totalAmount: true,
+				tokenId: true,
 				items: {
 					orderBy: {
 						createdAt: "desc",
 					},
-					include: {
+					select: {
+						id: true,
+						quantity: true,
 						productItem: {
-							include: {
-								product: true,
+							select: {
+								price: true,
+								size: true,
+								pizzaType: true,
+								product: {
+									select: {
+										name: true,
+										imageUrl: true,
+									},
+								},
 							},
 						},
-						ingredients: true,
+						ingredients: {
+							select: {
+								name: true,
+								price: true,
+							},
+						},
 					},
 				},
 			},
@@ -115,23 +132,41 @@ export async function POST(req: NextRequest) {
 			`;
 		});
 
-		// ✅ Возвращаем обновленную корзину с товарами
+		// ⚡ Возвращаем обновленную корзину только с нужными полями
 		const updatedCart = await prisma.cart.findFirst({
 			where: {
 				tokenId: token,
 			},
-			include: {
+			select: {
+				id: true,
+				totalAmount: true,
+				tokenId: true,
 				items: {
 					orderBy: {
 						createdAt: "desc",
 					},
-					include: {
+					select: {
+						id: true,
+						quantity: true,
 						productItem: {
-							include: {
-								product: true,
+							select: {
+								price: true,
+								size: true,
+								pizzaType: true,
+								product: {
+									select: {
+										name: true,
+										imageUrl: true,
+									},
+								},
 							},
 						},
-						ingredients: true,
+						ingredients: {
+							select: {
+								name: true,
+								price: true,
+							},
+						},
 					},
 				},
 			},
