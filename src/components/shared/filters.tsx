@@ -18,9 +18,7 @@ interface IFiltersProps {
 export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }): JSX.Element => {
 	// console.log("Filters enabled", enabled);
 
-	const priority = enabled ? "immediate" : "idle";
-
-	const { ingredients, loading } = useIngredients(enabled, "idle");
+	const { ingredients, loading } = useIngredients(enabled);
 
 	const filters = useFilters();
 
