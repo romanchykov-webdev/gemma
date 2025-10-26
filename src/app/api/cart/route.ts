@@ -43,20 +43,6 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
 
-		// ✅ Дебаг: проверяем загруженные данные
-		console.log("[CART_GET] Cart items:", cart.items?.length || 0);
-		console.log(
-			"[CART_GET] First item:",
-			cart.items?.[0]
-				? {
-						id: cart.items[0].id,
-						hasProductItem: !!cart.items[0].productItem,
-						hasProduct: !!cart.items[0].productItem?.product,
-						hasIngredients: cart.items[0].ingredients?.length,
-					}
-				: "empty",
-		);
-
 		return NextResponse.json(cart);
 	} catch (error) {
 		console.error("[CART_GET] Server error", error);
