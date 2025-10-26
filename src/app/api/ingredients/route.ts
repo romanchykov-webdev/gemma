@@ -4,8 +4,16 @@ import { prisma } from "../../../../prisma/prisma-client";
 // ✅ Кеширование на 1 час (3600 секунд)
 export const revalidate = 3600;
 
+// ✅ Тип для кешированных ингредиентов
+type CachedIngredient = {
+	id: number;
+	name: string;
+	price: number;
+	imageUrl: string;
+};
+
 // ✅ In-memory кеш для быстрого доступа
-let cachedIngredients: any[] | null = null;
+let cachedIngredients: CachedIngredient[] | null = null;
 let cacheTime = 0;
 const CACHE_TTL = 3600 * 1000; // 1 час в миллисекундах
 
