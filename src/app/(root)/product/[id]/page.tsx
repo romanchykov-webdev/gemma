@@ -67,6 +67,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 					price: true,
 					size: true,
 					pizzaType: true,
+					productId: true,
 				},
 				orderBy: {
 					createdAt: "desc",

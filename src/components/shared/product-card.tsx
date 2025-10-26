@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
-import { Ingredient } from "@prisma/client";
+import { Ingredient as PrismaIngredient } from "@prisma/client";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -9,7 +9,11 @@ import { Button } from "../ui";
 import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
 
-// import { Ingredient } from '@prisma/client';
+// ✅ Оптимизированный тип Ingredient (без обязательных createdAt/updatedAt)
+type Ingredient = Omit<PrismaIngredient, "createdAt" | "updatedAt"> & {
+	createdAt?: Date;
+	updatedAt?: Date;
+};
 
 interface Props {
 	id: number;
@@ -38,9 +42,8 @@ export const ProductCard: React.FC<Props> = ({
 	const addCartItem = useCartStore((state) => state.addCartItem);
 
 	// Быстрое добавление в корзину
-	const handleAddToCart = (e: React.MouseEvent) => {
-		// e.preventDefault();
-		// e.stopPropagation();
+	const handleAddToCart = (_e: React.MouseEvent) => {
+		// Параметр '_e' для будущего использования (preventDefault, stopPropagation)
 
 		// Мгновенно добавляем (оптимистично!)
 		addCartItem({

@@ -13,12 +13,24 @@ import { usePizzaOptions } from "@/hooks/use-pizza-options";
 import { getPizzaDetails } from "@/lib";
 import { Ingredient, ProductItem } from "@prisma/client";
 
+// ✅ Оптимизированный тип ингредиента (без обязательных createdAt/updatedAt)
+type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt"> & {
+	createdAt?: Date;
+	updatedAt?: Date;
+};
+
+// ✅ Оптимизированный тип ProductItem (без обязательных createdAt/updatedAt)
+type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
+	createdAt?: Date;
+	updatedAt?: Date;
+};
+
 interface Props {
 	imageUrl: string;
 	name: string;
-	ingredients: Ingredient[];
+	ingredients: OptimizedIngredient[];
 	loading: boolean;
-	items: ProductItem[];
+	items: OptimizedProductItem[];
 	onSubmit: (itemId: number, ingredients: number[]) => void;
 	className?: string;
 }
