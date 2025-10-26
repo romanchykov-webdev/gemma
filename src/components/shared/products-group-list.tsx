@@ -16,9 +16,16 @@ interface Props {
 	items: ProductWithRelations[];
 	categoryId: number;
 	className?: string;
+	isFirstCategory?: boolean; // ✅ Для оптимизации LCP - грузим первые 3 изображения сразу
 }
 
-export const ProductsGroupList: React.FC<Props> = ({ title, items, categoryId, className }) => {
+export const ProductsGroupList: React.FC<Props> = ({
+	title,
+	items,
+	categoryId,
+	className,
+	isFirstCategory = false,
+}) => {
 	//
 	const HEADER_OFFSET = 100; // высота sticky-зоны (TopBar + отступы)
 
@@ -54,6 +61,8 @@ export const ProductsGroupList: React.FC<Props> = ({ title, items, categoryId, c
 					.filter((product) => product.items.length > 0)
 					.map((product, index) => {
 						const minPriceItem = product.items.reduce((min, item) => (item.price < min.price ? item : min));
+						const hasPriority = isFirstCategory && index < 3;
+
 						return (
 							<ProductCard
 								key={product.id}
@@ -63,8 +72,10 @@ export const ProductsGroupList: React.FC<Props> = ({ title, items, categoryId, c
 								price={minPriceItem.price}
 								ingredients={product.ingredients}
 								itemId={minPriceItem.id}
-								// for lazy loading
-								priority={index < 6}
+								// ✅ Ленивая загрузка:
+								// - Только первые 3 изображения из ПЕРВОЙ категории загружаются сразу (LCP оптимизация)
+								// - Все остальные загружаются при приближении к viewport
+								priority={hasPriority}
 							/>
 						);
 					})}

@@ -81,7 +81,13 @@ export const SearchInput: React.FC<ISearchInputProps> = (): JSX.Element => {
 								key={product.id}
 								className="flex items-center  w-full hover:bg-primary/10 cursor-pointer rounded-sm pl-5"
 							>
-								<img src={product.imageUrl} alt={product.name} className="rounded-sm h-8 w-8" />
+								{/* ✅ Ленивая загрузка для превью в поиске */}
+								<img
+									src={product.imageUrl}
+									alt={product.name}
+									className="rounded-sm h-8 w-8"
+									loading="lazy"
+								/>
 								<div className="px-3 py-2 ">{product.name}</div>
 							</Link>
 						))}
