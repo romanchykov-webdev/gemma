@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 			ingredientIds: data.ingredients,
 		});
 
-		// ⚡ Быстрая транзакция: только upsert + update totalAmount
+		// ⚡ Быстрая транзакция: только upsert + update totalAmount одним SQL
 		await prisma.$transaction(async (tx) => {
 			// 1) upsert - создать или увеличить количество
 			await tx.cartItem.upsert({
@@ -132,30 +132,29 @@ export async function POST(req: NextRequest) {
 				},
 			});
 
-			// 2) Пересчёт totalAmount одним SQL-запросом
-			await tx.$executeRawUnsafe(
-				`
+			// ✅ 2) Быстрый пересчёт totalAmount одним оптимизированным SQL
+			await tx.$executeRaw`
 				UPDATE "Cart" c
 				SET 
-				  "totalAmount" = COALESCE((
-					SELECT SUM((pi.price + COALESCE(ing_total, 0)) * ci.quantity)::int
-					FROM "CartItem" ci
-					JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-					LEFT JOIN (
-					  SELECT 
-						m."A" as cart_item_id,
-						SUM(i.price) as ing_total
-					  FROM "_CartItemToIngredient" m
-					  JOIN "Ingredient" i ON i.id = m."B"
-					  GROUP BY m."A"
-					) ing ON ing.cart_item_id = ci.id
-					WHERE ci."cartId" = c.id
-				  ), 0),
-				  "updatedAt" = NOW()
-				WHERE c.id = $1::uuid
-				`,
-				userCart.id,
-			);
+					"totalAmount" = COALESCE((
+						SELECT SUM(
+							(pi.price + COALESCE(ing.total_price, 0)) * ci.quantity
+						)::int
+						FROM "CartItem" ci
+						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
+						LEFT JOIN (
+							SELECT 
+								m."A" as cart_item_id,
+								SUM(i.price)::int as total_price
+							FROM "_CartItemToIngredient" m
+							JOIN "Ingredient" i ON i.id = m."B"
+							GROUP BY m."A"
+						) ing ON ing.cart_item_id = ci.id
+						WHERE ci."cartId" = c.id
+					), 0),
+					"updatedAt" = NOW()
+				WHERE c.id = ${userCart.id}::uuid
+			`;
 		});
 
 		// Возвращаем только success - клиент сам запросит GET /api/cart

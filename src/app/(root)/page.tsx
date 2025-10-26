@@ -17,6 +17,9 @@ import { GetSearchParams } from "@/lib/find-pizza";
 
 const toStr = (v?: string | string[]) => (typeof v === "string" ? v : Array.isArray(v) ? v[0] : undefined);
 
+// ✅ Кеширование главной страницы на 60 секунд
+export const revalidate = 60;
+
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
 	// Дожидаемся разрешения промиса searchParams
 	const raw = await searchParams;

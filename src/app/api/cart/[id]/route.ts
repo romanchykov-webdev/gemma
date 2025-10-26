@@ -110,10 +110,13 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 			return NextResponse.json({ message: "Impossibile aggiornare il carrello" }, { status: 401 });
 		}
 
-		// ⚡ Одна транзакция: UPDATE item + пересчёт totalAmount
+		// ⚡ Одна транзакция: UPDATE item + пересчёт totalAmount одним SQL
 		await prisma.$transaction(async (tx) => {
 			// Проверяем существование
-			const cartItem = await tx.cartItem.findFirst({ where: { id } });
+			const cartItem = await tx.cartItem.findFirst({
+				where: { id },
+				select: { id: true },
+			});
 			if (!cartItem) {
 				throw new Error("Cart item not found");
 			}
@@ -124,30 +127,29 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 				data: { quantity: data.quantity },
 			});
 
-			// Пересчитываем totalAmount одним SQL
-			await tx.$executeRawUnsafe(
-				`
+			// ✅ Быстрый пересчёт totalAmount одним оптимизированным SQL
+			await tx.$executeRaw`
 				UPDATE "Cart" c
 				SET 
-				  "totalAmount" = COALESCE((
-					SELECT SUM((pi.price + COALESCE(ing_total, 0)) * ci.quantity)::int
-					FROM "CartItem" ci
-					JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-					LEFT JOIN (
-					  SELECT 
-						m."A" as cart_item_id,
-						SUM(i.price) as ing_total
-					  FROM "_CartItemToIngredient" m
-					  JOIN "Ingredient" i ON i.id = m."B"
-					  GROUP BY m."A"
-					) ing ON ing.cart_item_id = ci.id
-					WHERE ci."cartId" = c.id AND c."tokenId" = $1
-				  ), 0),
-				  "updatedAt" = NOW()
-				WHERE c."tokenId" = $1
-				`,
-				token,
-			);
+					"totalAmount" = COALESCE((
+						SELECT SUM(
+							(pi.price + COALESCE(ing.total_price, 0)) * ci.quantity
+						)::int
+						FROM "CartItem" ci
+						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
+						LEFT JOIN (
+							SELECT 
+								m."A" as cart_item_id,
+								SUM(i.price)::int as total_price
+							FROM "_CartItemToIngredient" m
+							JOIN "Ingredient" i ON i.id = m."B"
+							GROUP BY m."A"
+						) ing ON ing.cart_item_id = ci.id
+						WHERE ci."cartId" = c.id
+					), 0),
+					"updatedAt" = NOW()
+				WHERE c."tokenId" = ${token}
+			`;
 		});
 
 		// Клиент сам перезапросит корзину
@@ -168,10 +170,13 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			return NextResponse.json({ message: "Impossibile aggiornare il carrello" }, { status: 401 });
 		}
 
-		// ⚡ Одна транзакция: DELETE item + пересчёт totalAmount
+		// ⚡ Одна транзакция: DELETE item + пересчёт totalAmount одним SQL
 		await prisma.$transaction(async (tx) => {
 			// Проверяем существование
-			const cartItem = await tx.cartItem.findFirst({ where: { id } });
+			const cartItem = await tx.cartItem.findFirst({
+				where: { id },
+				select: { id: true },
+			});
 			if (!cartItem) {
 				throw new Error("Cart item not found");
 			}
@@ -179,30 +184,29 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			// Удаляем
 			await tx.cartItem.delete({ where: { id } });
 
-			// Пересчитываем totalAmount одним SQL
-			await tx.$executeRawUnsafe(
-				`
+			// ✅ Быстрый пересчёт totalAmount одним оптимизированным SQL
+			await tx.$executeRaw`
 				UPDATE "Cart" c
 				SET 
-				  "totalAmount" = COALESCE((
-					SELECT SUM((pi.price + COALESCE(ing_total, 0)) * ci.quantity)::int
-					FROM "CartItem" ci
-					JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-					LEFT JOIN (
-					  SELECT 
-						m."A" as cart_item_id,
-						SUM(i.price) as ing_total
-					  FROM "_CartItemToIngredient" m
-					  JOIN "Ingredient" i ON i.id = m."B"
-					  GROUP BY m."A"
-					) ing ON ing.cart_item_id = ci.id
-					WHERE ci."cartId" = c.id AND c."tokenId" = $1
-				  ), 0),
-				  "updatedAt" = NOW()
-				WHERE c."tokenId" = $1
-				`,
-				token,
-			);
+					"totalAmount" = COALESCE((
+						SELECT SUM(
+							(pi.price + COALESCE(ing.total_price, 0)) * ci.quantity
+						)::int
+						FROM "CartItem" ci
+						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
+						LEFT JOIN (
+							SELECT 
+								m."A" as cart_item_id,
+								SUM(i.price)::int as total_price
+							FROM "_CartItemToIngredient" m
+							JOIN "Ingredient" i ON i.id = m."B"
+							GROUP BY m."A"
+						) ing ON ing.cart_item_id = ci.id
+						WHERE ci."cartId" = c.id
+					), 0),
+					"updatedAt" = NOW()
+				WHERE c."tokenId" = ${token}
+			`;
 		});
 
 		// Клиент сам перезапросит корзину

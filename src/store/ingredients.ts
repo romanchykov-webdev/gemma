@@ -29,18 +29,25 @@ export const useIngredientsStore = create<IngredientsState>()(
 				}
 
 				set({ loading: true, error: false });
-				console.log("⏸️ Waiting 10 seconds...");
 
-				setTimeout(async () => {
+				// ✅ Отложенная загрузка: грузим когда браузер свободен
+				const loadWhenIdle = async () => {
 					try {
-						console.log("🔄 Fetching ingredients from API...");
+						console.log("🔄 Fetching ingredients from API (idle)...");
 						const data = await Api.ingredients.getAll();
 						set({ ingredients: data, loading: false, error: false });
 					} catch (error) {
 						console.error("❌ Error fetching ingredients:", error);
 						set({ error: true, loading: false });
 					}
-				}, 2000);
+				};
+
+				// requestIdleCallback с fallback на setTimeout
+				if ("requestIdleCallback" in window) {
+					window.requestIdleCallback(() => loadWhenIdle(), { timeout: 2000 });
+				} else {
+					setTimeout(loadWhenIdle, 1000);
+				}
 			},
 		}),
 		{ name: "IngredientsStore" },

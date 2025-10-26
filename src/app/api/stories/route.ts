@@ -1,12 +1,29 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '../../../../prisma/prisma-client';
+import { NextResponse } from "next/server";
+import { prisma } from "../../../../prisma/prisma-client";
+
+// ✅ Кеширование на 30 минут (1800 секунд)
+export const revalidate = 1800;
 
 export async function GET() {
-  const stories = await prisma.story.findMany({
-    include: {
-      items: true,
-    },
-  });
+	// ✅ Оптимизация: загружаем только нужные поля
+	const stories = await prisma.story.findMany({
+		select: {
+			id: true,
+			previewImageUrl: true,
+			items: {
+				select: {
+					id: true,
+					sourceUrl: true,
+				},
+				orderBy: {
+					id: "asc",
+				},
+			},
+		},
+		orderBy: {
+			id: "asc",
+		},
+	});
 
-  return NextResponse.json(stories);
+	return NextResponse.json(stories);
 }
