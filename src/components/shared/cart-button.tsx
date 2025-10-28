@@ -14,7 +14,7 @@ interface Props {
 export const CartButton: React.FC<Props> = ({ className }) => {
 	const totalAmount = useCartStore((state) => state.totalAmount);
 	const items = useCartStore((state) => state.items);
-	const itemsCount = items.length;
+	const itemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
 	return (
 		<LazyCartDrawer>
