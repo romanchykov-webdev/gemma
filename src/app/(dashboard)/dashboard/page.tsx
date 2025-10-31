@@ -3,7 +3,7 @@ import { Container, Title } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
-import { CategoriesAdminPanel, Menu, MenuList, ProductsAdminPanel } from "./components/shared";
+import { CategoriesDashboard, IngredientsDashboard, Menu, MenuList, ProductsDashboard } from "./components/shared";
 
 export default function DashBoardPage() {
 	//
@@ -27,14 +27,15 @@ export default function DashBoardPage() {
 					<MenuIcon size={40} />
 				</Button>
 				<div className="overflow-auto scrollbar py-5 sm:block hidden">
-					<MenuList className="flex-row" toggleMenu={toggleMenu} />
+					<MenuList className="flex-row" toggleMenu={toggleMenu} activeSection={activeSection} />
 				</div>
 			</div>
 
 			{/*  */}
 			{/* Контент в зависимости от выбранной секции */}
-			{activeSection === "categories" && <CategoriesAdminPanel className="mt-5" />}
-			{activeSection === "products" && <ProductsAdminPanel className="mt-5" />}
+			{activeSection === "categories" && <CategoriesDashboard className="mt-5" />}
+			{activeSection === "products" && <ProductsDashboard className="mt-5" />}
+			{activeSection === "ingredients" && <IngredientsDashboard className="mt-5" />}
 		</Container>
 	);
 }

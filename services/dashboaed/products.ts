@@ -24,7 +24,7 @@ export type Product = {
 		name: string;
 	};
 	items: ProductItem[];
-	ingredients: Ingredient[];
+	ingredients?: Ingredient[];
 };
 
 export const getProducts = async (categoryId?: number): Promise<Product[]> => {

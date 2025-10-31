@@ -26,9 +26,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		const updatedProduct = await prisma.product.update({
 			where: { id },
 			data: {
-				...(data.name && { name: data.name.trim() }),
-				...(data.imageUrl && { imageUrl: data.imageUrl.trim() }),
-				...(data.categoryId && { categoryId: Number(data.categoryId) }),
+				...(data.name !== undefined && { name: data.name.trim() }),
+				...(data.imageUrl !== undefined && { imageUrl: data.imageUrl.trim() }),
+				...(data.categoryId !== undefined && { categoryId: Number(data.categoryId) }),
 				// Обновление связей с ингредиентами
 				...(data.ingredientIds
 					? {

@@ -3,8 +3,8 @@ import { hashSync } from "bcrypt";
 import { _ingredients, categories, products } from "./constants";
 import { prisma } from "./prisma-client";
 
-const randomDecimalNumber = (min: number, max: number) => {
-	return Math.floor(Math.random() * (max - min) * 10 + min * 10) / 10;
+const randomDecimalPrice = (min: number, max: number): number => {
+	return Math.round((Math.random() * (max - min) + min) * 100) / 100;
 };
 
 const generateProductItem = ({
@@ -18,7 +18,7 @@ const generateProductItem = ({
 }) => {
 	return {
 		productId,
-		price: randomDecimalNumber(1, 20),
+		price: randomDecimalPrice(1.99, 24.99),
 		pizzaType,
 		size,
 	} as Prisma.ProductItemUncheckedCreateInput;

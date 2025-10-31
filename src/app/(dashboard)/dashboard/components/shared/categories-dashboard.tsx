@@ -20,7 +20,7 @@ type Category = {
 	};
 };
 
-export const CategoriesAdminPanel: React.FC<Props> = ({ className }) => {
+export const CategoriesDashboard: React.FC<Props> = ({ className }) => {
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -36,7 +36,7 @@ export const CategoriesAdminPanel: React.FC<Props> = ({ className }) => {
 	const loadCategories = async () => {
 		try {
 			setLoading(true);
-			const data = await Api.categories.getCategories();
+			const data = await Api.categories_dashboard.getCategories();
 			setCategories(data);
 		} catch (error) {
 			toast.error("Errore nel caricamento delle categorie");
@@ -55,7 +55,7 @@ export const CategoriesAdminPanel: React.FC<Props> = ({ className }) => {
 
 		try {
 			setIsCreating(true);
-			const newCategory = await Api.categories.createCategory(newCategoryName.trim());
+			const newCategory = await Api.categories_dashboard.createCategory(newCategoryName.trim());
 			setCategories([...categories, newCategory]);
 			setNewCategoryName("");
 			toast.success("Categoria creata con successo");
@@ -80,7 +80,7 @@ export const CategoriesAdminPanel: React.FC<Props> = ({ className }) => {
 		}
 
 		try {
-			const updated = await Api.categories.updateCategory(id, editingName.trim());
+			const updated = await Api.categories_dashboard.updateCategory(id, editingName.trim());
 			setCategories(categories.map((cat) => (cat.id === id ? updated : cat)));
 			setEditingId(null);
 			toast.success("Categoria aggiornata");
@@ -109,7 +109,7 @@ export const CategoriesAdminPanel: React.FC<Props> = ({ className }) => {
 		}
 
 		try {
-			await Api.categories.deleteCategory(id);
+			await Api.categories_dashboard.deleteCategory(id);
 			setCategories(categories.filter((cat) => cat.id !== id));
 			toast.success("Categoria eliminata");
 		} catch (error: any) {

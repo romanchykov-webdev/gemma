@@ -1,4 +1,13 @@
-export { CategoriesAdminPanel } from "./categories-admin-panel";
+export { CategoriesDashboard } from "./categories-dashboard";
+export { IngredientsDashboard } from "./ingredients-dashboard";
+export { IngredientCard } from "./ingredients/ingredient-card";
+export { IngredientCreateForm } from "./ingredients/ingredient-create-form";
+export { IngredientImagePreview } from "./ingredients/ingredient-image-preview";
 export { Menu } from "./menu";
 export { MenuList } from "./menu-list";
-export { ProductsAdminPanel } from "./products-admin-panel";
+export { ProductsDashboard } from "./products-dashboard";
+export { ProductCard } from "./products/product-card";
+export { ProductCategoryFilter } from "./products/product-category-filter";
+export { ProductCreateForm } from "./products/product-create-form";
+export { ProductImagePreview } from "./products/product-image-preview";
+export { ProductVariantsTable } from "./products/product-variants-table";
