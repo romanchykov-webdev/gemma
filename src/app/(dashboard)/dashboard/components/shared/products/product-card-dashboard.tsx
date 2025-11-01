@@ -1,8 +1,6 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { mapPizzaSize, mapPizzaTypes } from "@/constants/pizza";
-
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, ChevronUp, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -24,7 +22,7 @@ interface Props {
 	onDelete: (id: number) => void;
 }
 
-export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, onDelete }) => {
+export const ProductCardDashboard: React.FC<Props> = ({ product, categories, onUpdate, onDelete }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
 
@@ -43,14 +41,28 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 	);
 	const [showIngredients, setShowIngredients] = useState(false);
 
+	// 🔥 НОВОЕ: Динамические размеры и типы теста
+	const [availableSizes, setAvailableSizes] = useState<Array<{ id: number; name: string; value: number }>>([]);
+	const [availableDoughTypes, setAvailableDoughTypes] = useState<Array<{ id: number; name: string; value: number }>>(
+		[],
+	);
+
 	// Состояние для вариантов
 	const [editingVariants, setEditingVariants] = useState<ProductItem[]>([]);
 	const [showVariantsEdit, setShowVariantsEdit] = useState(false);
 
-	// Загрузка ингредиентов при переходе в режим редактирования
+	// 🔥 ОБНОВЛЕНО: Загрузка всех данных при переходе в режим редактирования
 	useEffect(() => {
-		if (isEditing && availableIngredients.length === 0) {
-			loadIngredients();
+		if (isEditing) {
+			if (availableIngredients.length === 0) {
+				loadIngredients();
+			}
+			if (availableSizes.length === 0) {
+				loadSizes();
+			}
+			if (availableDoughTypes.length === 0) {
+				loadDoughTypes();
+			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isEditing]);
@@ -61,6 +73,26 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 			setAvailableIngredients(data);
 		} catch (error) {
 			console.error("Errore nel caricamento degli ingredienti:", error);
+		}
+	};
+
+	// 🔥 НОВОЕ: Загрузка размеров
+	const loadSizes = async () => {
+		try {
+			const data = await Api.product_sizes_dashboard.getProductSizes();
+			setAvailableSizes(data.map((s) => ({ id: s.id, name: s.name, value: s.value })));
+		} catch (error) {
+			console.error("Errore nel caricamento dei formati:", error);
+		}
+	};
+
+	// 🔥 НОВОЕ: Загрузка типов теста
+	const loadDoughTypes = async () => {
+		try {
+			const data = await Api.dough_types_dashboard.getDoughTypes();
+			setAvailableDoughTypes(data.map((d) => ({ id: d.id, name: d.name, value: d.value })));
+		} catch (error) {
+			console.error("Errore nel caricamento dei tipi di impasto:", error);
 		}
 	};
 
@@ -91,12 +123,12 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 		);
 	};
 
-	// Добавление нового варианта
+	// 🔥 ОБНОВЛЕНО: Добавление нового варианта с динамическими дефолтными значениями
 	const addVariant = () => {
 		const newVariant: ProductItem = {
 			id: -Date.now(), // Временный отрицательный ID
-			sizeId: 1,
-			doughTypeId: 1,
+			sizeId: availableSizes[0]?.id || null,
+			doughTypeId: availableDoughTypes[0]?.id || null,
 			price: 0,
 		};
 		setEditingVariants([...editingVariants, newVariant]);
@@ -341,7 +373,13 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 									{showVariantsEdit ? "Nascondi" : "Mostra"}
 								</Button>
 							)}
-							<Button type="button" variant="outline" size="sm" onClick={addVariant}>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={addVariant}
+								disabled={availableSizes.length === 0 || availableDoughTypes.length === 0}
+							>
 								<Plus className="w-3 h-3 mr-1" />
 								Aggiungi
 							</Button>
@@ -357,30 +395,32 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 									className="flex items-center gap-2 bg-white p-3 rounded-lg border"
 								>
 									<div className="flex-1 grid grid-cols-3 gap-2">
-										{/* Размер */}
+										{/* 🔥 ОБНОВЛЕНО: Размер с динамическими данными */}
 										<select
 											className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-											value={variant.sizeId ?? 1}
+											value={variant.sizeId ?? availableSizes[0]?.id}
 											onChange={(e) => updateVariant(index, "sizeId", Number(e.target.value))}
+											disabled={availableSizes.length === 0}
 										>
-											{Object.entries(mapPizzaSize).map(([value, name]) => (
-												<option key={value} value={value}>
-													{name}
+											{availableSizes.map((size) => (
+												<option key={size.id} value={size.id}>
+													{size.name} - {size.value} cm
 												</option>
 											))}
 										</select>
 
-										{/* Тип теста */}
+										{/* 🔥 ОБНОВЛЕНО: Тип теста с динамическими данными */}
 										<select
 											className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-											value={variant.doughTypeId ?? 1}
+											value={variant.doughTypeId ?? availableDoughTypes[0]?.id}
 											onChange={(e) =>
 												updateVariant(index, "doughTypeId", Number(e.target.value))
 											}
+											disabled={availableDoughTypes.length === 0}
 										>
-											{Object.entries(mapPizzaTypes).map(([value, name]) => (
-												<option key={value} value={value}>
-													{name}
+											{availableDoughTypes.map((type) => (
+												<option key={type.id} value={type.id}>
+													{type.name}
 												</option>
 											))}
 										</select>
@@ -412,20 +452,21 @@ export const ProductCard: React.FC<Props> = ({ product, categories, onUpdate, on
 						</div>
 					)}
 
-					{/* Краткое отображение вариантов когда скрыто */}
+					{/* 🔥 ОБНОВЛЕНО: Краткое отображение вариантов с динамическими данными */}
 					{!showVariantsEdit && editingVariants.length > 0 && (
 						<div className="flex flex-wrap gap-2 mt-2">
-							{editingVariants.map((variant, index) => (
-								<div
-									key={variant.id || index}
-									className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs"
-								>
-									{variant.sizeId && mapPizzaSize[variant.sizeId as keyof typeof mapPizzaSize]} -{" "}
-									{variant.doughTypeId &&
-										mapPizzaTypes[variant.doughTypeId as keyof typeof mapPizzaTypes]}{" "}
-									- €{Number(variant.price)}
-								</div>
-							))}
+							{editingVariants.map((variant, index) => {
+								const size = availableSizes.find((s) => s.id === variant.sizeId);
+								const doughType = availableDoughTypes.find((d) => d.id === variant.doughTypeId);
+								return (
+									<div
+										key={variant.id || index}
+										className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs"
+									>
+										{size?.name} - {doughType?.name} - €{Number(variant.price)}
+									</div>
+								);
+							})}
 						</div>
 					)}
 				</div>

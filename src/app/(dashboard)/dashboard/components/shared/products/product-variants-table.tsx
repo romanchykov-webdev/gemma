@@ -1,8 +1,8 @@
 "use client";
 
-import { mapPizzaSize, mapPizzaTypes } from "@/constants/pizza";
 import { Check } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Api } from "../../../../../../../services/api-client";
 import { Product, ProductItem } from "../../../../../../../services/dashboaed/products";
 
 interface Props {
@@ -10,10 +10,35 @@ interface Props {
 }
 
 export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
-	// Проверка наличия варианта
-	const hasVariant = (size: number, pizzaType: number): ProductItem | undefined => {
-		return product.items.find((item) => item.sizeId === size && item.doughTypeId === pizzaType);
+	const [sizes, setSizes] = useState<Array<{ id: number; name: string; value: number }>>([]);
+	const [doughTypes, setDoughTypes] = useState<Array<{ id: number; name: string }>>([]);
+
+	// Загрузка размеров и типов теста
+	useEffect(() => {
+		loadData();
+	}, []);
+
+	const loadData = async () => {
+		try {
+			const [sizesData, typesData] = await Promise.all([
+				Api.product_sizes_dashboard.getProductSizes(),
+				Api.dough_types_dashboard.getDoughTypes(),
+			]);
+			setSizes(sizesData.map((s) => ({ id: s.id, name: s.name, value: s.value })));
+			setDoughTypes(typesData.map((d) => ({ id: d.id, name: d.name })));
+		} catch (error) {
+			console.error("Errore nel caricamento dei dati:", error);
+		}
 	};
+
+	// Проверка наличия варианта
+	const hasVariant = (sizeId: number, doughTypeId: number): ProductItem | undefined => {
+		return product.items.find((item) => item.sizeId === sizeId && item.doughTypeId === doughTypeId);
+	};
+
+	if (sizes.length === 0 || doughTypes.length === 0) {
+		return <div className="px-4 pb-4 pt-2">Caricamento...</div>;
+	}
 
 	return (
 		<div className="px-4 pb-4 pt-2 bg-gray-50 border-t">
@@ -25,21 +50,23 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 					<thead>
 						<tr className="border-b">
 							<th className="text-left py-2 px-2">Dimensione</th>
-							{Object.entries(mapPizzaTypes).map(([type, typeName]) => (
-								<th key={type} className="text-center py-2 px-2">
-									{typeName}
+							{doughTypes.map((type) => (
+								<th key={type.id} className="text-center py-2 px-2">
+									{type.name}
 								</th>
 							))}
 						</tr>
 					</thead>
 					<tbody>
-						{Object.entries(mapPizzaSize).map(([size, sizeName]) => (
-							<tr key={size} className="border-b last:border-0">
-								<td className="py-2 px-2 font-medium">{sizeName}</td>
-								{Object.keys(mapPizzaTypes).map((type) => {
-									const variant = hasVariant(Number(size), Number(type));
+						{sizes.map((size) => (
+							<tr key={size.id} className="border-b last:border-0">
+								<td className="py-2 px-2 font-medium">
+									{size.name} - {size.value} cm
+								</td>
+								{doughTypes.map((type) => {
+									const variant = hasVariant(size.id, type.id);
 									return (
-										<td key={type} className="text-center py-2 px-2">
+										<td key={type.id} className="text-center py-2 px-2">
 											{variant ? (
 												<div className="flex flex-col items-center">
 													<div className="w-5 h-5 rounded bg-green-500 flex items-center justify-center">
@@ -63,18 +90,21 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 
 			{/* Список всех вариантов */}
 			<div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-				{product.items.map((item) => (
-					<div
-						key={item.id}
-						className="text-xs bg-white p-2 rounded border flex justify-between items-center"
-					>
-						<span>
-							{item.sizeId && mapPizzaSize[item.sizeId as keyof typeof mapPizzaSize]} -{" "}
-							{item.doughTypeId && mapPizzaTypes[item.doughTypeId as keyof typeof mapPizzaTypes]}
-						</span>
-						<span className="font-semibold">{Number(item.price).toFixed(2)} €</span>
-					</div>
-				))}
+				{product.items.map((item) => {
+					const size = sizes.find((s) => s.id === item.sizeId);
+					const doughType = doughTypes.find((d) => d.id === item.doughTypeId);
+					return (
+						<div
+							key={item.id}
+							className="text-xs bg-white p-2 rounded border flex justify-between items-center"
+						>
+							<span>
+								{size?.name} - {doughType?.name}
+							</span>
+							<span className="font-semibold">{Number(item.price).toFixed(2)} €</span>
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);

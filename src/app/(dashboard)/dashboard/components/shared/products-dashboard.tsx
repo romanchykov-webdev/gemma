@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Api } from "../../../../../../services/api-client";
-import { ProductCard } from "./products/product-card";
+import { ProductCardDashboard } from "./products/product-card-dashboard";
 import { ProductCategoryFilter } from "./products/product-category-filter";
 import { ProductCreateForm } from "./products/product-create-form";
 
@@ -157,7 +157,7 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 					</div>
 				) : (
 					products.map((product) => (
-						<ProductCard
+						<ProductCardDashboard
 							key={product.id}
 							product={product}
 							categories={categories}

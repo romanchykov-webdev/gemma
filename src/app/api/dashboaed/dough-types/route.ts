@@ -21,33 +21,42 @@ export async function GET() {
 	}
 }
 
-// POST - Создать тип теста
+// POST - Создать тип теста (value генерируется автоматически)
 export async function POST(req: NextRequest) {
 	try {
 		const data = await req.json();
 
-		if (!data.name || !data.value) {
-			return NextResponse.json({ message: "Nome e valore sono obbligatori" }, { status: 400 });
+		if (!data.name || data.name.trim().length === 0) {
+			return NextResponse.json({ message: "Il nome è obbligatorio" }, { status: 400 });
 		}
 
-		const existing = await prisma.doughType.findFirst({
-			where: {
-				OR: [{ name: data.name.trim() }, { value: Number(data.value) }],
-			},
+		// Проверка на дубликат по имени
+		const existingByName = await prisma.doughType.findUnique({
+			where: { name: data.name.trim() },
 		});
 
-		if (existing) {
-			return NextResponse.json(
-				{ message: "Tipo di impasto con questo nome o valore esiste già" },
-				{ status: 409 },
-			);
+		if (existingByName) {
+			return NextResponse.json({ message: "Tipo di impasto con questo nome esiste già" }, { status: 409 });
 		}
+
+		// 🔥 Автоматическое генерирование value (максимальное + 1)
+		const maxValueType = await prisma.doughType.findFirst({
+			orderBy: { value: "desc" },
+			select: { value: true },
+		});
+
+		const nextValue = maxValueType ? maxValueType.value + 1 : 1;
 
 		const newType = await prisma.doughType.create({
 			data: {
 				name: data.name.trim(),
-				value: Number(data.value),
+				value: nextValue, // 🔥 Генерируется автоматически
 				sortOrder: data.sortOrder || 0,
+			},
+			include: {
+				_count: {
+					select: { productItems: true },
+				},
 			},
 		});
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { mapPizzaSize, mapPizzaTypes } from "@/constants/pizza";
 import { Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -35,14 +34,32 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 	const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
 	const [showIngredients, setShowIngredients] = useState(false);
 
+	// 🔥 НОВОЕ: Динамические размеры и типы теста
+	const [availableSizes, setAvailableSizes] = useState<Array<{ id: number; name: string; value: number }>>([]);
+	const [availableDoughTypes, setAvailableDoughTypes] = useState<Array<{ id: number; name: string; value: number }>>(
+		[],
+	);
+	const [loadingOptions, setLoadingOptions] = useState(true);
+
 	// Состояние для вариантов продукта
 	const [variants, setVariants] = useState<ProductVariant[]>([]);
 	const [showVariants, setShowVariants] = useState(false);
 
-	// Загрузка ингредиентов при монтировании
+	// 🔥 ОБНОВЛЕНО: Загрузка всех данных при монтировании
 	useEffect(() => {
-		loadIngredients();
+		loadAllData();
 	}, []);
+
+	const loadAllData = async () => {
+		setLoadingOptions(true);
+		try {
+			await Promise.all([loadIngredients(), loadSizes(), loadDoughTypes()]);
+		} catch (error) {
+			console.error("Errore nel caricamento dei dati:", error);
+		} finally {
+			setLoadingOptions(false);
+		}
+	};
 
 	const loadIngredients = async () => {
 		try {
@@ -53,6 +70,28 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 		}
 	};
 
+	// 🔥 НОВОЕ: Загрузка размеров из API
+	const loadSizes = async () => {
+		try {
+			const data = await Api.product_sizes_dashboard.getProductSizes();
+			setAvailableSizes(data.map((s) => ({ id: s.id, name: s.name, value: s.value })));
+		} catch (error) {
+			console.error("Errore nel caricamento dei formati:", error);
+			toast.error("Errore nel caricamento dei formati");
+		}
+	};
+
+	// 🔥 НОВОЕ: Загрузка типов теста из API
+	const loadDoughTypes = async () => {
+		try {
+			const data = await Api.dough_types_dashboard.getDoughTypes();
+			setAvailableDoughTypes(data.map((d) => ({ id: d.id, name: d.name, value: d.value })));
+		} catch (error) {
+			console.error("Errore nel caricamento dei tipi di impasto:", error);
+			toast.error("Errore nel caricamento dei tipi di impasto");
+		}
+	};
+
 	// Переключение выбора ингредиента
 	const toggleIngredient = (ingredientId: number) => {
 		setSelectedIngredientIds((prev) =>
@@ -60,9 +99,11 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 		);
 	};
 
-	// Добавление варианта
+	// 🔥 ОБНОВЛЕНО: Добавление варианта с дефолтными значениями из загруженных данных
 	const addVariant = () => {
-		setVariants([...variants, { sizeId: 1, doughTypeId: 1, price: 0 }]);
+		const defaultSizeId = availableSizes[0]?.id || null;
+		const defaultDoughTypeId = availableDoughTypes[0]?.id || null;
+		setVariants([...variants, { sizeId: defaultSizeId, doughTypeId: defaultDoughTypeId, price: 0 }]);
 		setShowVariants(true);
 	};
 
@@ -197,12 +238,37 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 								{showVariants ? "Nascondi" : "Mostra"}
 							</Button>
 						)}
-						<Button type="button" variant="outline" size="sm" onClick={addVariant} disabled={isCreating}>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={addVariant}
+							disabled={
+								isCreating ||
+								loadingOptions ||
+								availableSizes.length === 0 ||
+								availableDoughTypes.length === 0
+							}
+						>
 							<Plus className="w-3 h-3 mr-1" />
 							Aggiungi Variante
 						</Button>
 					</div>
 				</div>
+
+				{/* 🔥 НОВОЕ: Сообщение о загрузке */}
+				{loadingOptions && (
+					<div className="text-sm text-gray-500 text-center py-2">
+						Caricamento formati e tipi di impasto...
+					</div>
+				)}
+
+				{/* 🔥 НОВОЕ: Предупреждение если нет данных */}
+				{!loadingOptions && (availableSizes.length === 0 || availableDoughTypes.length === 0) && (
+					<div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg">
+						{`⚠️ Prima di aggiungere varianti, crea almeno un formato e un tipo di impasto nelle sezioni "Sizes" e "Types"`}
+					</div>
+				)}
 
 				{/* Список вариантов */}
 				{showVariants && variants.length > 0 && (
@@ -210,30 +276,30 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 						{variants.map((variant, index) => (
 							<div key={index} className="flex items-center gap-2 bg-white p-3 rounded-lg border">
 								<div className="flex-1 grid grid-cols-3 gap-2">
-									{/* Размер */}
+									{/* 🔥 ОБНОВЛЕНО: Размер с динамическими данными */}
 									<select
 										className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-										value={variant.sizeId ?? 1}
+										value={variant.sizeId ?? availableSizes[0]?.id}
 										onChange={(e) => updateVariant(index, "sizeId", Number(e.target.value))}
-										disabled={isCreating}
+										disabled={isCreating || availableSizes.length === 0}
 									>
-										{Object.entries(mapPizzaSize).map(([value, name]) => (
-											<option key={value} value={value}>
-												{name}
+										{availableSizes.map((size) => (
+											<option key={size.id} value={size.id}>
+												{size.name} - {size.value} cm
 											</option>
 										))}
 									</select>
 
-									{/* Тип теста */}
+									{/* 🔥 ОБНОВЛЕНО: Тип теста с динамическими данными */}
 									<select
 										className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-										value={variant.doughTypeId ?? 1}
+										value={variant.doughTypeId ?? availableDoughTypes[0]?.id}
 										onChange={(e) => updateVariant(index, "doughTypeId", Number(e.target.value))}
-										disabled={isCreating}
+										disabled={isCreating || availableDoughTypes.length === 0}
 									>
-										{Object.entries(mapPizzaTypes).map(([value, name]) => (
-											<option key={value} value={value}>
-												{name}
+										{availableDoughTypes.map((type) => (
+											<option key={type.id} value={type.id}>
+												{type.name}
 											</option>
 										))}
 									</select>
@@ -267,22 +333,23 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 					</div>
 				)}
 
-				{/* Краткое отображение вариантов когда скрыто */}
+				{/* 🔥 ОБНОВЛЕНО: Краткое отображение вариантов с динамическими данными */}
 				{!showVariants && variants.length > 0 && (
 					<div className="flex flex-wrap gap-2 mt-2">
-						{variants.map((variant, index) => (
-							<div
-								key={index}
-								className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs"
-							>
-								<span>
-									{variant.sizeId && mapPizzaSize[variant.sizeId as keyof typeof mapPizzaSize]} -{" "}
-									{variant.doughTypeId &&
-										mapPizzaTypes[variant.doughTypeId as keyof typeof mapPizzaTypes]}{" "}
-									- €{variant.price}
-								</span>
-							</div>
-						))}
+						{variants.map((variant, index) => {
+							const size = availableSizes.find((s) => s.id === variant.sizeId);
+							const doughType = availableDoughTypes.find((d) => d.id === variant.doughTypeId);
+							return (
+								<div
+									key={index}
+									className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs"
+								>
+									<span>
+										{size?.name} - {doughType?.name} - €{variant.price}
+									</span>
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</div>

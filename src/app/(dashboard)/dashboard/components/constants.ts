@@ -1,5 +1,5 @@
 // category
-export const menuItems = ["categories", "products", "ingredients", "orders", "users"];
+export const menuItems = ["categories", "products", "ingredients", "sizes", "types", "orders", "users"];
 
 // types
 export const typesTesto = [

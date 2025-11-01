@@ -57,24 +57,6 @@ export const ProductCard: React.FC<Props> = ({
 		<div className={cn("group flex flex-col h-full", className)}>
 			<Link href={`/product/${id}`} className="flex flex-col flex-1 h-full justify-between">
 				<div className="flex justify-center p-6 bg-secondary rounded-lg h-[260px] group-hover:shadow-md transition-all duration-300 ">
-					{/* <img
-						className="w-[215px] h-[215px] transition-transform duration-300 group-hover:scale-101"
-						src={imageUrl}
-						alt={name + " loading"}
-						loading={priority ? "eager" : "lazy"}
-						decoding="async"
-					/> */}
-					{/* <Image
-						src={imageUrl}
-						alt={name}
-						width={215}
-						height={215}
-						className="transition-transform duration-300 group-hover:scale-101"
-						priority={priority} // Первые 6 загружаются сразу
-						quality={75}
-						placeholder="blur" // Blur эффект при загрузке
-						blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
-					/> */}
 					<LazyImage
 						src={imageUrl}
 						alt={name}

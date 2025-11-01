@@ -20,8 +20,13 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 	const [submitting, setSubmitting] = useState(false);
 
 	const firstItem = product.items[0];
+	const minPriceItem = product.items.reduce((min, item) => (item.price < min.price ? item : min));
+	// pizza два типа 1 2 и больше не пицца
+	const isPizzaForm = Boolean(firstItem.doughTypeId && firstItem.doughTypeId < 3);
 
-	const isPizzaForm = Boolean(firstItem.doughTypeId);
+	console.log("ProductFormClient isPizzaForm", isPizzaForm);
+	console.log("ProductFormClient doughTypeId", firstItem);
+	console.log("ProductFormClient doughTypeId", firstItem.doughTypeId);
 
 	const onSubmit = async (
 		productItemId?: number,
@@ -81,9 +86,11 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 		<ChooseProductForm
 			imageUrl={product.imageUrl}
 			name={product.name}
-			price={firstItem.price}
+			price={minPriceItem.price}
 			onSubmit={onSubmit}
 			loading={submitting}
+			ingredients={product.ingredients}
+			items={product.items ?? []}
 		/>
 	);
 };

@@ -5,7 +5,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Title } from "./title";
 // import { IProduct } from '@/hooks/use-choose-pizza';
-
+import { OptimizedIngredient, OptimizedProductItem } from "../../../@types/prisma";
 // import { useCart } from '@/hooks/use-cart';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 	name: string;
 	price: number;
 	loading: boolean;
+	items: OptimizedProductItem[];
+	ingredients: OptimizedIngredient[];
 	onSubmit?: VoidFunction;
 	className?: string;
 	// items?: IProduct['items'];
@@ -23,7 +25,19 @@ interface Props {
  * Форма выбора продукта
  */
 
-export const ChooseProductForm: React.FC<Props> = ({ name, imageUrl, onSubmit, className, price, loading }) => {
+export const ChooseProductForm: React.FC<Props> = ({
+	name,
+	imageUrl,
+	onSubmit,
+	className,
+	price,
+	loading,
+	items,
+	ingredients,
+}) => {
+	console.log("ChooseProductForm items", items);
+	console.log("ChooseProductForm ingredients", ingredients);
+
 	return (
 		<div className={cn(className, "flex flex-col justify-between lg:flex-row flex-1 max-h-[90vh] overflow-auto ")}>
 			{/* Левая часть  */}

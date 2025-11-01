@@ -3,7 +3,15 @@ import { Container, Title } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
-import { CategoriesDashboard, IngredientsDashboard, Menu, MenuList, ProductsDashboard } from "./components/shared";
+import {
+	CategoriesDashboard,
+	DoughTypesDashboard,
+	IngredientsDashboard,
+	Menu,
+	MenuList,
+	ProductsDashboard,
+	ProductSizesDashboard,
+} from "./components/shared";
 
 export default function DashBoardPage() {
 	//
@@ -36,6 +44,8 @@ export default function DashBoardPage() {
 			{activeSection === "categories" && <CategoriesDashboard className="mt-5" />}
 			{activeSection === "products" && <ProductsDashboard className="mt-5" />}
 			{activeSection === "ingredients" && <IngredientsDashboard className="mt-5" />}
+			{activeSection === "sizes" && <ProductSizesDashboard className="mt-5" />}
+			{activeSection === "types" && <DoughTypesDashboard className="mt-5" />}
 		</Container>
 	);
 }
