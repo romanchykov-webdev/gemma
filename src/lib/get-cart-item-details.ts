@@ -1,23 +1,56 @@
-import { mapPizzaTypes, PizzaSize, PizzaType } from "@/constants/pizza";
+// import { mapPizzaTypes, PizzaSize, PizzaType } from "@/constants/pizza";
 
+// import { CartStateItem } from "./get-cart-details";
+
+// export const getCartItemDetails = (
+// 	ingredients: CartStateItem["ingredients"],
+// 	pizzaType?: PizzaType,
+// 	pizzaSize?: PizzaSize,
+// ): string => {
+// 	const details = [];
+// 	// console.log("getCartItemDetails details", details);
+// 	if (pizzaSize && pizzaType) {
+// 		// const typeName = type === 1 ? "Традиционное" : "Тонкое";
+// 		const typeName = mapPizzaTypes[pizzaType];
+
+// 		details.push(`${typeName} ${pizzaSize} cm`);
+// 	}
+
+// 	if (ingredients) {
+// 		details.push(...ingredients.map((ingredient) => ingredient.name));
+// 	}
+// 	return details.join(", ");
+// };
 import { CartStateItem } from "./get-cart-details";
 
+/**
+ * ✅ Получает детали товара в корзине (размер, тип теста, ингредиенты)
+ *
+ * @param ingredients - массив ингредиентов
+ * @param sizeName - название размера из БД (например "Маленькая", "500 мл")
+ * @param doughTypeName - название типа теста из БД (например "Тонкое", "Традиционное")
+ * @returns строка с деталями товара
+ */
 export const getCartItemDetails = (
 	ingredients: CartStateItem["ingredients"],
-	pizzaType?: PizzaType,
-	pizzaSize?: PizzaSize,
+	sizeName?: string | null,
+	doughTypeName?: string | null,
 ): string => {
 	const details = [];
 
-	if (pizzaSize && pizzaType) {
-		// const typeName = type === 1 ? "Традиционное" : "Тонкое";
-		const typeName = mapPizzaTypes[pizzaType];
-
-		details.push(`${typeName} ${pizzaSize} cm`);
+	// 🍕 Если это пицца (есть и размер и тип теста)
+	if (sizeName && doughTypeName) {
+		details.push(`${doughTypeName} ${sizeName}`);
+	}
+	// 🥤 Если это напиток/другой продукт (только размер)
+	else if (sizeName) {
+		details.push(sizeName);
 	}
 
-	if (ingredients) {
+	// Добавляем ингредиенты
+	if (ingredients && ingredients.length > 0) {
 		details.push(...ingredients.map((ingredient) => ingredient.name));
 	}
+
 	return details.join(", ");
 };

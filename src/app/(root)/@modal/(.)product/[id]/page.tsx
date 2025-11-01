@@ -24,49 +24,69 @@ type ProductPageProps = {
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { id } = await params;
 
-	// ✅ Оптимизация: используем select вместо include для загрузки только нужных полей
-	const product = await prisma.product.findFirst({
-		where: {
-			id: Number(id),
-		},
-		select: {
-			id: true,
-			name: true,
-			imageUrl: true,
-			categoryId: true,
-			// Убираем createdAt, updatedAt для ускорения
-			ingredients: {
-				select: {
-					id: true,
-					name: true,
-					price: true,
-					imageUrl: true,
-				},
+	// ✅ Загружаем продукт, размеры и типы теста параллельно (один раз на сервере)
+	const [product, sizes, doughTypes] = await Promise.all([
+		prisma.product.findFirst({
+			where: {
+				id: Number(id),
 			},
-			items: {
-				select: {
-					id: true,
-					price: true,
-					sizeId: true,
-					doughTypeId: true,
-					productId: true,
-					size: {
-						select: {
-							value: true,
-						},
-					},
-					doughType: {
-						select: {
-							value: true,
-						},
+			select: {
+				id: true,
+				name: true,
+				imageUrl: true,
+				categoryId: true,
+				// Убираем createdAt, updatedAt для ускорения
+				ingredients: {
+					select: {
+						id: true,
+						name: true,
+						price: true,
+						imageUrl: true,
 					},
 				},
-				orderBy: {
-					createdAt: "desc",
+				items: {
+					select: {
+						id: true,
+						price: true,
+						sizeId: true,
+						doughTypeId: true,
+						productId: true,
+						size: {
+							select: {
+								value: true,
+							},
+						},
+						doughType: {
+							select: {
+								value: true,
+							},
+						},
+					},
+					orderBy: {
+						createdAt: "desc",
+					},
 				},
 			},
-		},
-	});
+		}),
+		// 🔥 Загружаем все размеры
+		prisma.productSize.findMany({
+			orderBy: { sortOrder: "asc" },
+			select: {
+				id: true,
+				name: true,
+				value: true,
+			},
+		}),
+		// 🔥 Загружаем все типы теста
+		prisma.doughType.findMany({
+			orderBy: { sortOrder: "asc" },
+			select: {
+				id: true,
+				name: true,
+				value: true,
+			},
+		}),
+	]);
 
 	if (!product) {
 		return notFound();
@@ -85,6 +105,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		})),
 	};
 
-	// ✅ Используем прямой импорт без lazy loading для быстрого открытия
-	return <ChooseProductModal product={productWithNumbers} />;
+	// ✅ Передаем sizes и doughTypes в модальное окно
+	console.log("ProductPage sizes:", sizes);
+	console.log("ProductPage doughTypes:", doughTypes);
+	return <ChooseProductModal product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />;
 }

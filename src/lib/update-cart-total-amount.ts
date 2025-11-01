@@ -76,11 +76,13 @@ export const updateCartTotalAmount = async (token: string) => {
 							size: {
 								select: {
 									value: true,
+									name: true,
 								},
 							},
 							doughType: {
 								select: {
 									value: true,
+									name: true,
 								},
 							},
 							product: {

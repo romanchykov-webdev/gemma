@@ -9,6 +9,8 @@ export type CartStateItem = {
 	price: number;
 	pizzaSize?: number | null;
 	pizzaType?: number | null;
+	sizeName?: string | null; // 🔥 НОВОЕ: название размера из БД
+	doughTypeName?: string | null; // 🔥 НОВОЕ: название типа теста из БД
 	ingredients: Array<{ name: string; price: number }>;
 };
 
@@ -35,6 +37,10 @@ export const getCartDetails = (data: CartDTO): ReturnProps => {
 
 		pizzaSize: item.productItem.size?.value ?? null,
 		pizzaType: item.productItem.doughType?.value ?? null,
+
+		// 🔥 НОВОЕ: добавляем названия из базы данных
+		sizeName: item.productItem.size?.name ?? null,
+		doughTypeName: item.productItem.doughType?.name ?? null,
 
 		ingredients: item.ingredients.map((ingredient) => ({
 			name: ingredient.name,

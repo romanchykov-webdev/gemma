@@ -37,11 +37,13 @@ export async function GET(req: NextRequest) {
 								size: {
 									select: {
 										value: true,
+										name: true,
 									},
 								},
 								doughType: {
 									select: {
 										value: true,
+										name: true,
 									},
 								},
 								product: {
@@ -169,11 +171,13 @@ export async function POST(req: NextRequest) {
 									size: {
 										select: {
 											value: true,
+											name: true,
 										},
 									},
 									doughType: {
 										select: {
 											value: true,
+											name: true,
 										},
 									},
 									product: {

@@ -9,9 +9,11 @@ import { ProductWithRelations } from "../../../../@types/prisma";
 
 interface Props {
 	product: ProductWithRelations;
+	sizes: Array<{ id: number; name: string; value: number }>;
+	doughTypes: Array<{ id: number; name: string; value: number }>;
 }
 
-export const ChooseProductModal: React.FC<Props> = ({ product }) => {
+export const ChooseProductModal: React.FC<Props> = ({ product, sizes, doughTypes }) => {
 	const router = useRouter();
 
 	const handleClose = React.useCallback(() => {
@@ -25,7 +27,7 @@ export const ChooseProductModal: React.FC<Props> = ({ product }) => {
 					<DialogTitle>Product Details</DialogTitle>
 					<DialogDescription>Choose product options and add to cart</DialogDescription>
 				</VisuallyHidden>
-				<ProductFormClient product={product} />
+				<ProductFormClient product={product} sizes={sizes} doughTypes={doughTypes} />
 			</DialogContent>
 		</Dialog>
 	);
