@@ -9,18 +9,20 @@ const randomDecimalPrice = (min: number, max: number): number => {
 
 const generateProductItem = ({
 	productId,
-	pizzaType,
-	size,
+	doughTypeId,
+	sizeId,
+	price,
 }: {
 	productId: number;
-	pizzaType?: 1 | 2;
-	size?: 20 | 30 | 40;
+	doughTypeId?: number;
+	sizeId?: number;
+	price?: number;
 }) => {
 	return {
 		productId,
-		price: randomDecimalPrice(1.99, 24.99),
-		pizzaType,
-		size,
+		price: price ?? randomDecimalPrice(1.99, 24.99),
+		doughTypeId,
+		sizeId,
 	} as Prisma.ProductItemUncheckedCreateInput;
 };
 
@@ -48,6 +50,26 @@ async function up() {
 
 	await prisma.category.createMany({
 		data: categories,
+	});
+
+	// Создаем универсальные размеры продуктов
+	await prisma.productSize.createMany({
+		data: [
+			{ name: "Piccola", value: 20, sortOrder: 1 }, // Малая
+			{ name: "Media", value: 30, sortOrder: 2 }, // Средняя
+			{ name: "Grande", value: 40, sortOrder: 3 }, // Большая
+			{ name: "0.33L", value: 33, sortOrder: 4 }, // Для напитков
+			{ name: "0.5L", value: 50, sortOrder: 5 },
+			{ name: "1L", value: 100, sortOrder: 6 },
+		],
+	});
+
+	// Создаем типы теста (специфично для пиццы)
+	await prisma.doughType.createMany({
+		data: [
+			{ name: "Tradizionale", value: 1, sortOrder: 1 },
+			{ name: "Sottile", value: 2, sortOrder: 2 },
+		],
 	});
 
 	await prisma.ingredient.createMany({
@@ -185,57 +207,84 @@ async function up() {
 	await prisma.productItem.createMany({
 		data: [
 			// Пицца "Пепперони фреш"
-			generateProductItem({ productId: pizza1.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza1.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza1.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza1.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Сырная"
-			generateProductItem({ productId: pizza2.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza2.id, pizzaType: 1, size: 30 }),
-			generateProductItem({ productId: pizza2.id, pizzaType: 1, size: 40 }),
-			generateProductItem({ productId: pizza2.id, pizzaType: 2, size: 20 }),
-			generateProductItem({ productId: pizza2.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza2.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza2.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Чоризо фреш"
-			generateProductItem({ productId: pizza3.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza3.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza3.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza3.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Маргарита"
-			generateProductItem({ productId: pizza4.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza4.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza4.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza4.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Барбекю"
-			generateProductItem({ productId: pizza5.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza5.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza5.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza5.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Гавайская"
-			generateProductItem({ productId: pizza6.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza6.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza6.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza6.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Ветчина и грибы"
-			generateProductItem({ productId: pizza7.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza7.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza7.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza7.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Мясная"
-			generateProductItem({ productId: pizza8.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza8.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza8.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza8.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
-			// Пицца "Мясная"
-			generateProductItem({ productId: pizza9.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza9.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza9.id, pizzaType: 2, size: 40 }),
+			// Пицца "Шесть сыров"
+			generateProductItem({ productId: pizza9.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza9.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza9.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza9.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza9.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza9.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Деревенская"
-			generateProductItem({ productId: pizza10.id, pizzaType: 1, size: 20 }),
-			generateProductItem({ productId: pizza10.id, pizzaType: 2, size: 30 }),
-			generateProductItem({ productId: pizza10.id, pizzaType: 2, size: 40 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 3, price: 15 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 2, sizeId: 1, price: 5 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 2, sizeId: 2, price: 10 }),
+			generateProductItem({ productId: pizza10.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Остальные продукты
 			generateProductItem({ productId: 1 }),
@@ -411,6 +460,8 @@ async function down() {
 	await prisma.$executeRaw`TRUNCATE TABLE "StoryItem" RESTART IDENTITY CASCADE`;
 	await prisma.$executeRaw`TRUNCATE TABLE "Order" RESTART IDENTITY CASCADE`;
 	await prisma.$executeRaw`TRUNCATE TABLE "VerificationCode" RESTART IDENTITY CASCADE`;
+	await prisma.$executeRaw`TRUNCATE TABLE "ProductSize" RESTART IDENTITY CASCADE`;
+	await prisma.$executeRaw`TRUNCATE TABLE "DoughType" RESTART IDENTITY CASCADE`;
 }
 
 async function main() {

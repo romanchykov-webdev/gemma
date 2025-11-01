@@ -4,7 +4,7 @@ export const menuItems = ["categories", "products", "ingredients", "orders", "us
 // types
 export const typesTesto = [
 	{ name: "tradizionale", value: 1 },
-	{ name: "Impercettibile", value: 2 },
+	{ name: "sottile", value: 2 },
 ];
 
 // Dimensioni

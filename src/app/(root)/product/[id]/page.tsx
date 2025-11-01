@@ -80,8 +80,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				select: {
 					id: true,
 					price: true,
-					size: true,
-					pizzaType: true,
+					sizeId: true,
+					doughTypeId: true,
 					productId: true,
 				},
 				orderBy: {
@@ -94,7 +94,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	if (!product) {
 		return notFound();
 	}
-	// console.log("ProductPage", JSON.stringify(product, null));
+
+	// ✅ Конвертируем Decimal в number для передачи в Client Component
+	const productWithNumbers = {
+		...product,
+		ingredients: product.ingredients.map((ing) => ({
+			...ing,
+			price: Number(ing.price),
+		})),
+		items: product.items.map((item) => ({
+			...item,
+			price: Number(item.price),
+		})),
+	};
 
 	return (
 		<Container className="flex flex-col my-30 ">
@@ -106,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				<ReplyIcon size={20} />
 			</Link>
 
-			<ProductFormClient product={product} />
+			<ProductFormClient product={productWithNumbers} />
 		</Container>
 	);
 }

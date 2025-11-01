@@ -70,8 +70,8 @@ export const findPizzas = cache(async (params: GetSearchParams) => {
 								lte: maxPrice,
 							},
 							// Дополнительные фильтры по размеру и типу пиццы
-							...(size && size.length > 0 ? { size: { in: size } } : {}),
-							...(pizzaType && pizzaType.length > 0 ? { pizzaType: { in: pizzaType } } : {}),
+							...(size && size.length > 0 ? { sizeId: { in: size } } : {}),
+							...(pizzaType && pizzaType.length > 0 ? { doughTypeId: { in: pizzaType } } : {}),
 						},
 					},
 				},
@@ -92,9 +92,19 @@ export const findPizzas = cache(async (params: GetSearchParams) => {
 						select: {
 							id: true,
 							price: true,
-							size: true,
-							pizzaType: true,
+							sizeId: true,
+							doughTypeId: true,
 							productId: true,
+							size: {
+								select: {
+									value: true,
+								},
+							},
+							doughType: {
+								select: {
+									value: true,
+								},
+							},
 						},
 					},
 				},
@@ -102,6 +112,20 @@ export const findPizzas = cache(async (params: GetSearchParams) => {
 		},
 	});
 
-	return categories;
+	// ✅ Конвертируем Decimal в number для передачи в Client Components
+	return categories.map((category) => ({
+		...category,
+		products: category.products.map((product) => ({
+			...product,
+			ingredients: product.ingredients.map((ingredient) => ({
+				...ingredient,
+				price: Number(ingredient.price),
+			})),
+			items: product.items.map((item) => ({
+				...item,
+				price: Number(item.price),
+			})),
+		})),
+	}));
 	//
 });

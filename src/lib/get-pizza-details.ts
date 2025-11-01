@@ -1,17 +1,6 @@
 import { mapPizzaTypes, PizzaSize, PizzaType } from "@/constants/pizza";
 import { calcTotalPizzaPrice } from "@/lib/calc-total-pizza-price";
-import { Ingredient, ProductItem } from "@prisma/client";
-
-// ✅ Оптимизированные типы (без обязательных createdAt/updatedAt)
-type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
-
-type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
+import { OptimizedIngredient, OptimizedProductItem } from "../../@types/prisma";
 
 export const getPizzaDetails = (
 	type: PizzaType,
@@ -24,7 +13,7 @@ export const getPizzaDetails = (
 
 	const ingredientsList = `<strong>Ingredienti:</strong>`;
 
-	const textDetails = `${size} cm ${mapPizzaTypes[type]} тесто. ${ingredientsList} ${ingredients.map((i) => i.name).join(", ")} `;
+	const textDetails = `${size} cm ${mapPizzaTypes[type]} pasta. ${ingredientsList} ${ingredients.map((i) => i.name).join(", ")} `;
 
 	return { totalPrice, textDetails };
 };

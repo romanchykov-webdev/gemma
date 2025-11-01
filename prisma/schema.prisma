@@ -51,17 +51,24 @@ model Product {
 }
 
 model ProductItem {
-  id        Int        @id @default(autoincrement())
-  price     Decimal    @db.Decimal(10, 2)
-  size      Int?
-  pizzaType Int?
-  productId Int
+  id        Int      @id @default(autoincrement())
+  price     Decimal  @db.Decimal(10, 2)
+
+  productId   Int
+  sizeId      Int?
+  doughTypeId Int?
+  
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  
   cartItems CartItem[]
-  product   Product    @relation(fields: [productId], references: [id])
+  product   Product      @relation(fields: [productId], references: [id])
+  size      ProductSize? @relation("ProductItemSize", fields: [sizeId], references: [id])
+  doughType DoughType?   @relation("ProductItemDoughType", fields: [doughTypeId], references: [id])
   
   @@index([productId])
+  @@index([sizeId])
+  @@index([doughTypeId])
 }
 
 model Ingredient {
@@ -73,6 +80,27 @@ model Ingredient {
   updatedAt DateTime   @updatedAt
   cartItems CartItem[] @relation("CartItemToIngredient")
   products  Product[]  @relation("IngredientToProduct")
+}
+
+model ProductSize {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  value       Int           @unique
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  productItems ProductItem[] @relation("ProductItemSize")
+}
+
+
+model DoughType {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  value       Int           @unique
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  productItems ProductItem[] @relation("ProductItemDoughType")
 }
 
 model Cart {

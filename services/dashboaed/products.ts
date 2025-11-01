@@ -1,16 +1,17 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { axiosInstance } from "../instance";
 
 export type ProductItem = {
 	id: number;
-	price: number;
-	size: number | null;
-	pizzaType: number | null;
+	price: number | Decimal;
+	sizeId: number | null;
+	doughTypeId: number | null;
 };
 
 export type Ingredient = {
 	id: number;
 	name: string;
-	price: number;
+	price: number | Decimal;
 	imageUrl: string;
 };
 
@@ -37,7 +38,7 @@ export const createProduct = async (productData: {
 	name: string;
 	imageUrl: string;
 	categoryId: number;
-	items?: Array<{ price: number; size?: number; pizzaType?: number }>;
+	items?: Array<{ price: number; sizeId?: number; doughTypeId?: number }>;
 	ingredientIds?: number[];
 }): Promise<Product> => {
 	const { data } = await axiosInstance.post<Product>("/dashboaed/products", productData);
@@ -51,6 +52,7 @@ export const updateProduct = async (
 		imageUrl?: string;
 		categoryId?: number;
 		ingredientIds?: number[];
+		items?: Array<{ id?: number; price: number; sizeId?: number | null; doughTypeId?: number | null }>;
 	},
 ): Promise<Product> => {
 	const { data } = await axiosInstance.patch<Product>(`/dashboaed/products/${id}`, productData);

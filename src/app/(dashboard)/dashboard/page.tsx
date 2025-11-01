@@ -20,7 +20,7 @@ export default function DashBoardPage() {
 			<Title text="Admin panel" size="lg" className="font-extrabold text-center" />
 
 			{/* menu component */}
-			<Menu isOpen={isOpen} setIsOpen={setIsOpen} toggleMenu={toggleMenu} />
+			<Menu isOpen={isOpen} setIsOpen={setIsOpen} toggleMenu={toggleMenu} activeSection={activeSection || ""} />
 			{/* menu button */}
 			<div className="flex items-center gap-4 ">
 				<Button variant="outline" className="text-brand-primary" onClick={() => setIsOpen(!isOpen)}>

@@ -54,11 +54,22 @@ export async function POST(req: NextRequest) {
 		});
 
 		return NextResponse.json(newIngredient, { status: 201 });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("[INGREDIENTS_POST] Server error:", error);
 
 		// 🔥 Обработка ошибки sequence
-		if (error.code === "P2002" && error.meta?.target?.includes("id")) {
+		if (
+			typeof error === "object" &&
+			error !== null &&
+			"code" in error &&
+			error.code === "P2002" &&
+			"meta" in error &&
+			typeof error.meta === "object" &&
+			error.meta !== null &&
+			"target" in error.meta &&
+			Array.isArray(error.meta.target) &&
+			error.meta.target.includes("id")
+		) {
 			return NextResponse.json(
 				{ message: "Errore del database. Contatta l'amministratore per resettare la sequence." },
 				{ status: 500 },

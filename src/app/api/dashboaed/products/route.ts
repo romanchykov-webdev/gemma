@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
 					select: {
 						id: true,
 						price: true,
-						size: true,
-						pizzaType: true,
+						sizeId: true,
+						doughTypeId: true,
 					},
 				},
 				ingredients: {
@@ -93,11 +93,13 @@ export async function POST(req: NextRequest) {
 				...(data.items && data.items.length > 0
 					? {
 							items: {
-								create: data.items.map((item: any) => ({
-									price: Number(item.price),
-									size: item.size ? Number(item.size) : null,
-									pizzaType: item.pizzaType ? Number(item.pizzaType) : null,
-								})),
+								create: data.items.map(
+									(item: { price: number; sizeId?: number; doughTypeId?: number }) => ({
+										price: Number(item.price),
+										sizeId: item.sizeId ? Number(item.sizeId) : null,
+										doughTypeId: item.doughTypeId ? Number(item.doughTypeId) : null,
+									}),
+								),
 							},
 						}
 					: {}),
@@ -125,8 +127,8 @@ export async function POST(req: NextRequest) {
 					select: {
 						id: true,
 						price: true,
-						size: true,
-						pizzaType: true,
+						sizeId: true,
+						doughTypeId: true,
 					},
 				},
 				ingredients: {

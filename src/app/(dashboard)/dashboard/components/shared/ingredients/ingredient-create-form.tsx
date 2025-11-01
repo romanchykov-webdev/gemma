@@ -5,8 +5,15 @@ import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 
+interface Ingredient {
+	id: number;
+	name: string;
+	price: number;
+	imageUrl: string;
+}
+
 interface Props {
-	onIngredientCreated: (ingredient: any) => void;
+	onIngredientCreated: (ingredient: Ingredient) => void;
 }
 
 export const IngredientCreateForm: React.FC<Props> = ({ onIngredientCreated }) => {
@@ -46,8 +53,12 @@ export const IngredientCreateForm: React.FC<Props> = ({ onIngredientCreated }) =
 
 			toast.success("Ingrediente creato con successo");
 			onIngredientCreated(newIngredient);
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nella creazione");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nella creazione";
+			toast.error(message || "Errore nella creazione");
 		} finally {
 			setIsCreating(false);
 		}

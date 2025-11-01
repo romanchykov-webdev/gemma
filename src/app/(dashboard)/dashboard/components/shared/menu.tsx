@@ -10,9 +10,17 @@ interface Props {
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
 	toggleMenu: (item: string) => void;
+	activeSection: string;
 }
 
-export const Menu: React.FC<Props> = ({ className, children, isOpen, setIsOpen, toggleMenu }): JSX.Element => {
+export const Menu: React.FC<Props> = ({
+	className,
+	children,
+	isOpen,
+	setIsOpen,
+	toggleMenu,
+	activeSection,
+}): JSX.Element => {
 	return (
 		<div className={cn("", className)}>
 			<Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -29,7 +37,7 @@ export const Menu: React.FC<Props> = ({ className, children, isOpen, setIsOpen, 
 					</SheetHeader>
 
 					<div className="flex-1 overflow-y-auto scrollbar pr-12 pb-6">
-						<MenuList toggleMenu={toggleMenu} />
+						<MenuList toggleMenu={toggleMenu} activeSection={activeSection} />
 					</div>
 				</SheetContent>
 			</Sheet>

@@ -30,8 +30,18 @@ const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
 			select: {
 				id: true,
 				price: true,
-				size: true,
-				pizzaType: true,
+				sizeId: true,
+				doughTypeId: true,
+				size: {
+					select: {
+						value: true,
+					},
+				},
+				doughType: {
+					select: {
+						value: true,
+					},
+				},
 				product: {
 					select: {
 						id: true,

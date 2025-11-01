@@ -59,8 +59,12 @@ export const CategoriesDashboard: React.FC<Props> = ({ className }) => {
 			setCategories([...categories, newCategory]);
 			setNewCategoryName("");
 			toast.success("Categoria creata con successo");
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nella creazione");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nella creazione";
+			toast.error(message || "Errore nella creazione");
 		} finally {
 			setIsCreating(false);
 		}
@@ -84,8 +88,12 @@ export const CategoriesDashboard: React.FC<Props> = ({ className }) => {
 			setCategories(categories.map((cat) => (cat.id === id ? updated : cat)));
 			setEditingId(null);
 			toast.success("Categoria aggiornata");
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nell'aggiornamento");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'aggiornamento";
+			toast.error(message || "Errore nell'aggiornamento");
 		}
 	};
 
@@ -112,8 +120,12 @@ export const CategoriesDashboard: React.FC<Props> = ({ className }) => {
 			await Api.categories_dashboard.deleteCategory(id);
 			setCategories(categories.filter((cat) => cat.id !== id));
 			toast.success("Categoria eliminata");
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nell'eliminazione");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'eliminazione";
+			toast.error(message || "Errore nell'eliminazione");
 		}
 	};
 

@@ -47,9 +47,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				select: {
 					id: true,
 					price: true,
-					size: true,
-					pizzaType: true,
+					sizeId: true,
+					doughTypeId: true,
 					productId: true,
+					size: {
+						select: {
+							value: true,
+						},
+					},
+					doughType: {
+						select: {
+							value: true,
+						},
+					},
 				},
 				orderBy: {
 					createdAt: "desc",
@@ -62,6 +72,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		return notFound();
 	}
 
+	// ✅ Конвертируем Decimal в number для передачи в Client Component
+	const productWithNumbers = {
+		...product,
+		ingredients: product.ingredients.map((ing) => ({
+			...ing,
+			price: Number(ing.price),
+		})),
+		items: product.items.map((item) => ({
+			...item,
+			price: Number(item.price),
+		})),
+	};
+
 	// ✅ Используем прямой импорт без lazy loading для быстрого открытия
-	return <ChooseProductModal product={product} />;
+	return <ChooseProductModal product={productWithNumbers} />;
 }

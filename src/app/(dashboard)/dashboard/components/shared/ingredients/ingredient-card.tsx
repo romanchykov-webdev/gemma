@@ -65,8 +65,12 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 			onUpdate(ingredient.id, updated);
 			setIsEditing(false);
 			toast.success("Ingrediente aggiornato");
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nell'aggiornamento");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'aggiornamento";
+			toast.error(message || "Errore nell'aggiornamento");
 		}
 	};
 
@@ -80,8 +84,12 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 			await Api.ingredients_dashboard.deleteIngredient(ingredient.id);
 			onDelete(ingredient.id);
 			toast.success("Ingrediente eliminato");
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nell'eliminazione");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'eliminazione";
+			toast.error(message || "Errore nell'eliminazione");
 		}
 	};
 

@@ -19,9 +19,9 @@ type Category = {
 
 type ProductItem = {
 	id: number;
-	price: number;
-	size: number | null;
-	pizzaType: number | null;
+	price: number | import("@prisma/client/runtime/library").Decimal;
+	sizeId: number | null;
+	doughTypeId: number | null;
 };
 
 type Product = {
@@ -37,7 +37,7 @@ type Product = {
 	ingredients?: {
 		id: number;
 		name: string;
-		price: number;
+		price: number | import("@prisma/client/runtime/library").Decimal;
 		imageUrl: string;
 	}[];
 };
@@ -56,8 +56,9 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 	// Загрузка продуктов при изменении выбранной категории
 	useEffect(() => {
 		if (categories.length > 0) {
-			loadProducts(selectedCategoryId);
+			loadProducts();
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedCategoryId, categories]);
 
 	const loadCategories = async () => {
@@ -70,14 +71,28 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 		}
 	};
 
-	const loadProducts = async (categoryId: number | null) => {
+	const loadProducts = async () => {
 		try {
 			setLoading(true);
-			const data = await Api.product_dashboard.getProducts(categoryId || undefined);
-			setProducts(data);
+			const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined);
+
+			// ✅ Конвертируем Decimal в number для совместимости типов
+			const normalizedData = data.map((product) => ({
+				...product,
+				items: product.items.map((item) => ({
+					...item,
+					price: Number(item.price),
+				})),
+				ingredients: product.ingredients?.map((ing) => ({
+					...ing,
+					price: Number(ing.price),
+				})),
+			}));
+
+			setProducts(normalizedData);
 		} catch (error) {
-			toast.error("Errore nel caricamento dei prodotti");
-			console.error(error);
+			console.error("Errore nel caricamento dei prodotti:", error);
+			toast.error("Impossibile caricare i prodotti");
 		} finally {
 			setLoading(false);
 		}

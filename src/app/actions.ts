@@ -9,7 +9,6 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import type { Stripe } from "stripe";
 import { prisma } from "../../prisma/prisma-client";
 
-import { mapPizzaTypes } from "@/constants/pizza";
 import { calcCatItemTotalPrice } from "@/lib/calc-cart-item-total-price";
 import { getUserSession } from "@/lib/get-user-session";
 import { hashSync } from "bcrypt";
@@ -42,7 +41,11 @@ export async function createOrder(data: CheckoutFormValues) {
 				items: {
 					include: {
 						productItem: {
-							include: { product: true },
+							include: {
+								product: true,
+								size: true,
+								doughType: true,
+							},
 						},
 						ingredients: true,
 					},
@@ -129,7 +132,13 @@ export async function createCashOrder(data: CheckoutFormValues) {
 			include: {
 				items: {
 					include: {
-						productItem: { include: { product: true } },
+						productItem: {
+							include: {
+								product: true,
+								size: true,
+								doughType: true,
+							},
+						},
 						ingredients: true,
 					},
 				},
@@ -165,12 +174,12 @@ export async function createCashOrder(data: CheckoutFormValues) {
 		for (const it of cart.items) {
 			const qty = it.quantity ?? 1;
 			const name = it.productItem?.product?.name ?? "Prodotto";
-			const size = (it.pizzaSize ?? it.productItem?.size) ? ` (${it.pizzaSize ?? it.productItem?.size} cm)` : "";
+			const size = it.productItem?.size?.value ? ` (${it.productItem.size.value} cm)` : "";
 
-			// тип теста: берём из item.type, если нет — из productItem.pizzaType
-			const doughType = it.type ?? it.productItem?.pizzaType;
-			const doughName = doughType ? mapPizzaTypes[doughType as keyof typeof mapPizzaTypes] : undefined;
-			const doughLine = doughName ? `, impasto: ${doughName}` : "";
+			// тип теста: берём из item.type, если нет — из productItem.doughTypeId
+			const doughType = it.productItem?.doughType;
+			// const doughName = doughType ? mapPizzaTypes[doughType as keyof typeof mapPizzaTypes] : undefined;
+			const doughLine = doughType ? `, impasto: ${doughType.name}` : "";
 
 			const ing = (it.ingredients ?? []).map((x) => x.name).filter(Boolean);
 			const ingLine = ing.length ? `\n  + Ingredienti: ${ing.join(", ")}` : "";

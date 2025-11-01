@@ -1,3 +1,4 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 
@@ -8,7 +9,7 @@ export const revalidate = 3600;
 type CachedIngredient = {
 	id: number;
 	name: string;
-	price: number;
+	price: number | Decimal;
 	imageUrl: string;
 };
 

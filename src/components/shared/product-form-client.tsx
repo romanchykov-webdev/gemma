@@ -21,7 +21,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({ product }
 
 	const firstItem = product.items[0];
 
-	const isPizzaForm = Boolean(firstItem.pizzaType);
+	const isPizzaForm = Boolean(firstItem.doughTypeId);
 
 	const onSubmit = async (
 		productItemId?: number,

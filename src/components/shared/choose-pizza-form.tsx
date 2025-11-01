@@ -11,19 +11,7 @@ import { Title } from "./title";
 
 import { usePizzaOptions } from "@/hooks/use-pizza-options";
 import { getPizzaDetails } from "@/lib";
-import { Ingredient, ProductItem } from "@prisma/client";
-
-// ✅ Оптимизированный тип ингредиента (без обязательных createdAt/updatedAt)
-type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
-
-// ✅ Оптимизированный тип ProductItem (без обязательных createdAt/updatedAt)
-type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
+import { OptimizedIngredient, OptimizedProductItem } from "../../../@types/prisma";
 
 interface Props {
 	imageUrl: string;
@@ -76,8 +64,19 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 					price: ing.price,
 				}));
 
-			// ⚡ Передаем все данные для мгновенного обновления UI
-			onSubmit(currentItemId, Array.from(selectedIngredients), totalPrice, size, type, selectedIngredientsData);
+			const selectedIngredientsDataConverted = selectedIngredientsData.map((ing) => ({
+				...ing,
+				price: Number(ing.price),
+			}));
+
+			onSubmit(
+				currentItemId,
+				Array.from(selectedIngredients),
+				totalPrice,
+				size,
+				type,
+				selectedIngredientsDataConverted,
+			);
 		}
 	};
 	// console.log({ ingredients });
@@ -130,7 +129,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 					onClick={handleClickAdd}
 					className="h-[55px] px-10 text-base rounded-[18px] w-full sticky bottom-0"
 				>
-					Aggiungi al carrello per {totalPrice} €
+					Aggiungi al carrello per {totalPrice.toFixed(2)} €
 				</Button>
 			</div>
 		</div>

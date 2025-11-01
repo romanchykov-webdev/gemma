@@ -6,28 +6,22 @@ import { Plus, Trash2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Api } from "../../../../../../../services/api-client";
+import { Ingredient, Product } from "../../../../../../../services/dashboaed/products";
 
 interface Category {
 	id: number;
 	name: string;
 }
 
-interface Ingredient {
-	id: number;
-	name: string;
-	price: number;
-	imageUrl: string;
-}
-
 interface ProductVariant {
-	size: number | null;
-	pizzaType: number | null;
+	sizeId: number | null;
+	doughTypeId: number | null;
 	price: number;
 }
 
 interface Props {
 	categories: Category[];
-	onProductCreated: (product: any) => void;
+	onProductCreated: (product: Product) => void;
 }
 
 export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreated }) => {
@@ -68,7 +62,7 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 
 	// Добавление варианта
 	const addVariant = () => {
-		setVariants([...variants, { size: 20, pizzaType: 1, price: 0 }]);
+		setVariants([...variants, { sizeId: 1, doughTypeId: 1, price: 0 }]);
 		setShowVariants(true);
 	};
 
@@ -116,7 +110,14 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 				imageUrl: imageUrl.trim(),
 				categoryId: categoryId,
 				ingredientIds: selectedIngredientIds.length > 0 ? selectedIngredientIds : undefined,
-				items: variants.length > 0 ? variants : undefined,
+				items:
+					variants.length > 0
+						? variants.map((v) => ({
+								price: v.price,
+								sizeId: v.sizeId ?? undefined,
+								doughTypeId: v.doughTypeId ?? undefined,
+							}))
+						: undefined,
 			});
 
 			// Очищаем форму
@@ -130,8 +131,12 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 
 			toast.success("Prodotto creato con successo");
 			onProductCreated(newProduct);
-		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Errore nella creazione");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nella creazione";
+			toast.error(message || "Errore nella creazione");
 		} finally {
 			setIsCreating(false);
 		}
@@ -208,8 +213,8 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 									{/* Размер */}
 									<select
 										className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-										value={variant.size ?? 20}
-										onChange={(e) => updateVariant(index, "size", Number(e.target.value))}
+										value={variant.sizeId ?? 1}
+										onChange={(e) => updateVariant(index, "sizeId", Number(e.target.value))}
 										disabled={isCreating}
 									>
 										{Object.entries(mapPizzaSize).map(([value, name]) => (
@@ -222,8 +227,8 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 									{/* Тип теста */}
 									<select
 										className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
-										value={variant.pizzaType ?? 1}
-										onChange={(e) => updateVariant(index, "pizzaType", Number(e.target.value))}
+										value={variant.doughTypeId ?? 1}
+										onChange={(e) => updateVariant(index, "doughTypeId", Number(e.target.value))}
 										disabled={isCreating}
 									>
 										{Object.entries(mapPizzaTypes).map(([value, name]) => (
@@ -271,9 +276,9 @@ export const ProductCreateForm: React.FC<Props> = ({ categories, onProductCreate
 								className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs"
 							>
 								<span>
-									{variant.size && mapPizzaSize[variant.size as keyof typeof mapPizzaSize]} -{" "}
-									{variant.pizzaType &&
-										mapPizzaTypes[variant.pizzaType as keyof typeof mapPizzaTypes]}{" "}
+									{variant.sizeId && mapPizzaSize[variant.sizeId as keyof typeof mapPizzaSize]} -{" "}
+									{variant.doughTypeId &&
+										mapPizzaTypes[variant.doughTypeId as keyof typeof mapPizzaTypes]}{" "}
 									- €{variant.price}
 								</span>
 							</div>

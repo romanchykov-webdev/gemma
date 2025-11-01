@@ -34,8 +34,16 @@ export async function GET(req: NextRequest) {
 							select: {
 								id: true,
 								price: true,
-								size: true,
-								pizzaType: true,
+								size: {
+									select: {
+										value: true,
+									},
+								},
+								doughType: {
+									select: {
+										value: true,
+									},
+								},
 								product: {
 									select: {
 										id: true,
@@ -158,8 +166,16 @@ export async function POST(req: NextRequest) {
 								select: {
 									id: true,
 									price: true,
-									size: true,
-									pizzaType: true,
+									size: {
+										select: {
+											value: true,
+										},
+									},
+									doughType: {
+										select: {
+											value: true,
+										},
+									},
 									product: {
 										select: {
 											id: true,

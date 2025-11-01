@@ -3,18 +3,7 @@
 import { mapPizzaSize, mapPizzaTypes } from "@/constants/pizza";
 import { Check } from "lucide-react";
 import React from "react";
-
-interface ProductItem {
-	id: number;
-	price: number;
-	size: number | null;
-	pizzaType: number | null;
-}
-
-interface Product {
-	id: number;
-	items: ProductItem[];
-}
+import { Product, ProductItem } from "../../../../../../../services/dashboaed/products";
 
 interface Props {
 	product: Product;
@@ -23,7 +12,7 @@ interface Props {
 export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 	// Проверка наличия варианта
 	const hasVariant = (size: number, pizzaType: number): ProductItem | undefined => {
-		return product.items.find((item) => item.size === size && item.pizzaType === pizzaType);
+		return product.items.find((item) => item.sizeId === size && item.doughTypeId === pizzaType);
 	};
 
 	return (
@@ -57,7 +46,7 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 														<Check className="w-3 h-3 text-white" />
 													</div>
 													<span className="text-xs text-gray-600 mt-1">
-														{variant.price} €
+														{Number(variant.price).toFixed(2)} €
 													</span>
 												</div>
 											) : (
@@ -80,10 +69,10 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 						className="text-xs bg-white p-2 rounded border flex justify-between items-center"
 					>
 						<span>
-							{item.size && mapPizzaSize[item.size as keyof typeof mapPizzaSize]} -{" "}
-							{item.pizzaType && mapPizzaTypes[item.pizzaType as keyof typeof mapPizzaTypes]}
+							{item.sizeId && mapPizzaSize[item.sizeId as keyof typeof mapPizzaSize]} -{" "}
+							{item.doughTypeId && mapPizzaTypes[item.doughTypeId as keyof typeof mapPizzaTypes]}
 						</span>
-						<span className="font-semibold">{item.price} €</span>
+						<span className="font-semibold">{Number(item.price).toFixed(2)} €</span>
 					</div>
 				))}
 			</div>

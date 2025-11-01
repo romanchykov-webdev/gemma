@@ -22,7 +22,7 @@ export { generateMetadata } from "./metadata";
 const toStr = (v?: string | string[]) => (typeof v === "string" ? v : Array.isArray(v) ? v[0] : undefined);
 
 // ✅ Кеширование главной страницы на 60 секунд
-export const revalidate = 300;
+// export const revalidate = 300;
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[]>> }) {
 	// Дожидаемся разрешения промиса searchParams
