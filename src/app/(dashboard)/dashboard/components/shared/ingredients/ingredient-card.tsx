@@ -16,27 +16,28 @@ interface Props {
 export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingName, setEditingName] = useState(ingredient.name);
-	const [editingPrice, setEditingPrice] = useState(ingredient.price);
+	// 🔥 Конвертируем price в number при инициализации
+	const [editingPrice, setEditingPrice] = useState(Number(ingredient.price));
 	const [editingImageUrl, setEditingImageUrl] = useState(ingredient.imageUrl);
 
 	const startEditing = () => {
 		setIsEditing(true);
 		setEditingName(ingredient.name);
-		setEditingPrice(ingredient.price);
+		setEditingPrice(Number(ingredient.price)); // 🔥 Конвертируем
 		setEditingImageUrl(ingredient.imageUrl);
 	};
 
 	const cancelEditing = () => {
 		setIsEditing(false);
 		setEditingName(ingredient.name);
-		setEditingPrice(ingredient.price);
+		setEditingPrice(Number(ingredient.price)); // 🔥 Конвертируем
 		setEditingImageUrl(ingredient.imageUrl);
 	};
 
 	const handleUpdate = () => {
 		onUpdate(ingredient.id, {
 			name: editingName.trim(),
-			price: editingPrice,
+			price: editingPrice, // Теперь это точно number
 			imageUrl: editingImageUrl.trim(),
 		});
 		setIsEditing(false);
@@ -64,7 +65,7 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 					/>
 					<Input
 						type="number"
-						value={editingPrice || ""}
+						value={editingPrice || ""} // Теперь editingPrice точно number
 						onChange={(e) => setEditingPrice(Number(e.target.value))}
 						placeholder="Prezzo"
 						min="0"
