@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { Api } from "../../../../../../services/api-client";
 import { ProductCardDashboard } from "./products/product-card-dashboard";
 import { ProductCategoryFilter } from "./products/product-category-filter";
-import { ProductCreateForm } from "./products/product-create-form";
+import { ProductCreateFormDashboard } from "./products/product-create-form-dashboard/product-create-form";
 
 interface Props {
 	className?: string;
@@ -99,19 +99,10 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 	};
 
 	// Обработчик создания нового продукта
-	const handleProductCreated = (newProduct: Product) => {
-		setProducts([newProduct, ...products]);
-	};
-
-	// Обработчик обновления продукта
-	const handleProductUpdated = (id: number, updated: Product) => {
+	const handleProductCreated = (newProduct: Product) => setProducts([newProduct, ...products]);
+	const handleProductUpdated = (id: number, updated: Product) =>
 		setProducts(products.map((prod) => (prod.id === id ? updated : prod)));
-	};
-
-	// Обработчик удаления продукта
-	const handleProductDeleted = (id: number) => {
-		setProducts(products.filter((prod) => prod.id !== id));
-	};
+	const handleProductDeleted = (id: number) => setProducts(products.filter((prod) => prod.id !== id));
 
 	if (loading && categories.length === 0) {
 		return (
@@ -140,7 +131,7 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 			/>
 
 			{/* Форма создания */}
-			<ProductCreateForm categories={categories} onProductCreated={handleProductCreated} />
+			<ProductCreateFormDashboard categories={categories} onProductCreated={handleProductCreated} />
 
 			{/* Список продуктов */}
 			<div className="grid grid-cols-1 gap-3">
