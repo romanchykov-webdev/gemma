@@ -6,25 +6,19 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { IngredientCard } from "./ingredients/ingredient-card";
 import { IngredientCreateForm } from "./ingredients/ingredient-create-form";
+import { CreateIngredientData, Ingredient, UpdateIngredientData } from "./ingredients/ingredient-types";
+import { validateIngredientData } from "./ingredients/ingredient-utils";
 
 interface Props {
 	className?: string;
 }
 
-type Ingredient = {
-	id: number;
-	name: string;
-	price: number;
-	imageUrl: string;
-};
-
 export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
 	const [ingredients, setIngredients] = useState<Ingredient[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [isCreating, setIsCreating] = useState(false);
 
-	console.log("ingredients", ingredients);
-
-	// Загрузка ингредиентов
+	// Загрузка ингредиентов при монтировании
 	useEffect(() => {
 		loadIngredients();
 	}, []);
@@ -42,19 +36,66 @@ export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
 		}
 	};
 
-	// Обработчик создания нового ингредиента
-	const handleIngredientCreated = (newIngredient: Ingredient) => {
-		setIngredients([newIngredient, ...ingredients]);
+	// Создание нового ингредиента
+	const handleCreate = async (data: CreateIngredientData) => {
+		// Валидация
+		const validationError = validateIngredientData(data);
+		if (validationError) {
+			toast.error(validationError);
+			return;
+		}
+
+		try {
+			setIsCreating(true);
+			const newIngredient = await Api.ingredients_dashboard.createIngredient(data);
+			setIngredients([newIngredient, ...ingredients]);
+			toast.success("Ingrediente creato con successo");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nella creazione";
+			toast.error(message || "Errore nella creazione");
+		} finally {
+			setIsCreating(false);
+		}
 	};
 
-	// Обработчик обновления ингредиента
-	const handleIngredientUpdated = (id: number, updated: Ingredient) => {
-		setIngredients(ingredients.map((ing) => (ing.id === id ? updated : ing)));
+	// Обновление ингредиента
+	const handleUpdate = async (id: number, data: UpdateIngredientData) => {
+		// Валидация
+		const validationError = validateIngredientData(data);
+		if (validationError) {
+			toast.error(validationError);
+			return;
+		}
+
+		try {
+			const updated = await Api.ingredients_dashboard.updateIngredient(id, data);
+			setIngredients(ingredients.map((ing) => (ing.id === id ? updated : ing)));
+			toast.success("Ingrediente aggiornato");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'aggiornamento";
+			toast.error(message || "Errore nell'aggiornamento");
+		}
 	};
 
-	// Обработчик удаления ингредиента
-	const handleIngredientDeleted = (id: number) => {
-		setIngredients(ingredients.filter((ing) => ing.id !== id));
+	// Удаление ингредиента
+	const handleDelete = async (id: number) => {
+		try {
+			await Api.ingredients_dashboard.deleteIngredient(id);
+			setIngredients(ingredients.filter((ing) => ing.id !== id));
+			toast.success("Ingrediente eliminato");
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error && "response" in error
+					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+					: "Errore nell'eliminazione";
+			toast.error(message || "Errore nell'eliminazione");
+		}
 	};
 
 	if (loading) {
@@ -79,7 +120,7 @@ export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
 			</div>
 
 			{/* Форма создания */}
-			<IngredientCreateForm onIngredientCreated={handleIngredientCreated} />
+			<IngredientCreateForm onSubmit={handleCreate} isCreating={isCreating} />
 
 			{/* Список ингредиентов */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -93,8 +134,8 @@ export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
 						<IngredientCard
 							key={ingredient.id}
 							ingredient={ingredient}
-							onUpdate={handleIngredientUpdated}
-							onDelete={handleIngredientDeleted}
+							onUpdate={handleUpdate}
+							onDelete={handleDelete}
 						/>
 					))
 				)}

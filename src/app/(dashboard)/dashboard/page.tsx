@@ -9,6 +9,7 @@ import {
 	IngredientsDashboard,
 	Menu,
 	MenuList,
+	OrdersDashboard,
 	ProductsDashboard,
 	ProductSizesDashboard,
 } from "./components/shared";
@@ -46,6 +47,7 @@ export default function DashBoardPage() {
 			{activeSection === "ingredients" && <IngredientsDashboard className="mt-5" />}
 			{activeSection === "sizes" && <ProductSizesDashboard className="mt-5" />}
 			{activeSection === "types" && <DoughTypesDashboard className="mt-5" />}
+			{activeSection === "orders" && <OrdersDashboard className="mt-5" />}
 		</Container>
 	);
 }

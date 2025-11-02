@@ -3,19 +3,13 @@
 import { Button, Input } from "@/components/ui";
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
-import { toast } from "react-hot-toast";
 import { IngredientImagePreview } from "./ingredient-image-preview";
-
-interface Ingredient {
-	id: number;
-	name: string;
-	price: number;
-	imageUrl: string;
-}
+import { Ingredient, UpdateIngredientData } from "./ingredient-types";
+import { formatPrice } from "./ingredient-utils";
 
 interface Props {
 	ingredient: Ingredient;
-	onUpdate: (id: number, updated: Ingredient) => void;
+	onUpdate: (id: number, data: UpdateIngredientData) => void;
 	onDelete: (id: number) => void;
 }
 
@@ -39,58 +33,20 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 		setEditingImageUrl(ingredient.imageUrl);
 	};
 
-	const handleUpdate = async () => {
-		// Валидация
-		if (!editingName.trim()) {
-			toast.error("Il nome non può essere vuoto");
-			return;
-		}
-		if (!editingPrice || editingPrice <= 0) {
-			toast.error("Inserisci un prezzo valido");
-			return;
-		}
-		if (!editingImageUrl.trim()) {
-			toast.error("L'URL dell'immagine non può essere vuoto");
-			return;
-		}
-
-		try {
-			const { Api } = await import("@/../services/api-client");
-			const updated = await Api.ingredients_dashboard.updateIngredient(ingredient.id, {
-				name: editingName.trim(),
-				price: editingPrice,
-				imageUrl: editingImageUrl.trim(),
-			});
-
-			onUpdate(ingredient.id, updated);
-			setIsEditing(false);
-			toast.success("Ingrediente aggiornato");
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nell'aggiornamento";
-			toast.error(message || "Errore nell'aggiornamento");
-		}
+	const handleUpdate = () => {
+		onUpdate(ingredient.id, {
+			name: editingName.trim(),
+			price: editingPrice,
+			imageUrl: editingImageUrl.trim(),
+		});
+		setIsEditing(false);
 	};
 
-	const handleDelete = async () => {
+	const handleDelete = () => {
 		if (!confirm("Sei sicuro di voler eliminare questo ingrediente?")) {
 			return;
 		}
-
-		try {
-			const { Api } = await import("@/../services/api-client");
-			await Api.ingredients_dashboard.deleteIngredient(ingredient.id);
-			onDelete(ingredient.id);
-			toast.success("Ingrediente eliminato");
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nell'eliminazione";
-			toast.error(message || "Errore nell'eliminazione");
-		}
+		onDelete(ingredient.id);
 	};
 
 	return (
@@ -138,7 +94,7 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 
 					<div className="p-4">
 						<h3 className="font-semibold text-lg mb-1">{ingredient.name}</h3>
-						<p className="text-brand-primary font-bold text-xl mb-3">{ingredient.price} €</p>
+						<p className="text-brand-primary font-bold text-xl mb-3">{formatPrice(ingredient.price)}</p>
 
 						<div className="flex gap-2">
 							<Button

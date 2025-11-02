@@ -3,66 +3,32 @@
 import { Button, Input } from "@/components/ui";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
-import { toast } from "react-hot-toast";
-
-interface Ingredient {
-	id: number;
-	name: string;
-	price: number;
-	imageUrl: string;
-}
+import { CreateIngredientData } from "./ingredient-types";
 
 interface Props {
-	onIngredientCreated: (ingredient: Ingredient) => void;
+	onSubmit: (data: CreateIngredientData) => void;
+	isCreating?: boolean;
 }
 
-export const IngredientCreateForm: React.FC<Props> = ({ onIngredientCreated }) => {
-	const [isCreating, setIsCreating] = useState(false);
+export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = false }) => {
 	const [name, setName] = useState("");
 	const [price, setPrice] = useState<number>(0);
 	const [imageUrl, setImageUrl] = useState("");
 
-	const handleCreate = async () => {
-		// Валидация
-		if (!name.trim()) {
-			toast.error("Inserisci il nome dell'ingrediente");
-			return;
-		}
-		if (!price || price <= 0) {
-			toast.error("Inserisci un prezzo valido");
-			return;
-		}
-		if (!imageUrl.trim()) {
-			toast.error("Inserisci l'URL dell'immagine");
-			return;
-		}
+	const handleSubmit = () => {
+		onSubmit({
+			name: name.trim(),
+			price: price,
+			imageUrl: imageUrl.trim(),
+		});
 
-		try {
-			setIsCreating(true);
-			const { Api } = await import("@/../services/api-client");
-			const newIngredient = await Api.ingredients_dashboard.createIngredient({
-				name: name.trim(),
-				price: price,
-				imageUrl: imageUrl.trim(),
-			});
-
-			// Очищаем форму
-			setName("");
-			setPrice(0);
-			setImageUrl("");
-
-			toast.success("Ingrediente creato con successo");
-			onIngredientCreated(newIngredient);
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nella creazione";
-			toast.error(message || "Errore nella creazione");
-		} finally {
-			setIsCreating(false);
-		}
+		// Очищаем форму после успешной отправки
+		setName("");
+		setPrice(0);
+		setImageUrl("");
 	};
+
+	const isFormValid = name.trim() && price > 0 && imageUrl.trim();
 
 	return (
 		<div className="bg-white p-4 rounded-lg border space-y-3">
@@ -73,6 +39,7 @@ export const IngredientCreateForm: React.FC<Props> = ({ onIngredientCreated }) =
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					disabled={isCreating}
+					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
 				<Input
 					type="number"
@@ -82,19 +49,17 @@ export const IngredientCreateForm: React.FC<Props> = ({ onIngredientCreated }) =
 					disabled={isCreating}
 					min="0"
 					step="0.01"
+					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
 				<Input
 					placeholder="URL immagine..."
 					value={imageUrl}
 					onChange={(e) => setImageUrl(e.target.value)}
 					disabled={isCreating}
+					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
 			</div>
-			<Button
-				onClick={handleCreate}
-				disabled={isCreating || !name.trim() || !price || !imageUrl.trim()}
-				className="w-full md:w-auto"
-			>
+			<Button onClick={handleSubmit} disabled={isCreating || !isFormValid} className="w-full md:w-auto">
 				<Plus className="w-4 h-4 mr-2" />
 				Aggiungi Ingrediente
 			</Button>
