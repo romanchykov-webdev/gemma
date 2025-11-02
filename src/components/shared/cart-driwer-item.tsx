@@ -23,7 +23,7 @@ export const CartDriwerItem: React.FC<ICartDriwerItemProps> = ({
 	className,
 	onClickRemove,
 }): JSX.Element => {
-	console.log("CartDriwerItem details", details);
+	// console.log("CartDriwerItem details", details);
 
 	return (
 		<div

@@ -38,6 +38,10 @@ export const getCartItemDetails = (
 ): string => {
 	const details = [];
 
+	// sizeName=null && doughTypeName=null
+	if (sizeName === "Null" && doughTypeName === "Null") {
+		return "";
+	}
 	// 🍕 Если это пицца (есть и размер и тип теста)
 	if (sizeName && doughTypeName) {
 		details.push(`${doughTypeName} ${sizeName}`);
