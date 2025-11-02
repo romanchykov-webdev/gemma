@@ -50,6 +50,6 @@ export const getCartDetails = (data: CartDTO): ReturnProps => {
 
 	return {
 		items,
-		totalAmount: data.totalAmount,
+		totalAmount: Number(data.totalAmount), // 🔥 ИСПРАВЛЕНО: конвертируем Decimal в number
 	};
 };

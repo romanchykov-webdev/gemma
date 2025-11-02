@@ -37,7 +37,8 @@ export const getCartItemDetails = (
 	doughTypeName?: string | null,
 ): string => {
 	const details = [];
-
+	// console.log("getCartItemDetails sizeName", sizeName);
+	// console.log("getCartItemDetails doughTypeName", doughTypeName);
 	// sizeName=null && doughTypeName=null
 	if (sizeName === "Null" && doughTypeName === "Null") {
 		return "";

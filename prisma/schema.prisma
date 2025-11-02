@@ -107,7 +107,7 @@ model Cart {
   id          String     @id @default(uuid()) @db.Uuid
   userId      String?    @unique @db.Uuid
   tokenId     String?
-  totalAmount Int        @default(0)
+  totalAmount Decimal @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -148,7 +148,7 @@ model Order {
   tokenId     String
   items       Json
   status      OrderStatus @default(PENDING)
-  totalAmount Int
+  totalAmount Decimal @default(0)
   paymentId   String?
   fullName    String
   address     String

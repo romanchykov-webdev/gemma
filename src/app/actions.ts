@@ -54,13 +54,17 @@ export async function createOrder(data: CheckoutFormValues) {
 		});
 
 		if (!cart) throw new Error("Cart not found");
-		if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+		// if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+		if (!cart.items.length || cart.totalAmount.lte(0)) {
+			throw new Error("Cart is empty");
+		}
 
 		// Считаем на СЕРВЕРЕ (в центах, чтобы не ловить округления)
-		const itemsCents = Math.round(cart.totalAmount * 100);
-		const taxCents = Math.round((itemsCents * VAT_PERCENT) / 100);
-		const deliveryCents = Math.round(DELIVERY_EUR * 100);
-		const grandCents = itemsCents + taxCents + deliveryCents;
+		// const itemsCents = Math.round(cart.totalAmount * 100);
+		const itemsCents = Number(cart.totalAmount) * 100;
+		const taxCents = Number((itemsCents * VAT_PERCENT) / 100);
+		const deliveryCents = Number(DELIVERY_EUR * 100);
+		const grandCents = Number(itemsCents + taxCents + deliveryCents);
 
 		// Создаём Order в статусе PENDING
 		const order = await prisma.order.create({
@@ -146,17 +150,20 @@ export async function createCashOrder(data: CheckoutFormValues) {
 		});
 
 		if (!cart) throw new Error("Cart not found");
-		if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+		// if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+		if (!cart.items.length || cart.totalAmount.lte(0)) {
+			throw new Error("Cart is empty");
+		}
 
-		const itemsCents = Math.round(cart.totalAmount * 100);
-		const taxCents = Math.round((itemsCents * VAT_PERCENT) / 100);
-		const deliveryCents = Math.round(DELIVERY_EUR * 100);
+		const itemsCents = Number(cart.totalAmount) * 100;
+		const taxCents = Number((itemsCents * VAT_PERCENT) / 100);
+		const deliveryCents = Number(DELIVERY_EUR * 100);
 		const grandCents = itemsCents + taxCents + deliveryCents;
 
 		const order = await prisma.order.create({
 			data: {
 				tokenId: cartToken,
-				totalAmount: Math.round(grandCents / 100),
+				totalAmount: Number(grandCents / 100),
 				status: OrderStatus.PENDING, // ждёт подтверждения оператором
 				//
 				items: cart.items,
