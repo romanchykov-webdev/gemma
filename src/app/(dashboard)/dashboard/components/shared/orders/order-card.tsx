@@ -42,35 +42,12 @@ export const OrderCard: React.FC<Props> = ({
 				<div className="flex items-start justify-between gap-4">
 					{/* Левая часть - основная информация */}
 					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-3 mb-2">
+						<div className="flex flex-wrap items-center gap-1 mb-2 ">
 							<Package className="w-5 h-5 text-gray-400 flex-shrink-0" />
 							<h3 className="font-semibold text-lg truncate">{order.fullName}</h3>
 							<Badge className={cn("text-xs border", statusColors[order.status])}>
 								{statusLabels[order.status]}
 							</Badge>
-						</div>
-
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-							<div>
-								<span className="font-medium">Email:</span> {order.email}
-							</div>
-							<div>
-								<span className="font-medium">Telefono:</span> {order.phone}
-							</div>
-							<div className="sm:col-span-2">
-								<span className="font-medium">Indirizzo:</span> {order.address}
-							</div>
-							<div>
-								<span className="font-medium">Data:</span>{" "}
-								{new Date(order.createdAt).toLocaleString("it-IT")}
-							</div>
-							<div>
-								<span className="font-medium">Totale:</span>{" "}
-								<span className="font-bold text-lg">{order.totalAmount.toFixed(2)} €</span>
-							</div>
-							<div className="sm:col-span-2">
-								<span className="font-medium">Prodotti:</span> {orderItems.length} posizioni
-							</div>
 						</div>
 					</div>
 
@@ -108,6 +85,27 @@ export const OrderCard: React.FC<Props> = ({
 								<Trash2 className="w-4 h-4" />
 							</Button>
 						</div>
+					</div>
+				</div>
+				<div className="flex flex-col gap-2 text-sm text-gray-600">
+					<div>
+						<span className="font-bold">Email:</span> {order.email}
+					</div>
+					<div>
+						<span className="font-bold">Telefono:</span> {order.phone}
+					</div>
+					<div>
+						<span className="font-bold">Indirizzo:</span> {order.address}
+					</div>
+					<div>
+						<span className="font-bold">Data:</span> {new Date(order.createdAt).toLocaleString("it-IT")}
+					</div>
+					<div>
+						<span className="font-bold">Totale:</span>{" "}
+						<span className="font-bold text-lg">{order.totalAmount.toFixed(2)} €</span>
+					</div>
+					<div>
+						<span className="font-bold">Prodotti:</span> {orderItems.length} posizioni
 					</div>
 				</div>
 			</div>
