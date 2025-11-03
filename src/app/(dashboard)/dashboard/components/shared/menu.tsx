@@ -36,7 +36,7 @@ export const Menu: React.FC<Props> = ({
 						</VisuallyHidden>
 					</SheetHeader>
 
-					<div className="flex-1 overflow-y-auto scrollbar pr-12 pb-6">
+					<div className="flex-1  pr-12 pb-6">
 						<MenuList toggleMenu={toggleMenu} activeSection={activeSection} />
 					</div>
 				</SheetContent>

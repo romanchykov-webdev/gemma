@@ -53,7 +53,7 @@ export const DoughTypeCard: React.FC<Props> = ({ doughType, onUpdate, onDelete, 
 				</div>
 			)}
 			{isEditing ? (
-				<div className="flex gap-3 items-center">
+				<div className="flex  gap-3 items-center">
 					<Input
 						value={editingName}
 						onChange={(e) => setEditingName(e.target.value)}

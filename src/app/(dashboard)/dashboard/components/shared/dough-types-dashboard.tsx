@@ -35,7 +35,9 @@ export const DoughTypesDashboard: React.FC<Props> = ({ className }) => {
 				<p className="text-gray-500 text-sm mt-1">Totale: {doughTypes.length} tipi</p>
 			</div>
 
+			{/* Форма создания */}
 			<DoughTypeCreateForm onSubmit={handleCreate} isCreating={isCreating} />
+
 			<div className="space-y-2">
 				{doughTypes.length === 0 ? (
 					<div className="text-center py-12 text-gray-500">

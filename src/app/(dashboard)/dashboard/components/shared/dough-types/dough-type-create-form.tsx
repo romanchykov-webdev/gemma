@@ -30,13 +30,12 @@ export const DoughTypeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = fa
 	return (
 		<div className="bg-white p-4 rounded-lg border space-y-3">
 			<h3 className="font-semibold">Aggiungi nuovo tipo di impasto</h3>
-			<div className="flex items-center gap-3">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<Input
 					placeholder="Nome (es. Tradizionale, Sottile)..."
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					disabled={isCreating}
-					className="flex-1"
 					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
 				<Input
@@ -45,14 +44,13 @@ export const DoughTypeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = fa
 					value={sortOrder || ""}
 					onChange={(e) => setSortOrder(Number(e.target.value))}
 					disabled={isCreating}
-					className="w-32"
 					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
-				<Button className="h-13" onClick={handleSubmit} disabled={isCreating || !isFormValid}>
-					<Plus className="w-4 h-4 mr-2" />
-					Aggiungi
-				</Button>
 			</div>
+			<Button onClick={handleSubmit} disabled={isCreating || !isFormValid} className="w-full md:w-auto">
+				<Plus className="w-4 h-4 mr-2" />
+				Aggiungi
+			</Button>
 			<p className="text-xs text-gray-500">💡 Il valore ID verrà generato automaticamente dalla base di dati</p>
 		</div>
 	);

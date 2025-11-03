@@ -22,6 +22,7 @@ export default function DashBoardPage() {
 	const toggleMenu = (item: string) => {
 		console.log("DashBoardPage toggleMenu", item);
 		setActiveSection(item);
+		setIsOpen(false);
 	};
 	//
 	return (
