@@ -5,37 +5,25 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { useProductOptionsDashboard } from "@/hooks/dashboard/useProductOptionsDashboard";
-import { Category } from "@prisma/client";
-import { Api } from "../../../../../../../../services/api-client";
+import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from "../product-types";
 import { ProductIngredientsDashboard } from "./product-ingredients-dashboard";
 import { ProductVariantsDashboard } from "./product-variants-dashboard";
 
-type ProductItemFrontend = {
-	id: number;
-	price: number; // number, а не Decimal
-	sizeId: number | null;
-	doughTypeId: number | null;
-};
-
-type ProductFrontend = {
-	id: number;
-	name: string;
-	imageUrl: string;
-	categoryId: number;
-	category: { id: number; name: string };
-	items: ProductItemFrontend[];
-	ingredients?: { id: number; name: string; price: number; imageUrl: string }[];
-};
-
 interface Props {
 	categories: Category[];
-	onProductCreated: (product: ProductFrontend) => void;
+	ingredients: Ingredient[];
+	sizes: ProductSize[];
+	doughTypes: DoughType[];
+	onSubmit: (data: CreateProductData) => Promise<void>;
 }
 
-export const ProductCreateFormDashboard: React.FC<Props> = ({ categories, onProductCreated }) => {
-	const { loading, ingredients, sizes, doughTypes } = useProductOptionsDashboard();
-
+export const ProductCreateFormDashboard: React.FC<Props> = ({
+	categories,
+	ingredients,
+	sizes,
+	doughTypes,
+	onSubmit,
+}) => {
 	const [name, setName] = useState("");
 	const [imageUrl, setImageUrl] = useState("");
 	const [categoryId, setCategoryId] = useState(categories[0]?.id || 0);
@@ -72,45 +60,29 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({ categories, onProd
 		if (!name.trim()) return toast.error("Inserisci il nome del prodotto");
 		if (!imageUrl.trim()) return toast.error("Inserisci l'URL dell'immagine");
 		if (!categoryId) return toast.error("Seleziona una categoria");
-		if (variants.some((v) => !v.price || v.price <= 0))
+		if (variants.length > 0 && variants.some((v) => !v.price || v.price <= 0)) {
 			return toast.error("Inserisci un prezzo valido per tutte le varianti");
+		}
 
 		try {
 			setIsCreating(true);
 
-			const created = await Api.product_dashboard.createProduct({
+			await onSubmit({
 				name: name.trim(),
 				imageUrl: imageUrl.trim(),
 				categoryId,
 				ingredientIds: selectedIngredientIds.length > 0 ? selectedIngredientIds : undefined,
-				items: variants.length
-					? variants.map((v) => ({
-							price: v.price,
-							sizeId: v.sizeId || undefined,
-							doughTypeId: v.doughTypeId || undefined,
-						}))
-					: undefined,
+				items:
+					variants.length > 0
+						? variants.map((v) => ({
+								price: v.price,
+								sizeId: v.sizeId ?? undefined,
+								doughTypeId: v.doughTypeId ?? undefined,
+							}))
+						: undefined,
 			});
 
-			const category = categories.find((c) => c.id === categoryId) || { id: categoryId, name: "" };
-
-			// Формируем объект для фронтенда
-			const newProduct: ProductFrontend = {
-				id: created.id,
-				name: created.name,
-				imageUrl: created.imageUrl,
-				categoryId: created.categoryId,
-				category,
-				items: (created.items || []).map((i) => ({
-					id: i.id,
-					price: Number(i.price), // конвертация Decimal -> number
-					sizeId: i.sizeId || null,
-					doughTypeId: i.doughTypeId || null,
-				})),
-				ingredients: [], 
-			};
-
-			// Очистка формы
+			// Очистка формы после успешного создания
 			setName("");
 			setImageUrl("");
 			setCategoryId(categories[0]?.id || 0);
@@ -118,12 +90,8 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({ categories, onProd
 			setSelectedIngredientIds([]);
 			setShowVariants(false);
 			setShowIngredients(false);
-
-			toast.success("Prodotto creato con successo");
-			onProductCreated(newProduct);
 		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : "Errore nella creazione";
-			toast.error(message);
+			console.error("Error creating product:", error);
 		} finally {
 			setIsCreating(false);
 		}
@@ -131,6 +99,8 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({ categories, onProd
 
 	return (
 		<div className="bg-white p-4 rounded-lg border space-y-3">
+			<h3 className="font-semibold">Aggiungi nuovo prodotto</h3>
+
 			{/* Основные поля */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<Input
@@ -174,7 +144,7 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({ categories, onProd
 				addVariant={addVariant}
 				removeVariant={removeVariant}
 				updateVariant={updateVariant}
-				loadingOptions={loading}
+				loadingOptions={false}
 				isCreating={isCreating}
 			/>
 

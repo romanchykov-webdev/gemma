@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui";
-import { Ingredient } from "@prisma/client";
 import { X } from "lucide-react";
+import { Ingredient } from "../product-types";
 
 interface Props {
 	availableIngredients: Ingredient[];
@@ -10,6 +10,7 @@ interface Props {
 	setShowIngredients: (show: boolean) => void;
 	isCreating: boolean;
 }
+
 export const ProductIngredientsDashboard: React.FC<Props> = ({
 	availableIngredients,
 	selectedIngredientIds,
