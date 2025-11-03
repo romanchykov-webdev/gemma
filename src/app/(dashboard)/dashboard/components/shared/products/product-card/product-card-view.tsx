@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui";
-import { ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Pencil, Trash2 } from "lucide-react";
 import React from "react";
 import { ProductImagePreview } from "../product-image-preview";
 import { Category, Product } from "../product-types";
@@ -14,6 +14,7 @@ interface Props {
 	onToggleExpand: () => void;
 	onEdit: () => void;
 	onDelete: () => void;
+	isLoading?: boolean;
 }
 
 export const ProductCardView: React.FC<Props> = ({
@@ -23,13 +24,19 @@ export const ProductCardView: React.FC<Props> = ({
 	onToggleExpand,
 	onEdit,
 	onDelete,
+	isLoading,
 }) => {
 	const categoryName = getCategoryName(product.categoryId, categories);
 	const variantsCount = getVariantsCount(product);
 	const ingredientsCount = product.ingredients?.length || 0;
 
 	return (
-		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition">
+		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition relative ">
+			{isLoading && (
+				<div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
+					<Loader2 className="animate-spin" size={50} />
+				</div>
+			)}
 			<div className="p-4">
 				<div className="flex gap-4">
 					<ProductImagePreview

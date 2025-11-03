@@ -1,16 +1,24 @@
+// categories
 export { CategoriesDashboard } from "./categories-dashboard";
+export { CategoryCard } from "./categories/category-card";
+export { CategoryCreateForm } from "./categories/category-create-form";
+// dough types
 export { DoughTypesDashboard } from "./dough-types-dashboard";
 export { DoughTypeCard } from "./dough-types/dough-type-card";
 export { DoughTypeCreateForm } from "./dough-types/dough-type-create-form";
+// ingredients
 export { IngredientsDashboard } from "./ingredients-dashboard";
 export { IngredientCard } from "./ingredients/ingredient-card";
 export { IngredientCreateForm } from "./ingredients/ingredient-create-form";
 export { IngredientImagePreview } from "./ingredients/ingredient-image-preview";
+// menu
 export { Menu } from "./menu";
 export { MenuList } from "./menu-list";
+// orders
 export { OrdersDashboard } from "./orders-dashboard";
 export { OrderCard } from "./orders/order-card";
 export { OrderItemCard } from "./orders/order-item-card";
+// products
 export { ProductSizesDashboard } from "./product-sizes-dashboard";
 export { ProductSizeCard } from "./product-sizes/product-size-card";
 export { ProductSizeCreateForm } from "./product-sizes/product-size-create-form";

@@ -13,6 +13,7 @@ interface Props {
 	doughTypes: DoughType[];
 	onUpdate: (id: number, data: UpdateProductData) => void;
 	onDelete: (id: number) => void;
+	isLoading?: boolean;
 }
 
 export const ProductCardDashboard: React.FC<Props> = ({
@@ -23,6 +24,7 @@ export const ProductCardDashboard: React.FC<Props> = ({
 	doughTypes,
 	onUpdate,
 	onDelete,
+	isLoading,
 }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -60,6 +62,7 @@ export const ProductCardDashboard: React.FC<Props> = ({
 			onToggleExpand={() => setIsExpanded(!isExpanded)}
 			onEdit={() => setIsEditing(true)}
 			onDelete={handleDelete}
+			isLoading={isLoading}
 		/>
 	);
 };

@@ -27,46 +27,46 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	// ✅ Загружаем продукт, размеры и типы теста параллельно (один раз на сервере)
 	const [product, sizes, doughTypes] = await Promise.all([
 		prisma.product.findFirst({
-			where: {
-				id: Number(id),
-			},
-			select: {
-				id: true,
-				name: true,
-				imageUrl: true,
-				categoryId: true,
-				// Убираем createdAt, updatedAt для ускорения
-				ingredients: {
-					select: {
-						id: true,
-						name: true,
-						price: true,
-						imageUrl: true,
-					},
-				},
-				items: {
-					select: {
-						id: true,
-						price: true,
-						sizeId: true,
-						doughTypeId: true,
-						productId: true,
-						size: {
-							select: {
-								value: true,
-							},
-						},
-						doughType: {
-							select: {
-								value: true,
-							},
-						},
-					},
-					orderBy: {
-						createdAt: "desc",
-					},
+		where: {
+			id: Number(id),
+		},
+		select: {
+			id: true,
+			name: true,
+			imageUrl: true,
+			categoryId: true,
+			// Убираем createdAt, updatedAt для ускорения
+			ingredients: {
+				select: {
+					id: true,
+					name: true,
+					price: true,
+					imageUrl: true,
 				},
 			},
+			items: {
+				select: {
+					id: true,
+					price: true,
+					sizeId: true,
+					doughTypeId: true,
+					productId: true,
+					size: {
+						select: {
+							value: true,
+						},
+					},
+					doughType: {
+						select: {
+							value: true,
+						},
+					},
+				},
+				orderBy: {
+					createdAt: "desc",
+				},
+			},
+		},
 		}),
 		// 🔥 Загружаем все размеры
 		prisma.productSize.findMany({
