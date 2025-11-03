@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
 import { IngredientImagePreview } from "./ingredient-image-preview";
 import { Ingredient, UpdateIngredientData } from "./ingredient-types";
@@ -11,9 +11,10 @@ interface Props {
 	ingredient: Ingredient;
 	onUpdate: (id: number, data: UpdateIngredientData) => void;
 	onDelete: (id: number) => void;
+	isLoading?: boolean;
 }
 
-export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete }) => {
+export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete, isLoading }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingName, setEditingName] = useState(ingredient.name);
 	// 🔥 Конвертируем price в number при инициализации
@@ -51,7 +52,12 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
 	};
 
 	return (
-		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition">
+		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition relative ">
+			{isLoading && (
+				<div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
+					<Loader2 className="animate-spin" size={50} />
+				</div>
+			)}
 			{isEditing ? (
 				// 📝 Режим редактирования
 				<div className="p-4 space-y-3">

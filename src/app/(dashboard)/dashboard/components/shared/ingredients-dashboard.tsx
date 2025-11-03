@@ -1,103 +1,21 @@
 "use client";
 
-import { Api } from "@/../services/api-client";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-hot-toast";
+import React from "react";
+import { useIngredients } from "../../hooks/use-ingredients";
 import { IngredientCard } from "./ingredients/ingredient-card";
 import { IngredientCreateForm } from "./ingredients/ingredient-create-form";
-import { CreateIngredientData, Ingredient, UpdateIngredientData } from "./ingredients/ingredient-types";
-import { validateIngredientData } from "./ingredients/ingredient-utils";
 
 interface Props {
 	className?: string;
 }
 
 export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
-	const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [isCreating, setIsCreating] = useState(false);
+	// Hooks
+	const { ingredients, loading, isCreating, loadingIngredientIds, handleCreate, handleUpdate, handleDelete } =
+		useIngredients();
 
-	// Загрузка ингредиентов при монтировании
-	useEffect(() => {
-		loadIngredients();
-	}, []);
-
-	const loadIngredients = async () => {
-		try {
-			setLoading(true);
-			const data = await Api.ingredients_dashboard.getIngredients();
-			setIngredients(data);
-		} catch (error) {
-			toast.error("Errore nel caricamento degli ingredienti");
-			console.error(error);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	// Создание нового ингредиента
-	const handleCreate = async (data: CreateIngredientData) => {
-		// Валидация
-		const validationError = validateIngredientData(data);
-		if (validationError) {
-			toast.error(validationError);
-			return;
-		}
-
-		try {
-			setIsCreating(true);
-			const newIngredient = await Api.ingredients_dashboard.createIngredient(data);
-			setIngredients([newIngredient, ...ingredients]);
-			toast.success("Ingrediente creato con successo");
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nella creazione";
-			toast.error(message || "Errore nella creazione");
-		} finally {
-			setIsCreating(false);
-		}
-	};
-
-	// Обновление ингредиента
-	const handleUpdate = async (id: number, data: UpdateIngredientData) => {
-		// Валидация
-		const validationError = validateIngredientData(data);
-		if (validationError) {
-			toast.error(validationError);
-			return;
-		}
-
-		try {
-			const updated = await Api.ingredients_dashboard.updateIngredient(id, data);
-			setIngredients(ingredients.map((ing) => (ing.id === id ? updated : ing)));
-			toast.success("Ingrediente aggiornato");
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nell'aggiornamento";
-			toast.error(message || "Errore nell'aggiornamento");
-		}
-	};
-
-	// Удаление ингредиента
-	const handleDelete = async (id: number) => {
-		try {
-			await Api.ingredients_dashboard.deleteIngredient(id);
-			setIngredients(ingredients.filter((ing) => ing.id !== id));
-			toast.success("Ingrediente eliminato");
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error && "response" in error
-					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-					: "Errore nell'eliminazione";
-			toast.error(message || "Errore nell'eliminazione");
-		}
-	};
-
+	// Loading state
 	if (loading) {
 		return (
 			<div className={cn("p-6", className)}>
@@ -136,6 +54,7 @@ export const IngredientsDashboard: React.FC<Props> = ({ className }) => {
 							ingredient={ingredient}
 							onUpdate={handleUpdate}
 							onDelete={handleDelete}
+							isLoading={loadingIngredientIds.has(ingredient.id)}
 						/>
 					))
 				)}

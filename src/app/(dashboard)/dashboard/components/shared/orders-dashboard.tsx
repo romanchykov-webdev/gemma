@@ -11,6 +11,7 @@ interface Props {
 }
 
 export const OrdersDashboard: React.FC<Props> = ({ className }) => {
+	// Hooks
 	const { orders, loading, expandedOrderId, loadingOrderIds, handleToggleExpand, handleStatusChange, handleDelete } =
 		useOrders();
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
 import { DoughType, UpdateDoughTypeData } from "../dough-types/dough-type-types";
 
@@ -9,9 +9,10 @@ interface Props {
 	doughType: DoughType;
 	onUpdate: (id: number, data: UpdateDoughTypeData) => void;
 	onDelete: (id: number) => void;
+	isLoading?: boolean;
 }
 
-export const DoughTypeCard: React.FC<Props> = ({ doughType, onUpdate, onDelete }) => {
+export const DoughTypeCard: React.FC<Props> = ({ doughType, onUpdate, onDelete, isLoading }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingName, setEditingName] = useState(doughType.name);
 	const [editingSortOrder, setEditingSortOrder] = useState(doughType.sortOrder);
@@ -44,7 +45,13 @@ export const DoughTypeCard: React.FC<Props> = ({ doughType, onUpdate, onDelete }
 	};
 
 	return (
-		<div className="bg-white border rounded-lg p-4">
+		<div className="bg-white border rounded-lg p-4 relative overflow-hidden">
+			{/* Оверлей загрузки */}
+			{isLoading && (
+				<div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
+					<Loader2 className="animate-spin" size={50} />
+				</div>
+			)}
 			{isEditing ? (
 				<div className="flex gap-3 items-center">
 					<Input

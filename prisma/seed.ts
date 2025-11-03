@@ -449,6 +449,20 @@ async function up() {
 			},
 		],
 	});
+
+	// Сброс sequences после seed
+	await prisma.$executeRawUnsafe(`
+	SELECT setval('"Ingredient_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Ingredient"));
+	SELECT setval('"Category_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Category"));
+	SELECT setval('"Product_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Product"));
+	SELECT setval('"ProductItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "ProductItem"));
+	SELECT setval('"ProductSize_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "ProductSize"));
+	SELECT setval('"DoughType_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "DoughType"));
+	SELECT setval('"Story_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Story"));
+	SELECT setval('"StoryItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "StoryItem"));
+  `);
+
+	console.log("✅ Sequences сброшены");
 }
 
 async function down() {
