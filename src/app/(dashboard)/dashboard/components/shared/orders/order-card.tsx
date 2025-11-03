@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ChevronUp, Eye, Package, Trash2 } from "lucide-react";
+import { ChevronUp, Eye, Loader2, Package, Trash2 } from "lucide-react";
 import React from "react";
 
 import { OrderItemCard } from "./order-item-card";
@@ -17,14 +17,27 @@ interface Props {
 	onToggleExpand: (orderId: string) => void;
 	onStatusChange: (orderId: string, status: OrderStatus) => void;
 	onDelete: (orderId: string) => void;
+	isLoading: boolean;
 }
 
-export const OrderCard: React.FC<Props> = ({ order, isExpanded, onToggleExpand, onStatusChange, onDelete }) => {
+export const OrderCard: React.FC<Props> = ({
+	order,
+	isExpanded,
+	onToggleExpand,
+	onStatusChange,
+	onDelete,
+	isLoading,
+}) => {
 	const orderItems = parseOrderItems(order.items);
 
 	return (
-		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition">
+		<div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition relative">
 			{/* Основная информация */}
+			{isLoading && (
+				<div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
+					<Loader2 className="animate-spin" size={50} />
+				</div>
+			)}
 			<div className="p-4">
 				<div className="flex items-start justify-between gap-4">
 					{/* Левая часть - основная информация */}
