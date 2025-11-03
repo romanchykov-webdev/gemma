@@ -38,18 +38,6 @@ export const CategoryCard: React.FC<Props> = ({ category, onUpdate, onDelete, is
 		onDelete(category.id, category._count?.products || 0);
 	};
 
-	// Показываем лоадер если идет загрузка
-	// if (isLoading && !isEditing) {
-	// 	return (
-	// 		<div className="flex items-center gap-2 p-3 bg-white border rounded-lg">
-	// 			<div className="flex-1 animate-pulse">
-	// 				<div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
-	// 				<div className="h-4 bg-gray-200 rounded w-1/4"></div>
-	// 			</div>
-	// 		</div>
-	// 	);
-	// }
-
 	return (
 		<div className="flex items-center gap-2 p-3 bg-white border rounded-lg hover:shadow-md transition relative overflow-hidden">
 			{isLoading && (
