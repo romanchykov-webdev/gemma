@@ -1,16 +1,6 @@
 import { PizzaSize, PizzaType } from "@/constants/pizza";
-import { Ingredient, ProductItem } from "@prisma/client";
-
-// ✅ Оптимизированные типы (без обязательных createdAt/updatedAt)
-type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
-
-type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
+// ✅ Импортируем из @types/prisma вместо локального определения
+import { OptimizedIngredient, OptimizedProductItem } from "../../@types/prisma";
 
 /**
  * Функция для подсчета общей стоимости пиццы
@@ -18,10 +8,9 @@ type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt"> & {
  * @param type - тип теста выбранной пиццы
  * @param size - размер выбранной пиццы
  * @param items - список вариаций
- I
  * @param ingredients - список ингредиентов
  * @param selectedIngredientsIds - выбранные ингредиенты
- @returns number общую стоимость
+ * @returns number общую стоимость
  */
 
 export const calcTotalPizzaPrice = (
@@ -31,12 +20,14 @@ export const calcTotalPizzaPrice = (
 	ingredients: OptimizedIngredient[],
 	selectedIngredientsIds: Set<number>,
 ) => {
-	const pizzaPrice = items?.find((item) => item.pizzaType === type && item.size === size)?.price || 0;
+	const pizzaPrice = items?.find((item) => item.doughType?.value === type && item.size?.value === size)?.price || 0;
 
+	// ✅ price уже number, не нужен Number()
 	const totalIngredientsPrice = ingredients
 		.filter((ingredient) => selectedIngredientsIds.has(ingredient.id))
 		.reduce((acc, val) => {
 			return acc + val.price;
 		}, 0);
+
 	return pizzaPrice + totalIngredientsPrice;
 };

@@ -48,7 +48,7 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
 					className="mt-5"
 					name="impasto"
 					items={[
-						{ text: "Impercettibile", value: "1" },
+						{ text: "sottile", value: "1" },
 						{ text: "tradizionale", value: "2" },
 					]}
 					onClickCheckbox={filters.setPizzaTypes}

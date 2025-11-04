@@ -1,12 +1,6 @@
 import { Variant } from "@/components/shared/group-variants";
 import { pizzaSize, PizzaType } from "@/constants/pizza";
-import { ProductItem } from "@prisma/client";
-
-// ✅ Оптимизированный тип ProductItem (без обязательных createdAt/updatedAt)
-type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
+import { OptimizedProductItem } from "../../@types/prisma";
 
 /**
  *
@@ -15,10 +9,13 @@ type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
  */
 
 export const getAvailablePizzaSizes = (type: PizzaType, items: OptimizedProductItem[]): Variant[] => {
-	const filteredPizzaByType = items?.filter((item) => Number(item.pizzaType) === type);
+	// ✅ Фильтруем по значению типа теста из вложенного объекта
+	const filteredPizzaByType = items?.filter((item) => item.doughType?.value === type);
+
 	return pizzaSize.map((item) => ({
 		name: item.name,
 		value: item.value,
-		disabled: !filteredPizzaByType?.some((pizza) => Number(pizza.size) === Number(item.value)),
+		// ✅ Сравниваем значение размера из вложенного объекта
+		disabled: !filteredPizzaByType?.some((pizza) => pizza.size?.value === Number(item.value)),
 	}));
 };

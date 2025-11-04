@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
-import { Ingredient as PrismaIngredient } from "@prisma/client";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -9,18 +8,12 @@ import { Button } from "../ui";
 import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
 
-// ✅ Оптимизированный тип Ingredient (без обязательных createdAt/updatedAt)
-type Ingredient = Omit<PrismaIngredient, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
-
 interface Props {
 	id: number;
 	name: string;
 	price: number;
 	imageUrl: string;
-	ingredients: Ingredient[];
+	ingredients: Array<{ id: number; name: string; price: number }>;
 	className?: string;
 
 	itemId: number;
@@ -42,9 +35,7 @@ export const ProductCard: React.FC<Props> = ({
 	const addCartItem = useCartStore((state) => state.addCartItem);
 
 	// Быстрое добавление в корзину
-	const handleAddToCart = (_e: React.MouseEvent) => {
-		// Параметр '_e' для будущего использования (preventDefault, stopPropagation)
-
+	const handleAddToCart = () => {
 		// ⚡ Мгновенно добавляем с optimistic update!
 		addCartItem({
 			productItemId: itemId,
@@ -66,24 +57,6 @@ export const ProductCard: React.FC<Props> = ({
 		<div className={cn("group flex flex-col h-full", className)}>
 			<Link href={`/product/${id}`} className="flex flex-col flex-1 h-full justify-between">
 				<div className="flex justify-center p-6 bg-secondary rounded-lg h-[260px] group-hover:shadow-md transition-all duration-300 ">
-					{/* <img
-						className="w-[215px] h-[215px] transition-transform duration-300 group-hover:scale-101"
-						src={imageUrl}
-						alt={name + " loading"}
-						loading={priority ? "eager" : "lazy"}
-						decoding="async"
-					/> */}
-					{/* <Image
-						src={imageUrl}
-						alt={name}
-						width={215}
-						height={215}
-						className="transition-transform duration-300 group-hover:scale-101"
-						priority={priority} // Первые 6 загружаются сразу
-						quality={75}
-						placeholder="blur" // Blur эффект при загрузке
-						blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjE1IiBoZWlnaHQ9IjIxNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+"
-					/> */}
 					<LazyImage
 						src={imageUrl}
 						alt={name}

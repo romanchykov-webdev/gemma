@@ -34,8 +34,18 @@ export async function GET(req: NextRequest) {
 							select: {
 								id: true,
 								price: true,
-								size: true,
-								pizzaType: true,
+								size: {
+									select: {
+										value: true,
+										name: true,
+									},
+								},
+								doughType: {
+									select: {
+										value: true,
+										name: true,
+									},
+								},
 								product: {
 									select: {
 										id: true,
@@ -128,12 +138,12 @@ export async function POST(req: NextRequest) {
 					"totalAmount" = COALESCE((
 						SELECT SUM(
 							(pi.price + COALESCE(
-								(SELECT SUM(ing.price)::int 
-								 FROM "_CartItemToIngredient" m
-								 JOIN "Ingredient" ing ON ing.id = m."B"
-								 WHERE m."A" = ci.id), 
+								(SELECT SUM(ing.price)::numeric   
+								FROM "_CartItemToIngredient" m
+								JOIN "Ingredient" ing ON ing.id = m."B"
+								WHERE m."A" = ci.id), 
 							0)) * ci.quantity
-						)::int
+						)::numeric 
 						FROM "CartItem" ci
 						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
 						WHERE ci."cartId" = c.id
@@ -158,8 +168,18 @@ export async function POST(req: NextRequest) {
 								select: {
 									id: true,
 									price: true,
-									size: true,
-									pizzaType: true,
+									size: {
+										select: {
+											value: true,
+											name: true,
+										},
+									},
+									doughType: {
+										select: {
+											value: true,
+											name: true,
+										},
+									},
 									product: {
 										select: {
 											id: true,

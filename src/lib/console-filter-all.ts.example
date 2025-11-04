@@ -1,9 +1,0 @@
-/**
- * ❌ НЕ РЕКОМЕНДУЕТСЯ: Отключает ВСЕ console.warn
- * Используйте console-filter.ts вместо этого
- */
-
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  console.warn = () => {}; // Отключаем ВСЕ предупреждения
-}
-

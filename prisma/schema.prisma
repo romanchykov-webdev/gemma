@@ -51,23 +51,30 @@ model Product {
 }
 
 model ProductItem {
-  id        Int        @id @default(autoincrement())
-  price     Int
-  size      Int?
-  pizzaType Int?
-  productId Int
+  id        Int      @id @default(autoincrement())
+  price     Decimal  @db.Decimal(10, 2)
+
+  productId   Int
+  sizeId      Int?
+  doughTypeId Int?
+  
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  
   cartItems CartItem[]
-  product   Product    @relation(fields: [productId], references: [id])
+  product   Product      @relation(fields: [productId], references: [id])
+  size      ProductSize? @relation("ProductItemSize", fields: [sizeId], references: [id])
+  doughType DoughType?   @relation("ProductItemDoughType", fields: [doughTypeId], references: [id])
   
   @@index([productId])
+  @@index([sizeId])
+  @@index([doughTypeId])
 }
 
 model Ingredient {
   id        Int        @id @default(autoincrement())
   name      String
-  price     Int
+  price     Decimal    @db.Decimal(10, 2)
   imageUrl  String
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -75,11 +82,32 @@ model Ingredient {
   products  Product[]  @relation("IngredientToProduct")
 }
 
+model ProductSize {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  value       Int           @unique
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  productItems ProductItem[] @relation("ProductItemSize")
+}
+
+
+model DoughType {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  value       Int           @unique
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  productItems ProductItem[] @relation("ProductItemDoughType")
+}
+
 model Cart {
   id          String     @id @default(uuid()) @db.Uuid
   userId      String?    @unique @db.Uuid
   tokenId     String?
-  totalAmount Int        @default(0)
+  totalAmount Decimal @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -120,7 +148,7 @@ model Order {
   tokenId     String
   items       Json
   status      OrderStatus @default(PENDING)
-  totalAmount Int
+  totalAmount Decimal @default(0)
   paymentId   String?
   fullName    String
   address     String
@@ -158,7 +186,7 @@ model StoryItem {
   storyId   Int
   sourceUrl String
   createdAt DateTime @default(now())
-  story     Story    @relation(fields: [storyId], references: [id])
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   
   @@index([storyId])
 }
@@ -172,4 +200,6 @@ enum OrderStatus {
 enum UserRole {
   USER
   ADMIN
+  CONTENT_MAKER 
+  OWNER 
 }
