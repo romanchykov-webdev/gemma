@@ -200,4 +200,6 @@ enum OrderStatus {
 enum UserRole {
   USER
   ADMIN
+  CONTENT_MAKER 
+  OWNER 
 }

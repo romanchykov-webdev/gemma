@@ -32,3 +32,8 @@ export { ProductVariantsEditTable } from "./products/product-create-form-dashboa
 export { ProductImagePreview } from "./products/product-image-preview";
 // users
 export { UsersDashboard } from "./users-dashboard";
+export { UserCard } from "./users/user-card";
+export { UserCreateForm } from "./users/user-create-form";
+
+// stories
+export { StoriesDashboard } from "./stories-dashboard";
