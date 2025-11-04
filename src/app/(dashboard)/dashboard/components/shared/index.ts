@@ -30,3 +30,5 @@ export { ProductIngredientsDashboard } from "./products/product-create-form-dash
 export { ProductVariantsDashboard } from "./products/product-create-form-dashboard/product-variants-dashboard";
 export { ProductVariantsEditTable } from "./products/product-create-form-dashboard/product-variants-edit-table";
 export { ProductImagePreview } from "./products/product-image-preview";
+// users
+export { UsersDashboard } from "./users-dashboard";

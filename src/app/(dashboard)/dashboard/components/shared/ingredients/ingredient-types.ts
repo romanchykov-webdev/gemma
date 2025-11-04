@@ -1,8 +1,14 @@
 // Основной тип ингредиента
+// export type Ingredient = {
+// 	id: number;
+// 	name: string;
+// 	price: number | import("@prisma/client/runtime/library").Decimal; // 🔥 Поддержка Decimal
+// 	imageUrl: string;
+// };
 export type Ingredient = {
 	id: number;
 	name: string;
-	price: number | import("@prisma/client/runtime/library").Decimal; // 🔥 Поддержка Decimal
+	price: number;
 	imageUrl: string;
 };
 

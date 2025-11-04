@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Api } from "../../../../../../../services/api-client";
-import { Product } from "../../../../../../../services/dashboaed/products";
+import { Product } from "./product-types";
 
 interface Props {
 	product: Product;

@@ -91,8 +91,14 @@ export const ProductSizeCard: React.FC<Props> = ({ size, onUpdate, onDelete, isL
 				<div className="flex items-center justify-between">
 					<div className="flex-1">
 						<h3 className="font-semibold text-lg">{size.name}</h3>
+						{/* <p className="text-sm text-gray-600">
+							Valore: {formatSizeValue(size.value)} • Ordine: {size.sortOrder}
+						</p> */}
 						<p className="text-sm text-gray-600">
 							Valore: {formatSizeValue(size.value)} • Ordine: {size.sortOrder}
+							{size._count && size._count.productItems > 0 && (
+								<> • Prodotti: {size._count.productItems}</>
+							)}
 						</p>
 					</div>
 					<div className="flex gap-2">

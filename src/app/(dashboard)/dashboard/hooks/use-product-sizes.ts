@@ -156,7 +156,6 @@ export const useProductSizes = (): UseProductSizesReturn => {
 	// Загрузка при монтировании
 	useEffect(() => {
 		loadSizes();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

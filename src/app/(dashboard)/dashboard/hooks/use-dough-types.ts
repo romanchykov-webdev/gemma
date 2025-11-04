@@ -138,7 +138,6 @@ export const useDoughTypes = (): UseDoughTypesReturn => {
 	// Загрузка при монтировании
 	useEffect(() => {
 		loadDoughTypes();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

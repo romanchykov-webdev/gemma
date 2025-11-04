@@ -95,7 +95,13 @@ export const useProducts = (): UseProductsReturn => {
 				Api.dough_types_dashboard.getDoughTypes(),
 			]);
 
-			setIngredients(ingredientsData);
+			// ✅ Нормализуем ингредиенты (конвертируем Decimal в number)
+			setIngredients(
+				ingredientsData.map((ing) => ({
+					...ing,
+					price: Number(ing.price),
+				})),
+			);
 			setSizes(sizesData);
 			setDoughTypes(doughTypesData);
 		} catch (error) {
@@ -221,7 +227,6 @@ export const useProducts = (): UseProductsReturn => {
 	useEffect(() => {
 		loadCategories();
 		loadFormData();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// Загрузка продуктов при изменении категории

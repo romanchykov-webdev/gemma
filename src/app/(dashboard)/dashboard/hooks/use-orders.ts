@@ -102,7 +102,6 @@ export const useOrders = (): UseOrdersReturn => {
 	// Загрузка при монтировании
 	useEffect(() => {
 		loadOrders();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

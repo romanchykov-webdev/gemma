@@ -14,7 +14,7 @@ interface UseIngredientsReturn {
 	ingredients: Ingredient[];
 	loading: boolean;
 	isCreating: boolean;
-	loadingIngredientIds: Set<number>; // Добавить
+	loadingIngredientIds: Set<number>;
 	loadIngredients: () => Promise<void>;
 	handleCreate: (data: CreateIngredientData) => Promise<void>;
 	handleUpdate: (id: number, data: UpdateIngredientData) => Promise<void>;
@@ -130,7 +130,6 @@ export const useIngredients = (): UseIngredientsReturn => {
 	// Загрузка при монтировании
 	useEffect(() => {
 		loadIngredients();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

@@ -1,14 +1,14 @@
+import { ProductSize } from "@/app/(dashboard)/dashboard/components/shared/product-sizes/product-size-types";
 import { axiosInstance } from "../instance";
-
-export type ProductSize = {
-	id: number;
-	name: string;
-	value: number;
-	sortOrder: number;
-	_count?: {
-		productItems: number;
-	};
-};
+// export type ProductSize = {
+// 	id: number;
+// 	name: string;
+// 	value: number;
+// 	sortOrder: number;
+// 	_count?: {
+// 		productItems: number;
+// 	};
+// };
 
 export const getProductSizes = async (): Promise<ProductSize[]> => {
 	const { data } = await axiosInstance.get<ProductSize[]>("/dashboaed/product-sizes");

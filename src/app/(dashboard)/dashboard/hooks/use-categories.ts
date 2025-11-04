@@ -136,7 +136,6 @@ export const useCategories = (): UseCategoriesReturn => {
 	// Загрузка при монтировании
 	useEffect(() => {
 		loadCategories();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return {

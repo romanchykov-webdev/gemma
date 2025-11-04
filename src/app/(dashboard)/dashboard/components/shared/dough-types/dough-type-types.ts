@@ -1,9 +1,18 @@
 // Основной тип теста
+// export type DoughType = {
+// 	id: number;
+// 	name: string;
+// 	value: number; // Авто-генерируемый ID (не редактируется)
+// 	sortOrder: number;
+// };
 export type DoughType = {
 	id: number;
 	name: string;
 	value: number; // Авто-генерируемый ID (не редактируется)
 	sortOrder: number;
+	_count?: {
+		productItems: number;
+	};
 };
 
 // Тип для создания типа теста (без id и value)

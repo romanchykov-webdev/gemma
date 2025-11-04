@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+// import { Decimal } from "@prisma/client/runtime/library";
 
 // Категория
 export type Category = {
@@ -24,14 +24,14 @@ export type DoughType = {
 export type Ingredient = {
 	id: number;
 	name: string;
-	price: number | Decimal;
+	price: number;
 	imageUrl: string;
 };
 
 // Вариант продукта (ProductItem)
 export type ProductItem = {
 	id: number;
-	price: number | Decimal;
+	price: number;
 	sizeId: number | null;
 	doughTypeId: number | null;
 };
