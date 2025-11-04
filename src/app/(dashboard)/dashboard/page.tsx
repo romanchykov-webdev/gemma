@@ -34,7 +34,7 @@ export default function DashBoardPage() {
 			{/* menu component */}
 			<Menu isOpen={isOpen} setIsOpen={setIsOpen} toggleMenu={toggleMenu} activeSection={activeSection || ""} />
 			{/* menu button */}
-			<div className="flex items-center gap-4 ">
+			<div className="flex items-center gap-1 flex-wrap ">
 				<Button variant="outline" className="text-brand-primary" onClick={() => setIsOpen(!isOpen)}>
 					<MenuIcon size={40} />
 				</Button>

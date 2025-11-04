@@ -36,7 +36,9 @@ export const StoryCreateForm: React.FC<Props> = ({ isCreating, onSubmit }) => {
 	};
 
 	const removeItem = (index: number) => {
-		if (items.length > 1) {
+		// console.log(index);
+
+		if (items.length >= 0) {
 			setItems(items.filter((_, i) => i !== index));
 		}
 	};
@@ -60,25 +62,38 @@ export const StoryCreateForm: React.FC<Props> = ({ isCreating, onSubmit }) => {
 			<h3 className="text-lg font-semibold">Nuova Storia</h3>
 
 			{/* Preview Image URL */}
-			<div>
-				<label className="block text-sm font-medium text-gray-700 mb-2">
-					URL Immagine di Anteprima <span className="text-red-500">*</span>
-				</label>
-				<input
-					type="url"
-					value={previewImageUrl}
-					onChange={(e) => setPreviewImageUrl(e.target.value)}
-					className="w-full border rounded px-3 py-2"
-					placeholder="https://example.com/preview.jpg"
-					required
-					disabled={isCreating}
-				/>
+			<div className="flex flex-col gap-2 md:flex-row">
+				<div className="flex flex-col gap-2 flex-1">
+					<label className="block text-sm font-medium text-gray-700 mb-2">
+						URL Immagine di Anteprima <span className="text-red-500">*</span>
+					</label>
+					<div className="flex items-center gap-2">
+						<input
+							type="url"
+							value={previewImageUrl}
+							onChange={(e) => setPreviewImageUrl(e.target.value)}
+							className="w-full border rounded px-3 py-2"
+							placeholder="https://example.com/preview.jpg"
+							required
+							disabled={isCreating}
+						/>
+						<Button
+							type="button"
+							onClick={() => setPreviewImageUrl("")}
+							size="sm"
+							variant="outline"
+							// disabled={items.length === 1 || isCreating}
+						>
+							<X className="h-4 w-4 text-red-500" />
+						</Button>
+					</div>
+				</div>
 				{previewImageUrl && (
-					<div className="mt-3">
+					<div className="mt-3 flex items-center justify-center">
 						<img
 							src={previewImageUrl}
 							alt="Preview"
-							className="w-full h-40 object-cover rounded border"
+							className=" h-40 object-cover rounded border"
 							onError={(e) => {
 								e.currentTarget.src = "/assets/images/not-found.png";
 							}}
@@ -89,7 +104,7 @@ export const StoryCreateForm: React.FC<Props> = ({ isCreating, onSubmit }) => {
 
 			{/* Story Items */}
 			<div>
-				<div className="flex items-center justify-between mb-2">
+				<div className="flex items-center justify-between mb-2 flex-wrap gap-2">
 					<label className="block text-sm font-medium text-gray-700">
 						Elementi della Storia <span className="text-red-500">*</span>
 					</label>
@@ -99,35 +114,54 @@ export const StoryCreateForm: React.FC<Props> = ({ isCreating, onSubmit }) => {
 					</Button>
 				</div>
 
-				<div className="space-y-3">
+				<div className="">
 					{items.map((item, index) => (
-						<div key={index} className="flex items-center gap-2 p-3 border rounded bg-gray-50">
-							<span className="text-sm font-medium text-gray-500 min-w-[30px]">{index + 1}.</span>
-							<input
-								type="url"
-								value={item.sourceUrl}
-								onChange={(e) => updateItem(index, e.target.value)}
-								className="flex-1 border rounded px-3 py-2 text-sm bg-white"
-								placeholder="https://example.com/media.jpg o .mp4"
-								required
-								disabled={isCreating}
-							/>
-							<Button
-								type="button"
-								onClick={() => removeItem(index)}
-								size="sm"
-								variant="ghost"
-								disabled={items.length === 1 || isCreating}
-							>
-								<X className="h-4 w-4 text-red-500" />
-							</Button>
+						<div
+							key={index}
+							className="flex flex-col md:flex-row items-center gap-2 p-3 border rounded bg-gray-50 "
+						>
+							{/* link to media */}
+							<div className="flex flex-1 w-full flex-col md:flex-row items-center gap-2 ">
+								<span className="text-sm  font-medium text-gray-500 min-w-[30px]">{index + 1}.</span>
+								<div className="flex flex-1 w-full items-center gap-2">
+									<input
+										type="url"
+										value={item.sourceUrl}
+										onChange={(e) => updateItem(index, e.target.value)}
+										className="flex-1 w-full border rounded px-3 py-2 text-sm bg-white"
+										placeholder="https://example.com/media.jpg o .mp4"
+										required
+										disabled={isCreating}
+									/>
+									<Button
+										type="button"
+										onClick={() => removeItem(index)}
+										size="sm"
+										variant="outline"
+										// disabled={items.length === 1 || isCreating}
+									>
+										<X className="h-4 w-4 text-red-500" />
+									</Button>
+								</div>
+							</div>
+							{/* image */}
+							{items[index].sourceUrl && (
+								<div className="flex   ">
+									<img
+										src={items[index].sourceUrl}
+										alt="Preview"
+										className=" h-40 object-cover rounded border"
+										onError={(e) => {
+											e.currentTarget.src = "/assets/images/not-found.png";
+										}}
+									/>
+								</div>
+							)}
 						</div>
 					))}
 				</div>
 
-				<p className="text-xs text-gray-500 mt-2">
-					💡 Supportati: immagini (.jpg, .png, .gif, .webp) e video (.mp4, .webm, .ogg)
-				</p>
+				<p className="text-xs text-gray-500 mt-2">💡 Supportati: immagini (.jpg, .png, .gif, .webp)</p>
 			</div>
 
 			{/* Кнопки */}

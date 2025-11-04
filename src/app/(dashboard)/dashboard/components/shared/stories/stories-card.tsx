@@ -253,23 +253,13 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 													// 	}}
 													// />
 													<img
-														src={story.previewImageUrl}
-														alt={`Story ${story.id} preview`}
-														className="w-full h-40 object-cover"
+														src={item.sourceUrl}
+														alt={`Story ${story.id} item ${index + 1}`}
+														className="w-full h-32 object-cover"
 														onError={(e) => {
-															console.error(
-																"Failed to load preview:",
-																story.previewImageUrl,
-															);
+															console.error("Failed to load item:", item.sourceUrl);
 															e.currentTarget.src = "/assets/images/not-found.png";
 														}}
-													/>
-												) : fileType === "video" ? (
-													<video
-														src={item.sourceUrl}
-														className="w-full h-full object-cover"
-														muted
-														preload="metadata"
 													/>
 												) : (
 													<div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -314,7 +304,7 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 													// 	}}
 													// />
 													<img
-														src={story.previewImageUrl}
+														src={item.sourceUrl}
 														alt={`Story ${story.id} preview`}
 														className="w-full h-40 object-cover"
 														onError={(e) => {
