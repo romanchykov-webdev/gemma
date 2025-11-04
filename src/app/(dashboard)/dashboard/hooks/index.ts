@@ -4,4 +4,5 @@ export { useIngredients } from "./use-ingredients";
 export { useOrders } from "./use-orders";
 export { useProductSizes } from "./use-product-sizes";
 export { useProducts } from "./use-products";
+export { useStories } from "./use-stories";
 export { useUsers } from "./use-users";

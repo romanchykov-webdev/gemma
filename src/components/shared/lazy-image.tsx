@@ -15,6 +15,11 @@ interface LazyImageProps {
 	onClick?: () => void;
 }
 
+// 🔥 Функция проверки, является ли URL из Supabase
+const isSupabaseUrl = (url: string): boolean => {
+	return url.includes("supabase.co");
+};
+
 export const LazyImage: React.FC<LazyImageProps> = ({
 	src,
 	alt,
@@ -81,12 +86,16 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 		return () => observer.disconnect();
 	}, [priority]);
 
+	// 🔥 Определяем, использовать ли Next.js Image
+	const useNextImage = isSupabaseUrl(src);
+
 	return (
 		<div ref={imgRef} className={cn("relative", className)} style={{ width, height }} onClick={onClick}>
 			{!isInView ? (
 				// Placeholder пока изображение не в viewport
 				<div className="w-full h-full bg-gray-200 animate-pulse rounded-md" style={{ width, height }} />
-			) : (
+			) : useNextImage ? (
+				// 🔥 Next.js Image для Supabase (с оптимизацией)
 				<Image
 					src={src}
 					alt={alt}
@@ -95,6 +104,16 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 					className={cn("transition-opacity duration-300", isLoaded ? "opacity-100" : "opacity-0")}
 					quality={quality}
 					priority={priority}
+					onLoad={() => setIsLoaded(true)}
+				/>
+			) : (
+				// 🔥 Обычный img для внешних источников (Instagram, etc.)
+				<img
+					src={src}
+					alt={alt}
+					width={width}
+					height={height}
+					className={cn("transition-opacity duration-300", isLoaded ? "opacity-100" : "opacity-0")}
 					onLoad={() => setIsLoaded(true)}
 				/>
 			)}

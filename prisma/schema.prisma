@@ -186,7 +186,7 @@ model StoryItem {
   storyId   Int
   sourceUrl String
   createdAt DateTime @default(now())
-  story     Story    @relation(fields: [storyId], references: [id])
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   
   @@index([storyId])
 }

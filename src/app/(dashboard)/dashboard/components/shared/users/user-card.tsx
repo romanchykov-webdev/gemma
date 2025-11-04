@@ -61,6 +61,7 @@ export const UserCard: React.FC<Props> = ({ user, isLoading, onUpdate, onDelete 
 			)}
 		>
 			{/* Заголовок с именем и ролью */}
+
 			{isLoading && (
 				<div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
 					<Loader2 className="animate-spin" size={50} />
@@ -133,7 +134,6 @@ export const UserCard: React.FC<Props> = ({ user, isLoading, onUpdate, onDelete 
 					)}
 				</div>
 			</div>
-
 			{/* Информация о пользователе */}
 			<div className="space-y-3 pt-2 border-t">
 				{/* Email */}
@@ -190,7 +190,6 @@ export const UserCard: React.FC<Props> = ({ user, isLoading, onUpdate, onDelete 
 					<span className="text-sm font-medium">{user._count?.orders || 0} ordini</span>
 				</div>
 			</div>
-
 			{/* Дополнительная информация */}
 			<div className="flex items-center justify-between pt-2 border-t text-xs text-gray-500">
 				<div className="space-y-1">
