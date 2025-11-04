@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useState } from "react";
 import { useProducts } from "../../hooks/use-products";
 import { ProductCardDashboard } from "./products/product-card/product-card";
 import { ProductCategoryFilter } from "./products/product-category-filter";
@@ -27,6 +27,8 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 		handleUpdate,
 		handleDelete,
 	} = useProducts();
+
+	const [imageUrl, setImageUrl] = useState("");
 
 	// Loading state (initial load)
 	if (loading && categories.length === 0) {
@@ -65,18 +67,18 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 			/>
 
 			{/* Список продуктов */}
-				{loading ? (
-					<div className="text-center py-8 text-gray-500">Caricamento...</div>
-				) : products.length === 0 ? (
-					<div className="text-center py-12 text-gray-500">
-						<p>Nessun prodotto trovato</p>
-						<p className="text-sm mt-2">
-							{selectedCategoryId
-								? "Questa categoria non contiene prodotti"
-								: "Inizia creando il tuo primo prodotto"}
-						</p>
-					</div>
-				) : (
+			{loading ? (
+				<div className="text-center py-8 text-gray-500">Caricamento...</div>
+			) : products.length === 0 ? (
+				<div className="text-center py-12 text-gray-500">
+					<p>Nessun prodotto trovato</p>
+					<p className="text-sm mt-2">
+						{selectedCategoryId
+							? "Questa categoria non contiene prodotti"
+							: "Inizia creando il tuo primo prodotto"}
+					</p>
+				</div>
+			) : (
 				<div className="grid grid-cols-1 gap-3">
 					{products.map((product) => (
 						<ProductCardDashboard
@@ -91,7 +93,7 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 							isLoading={loadingProductIds.has(product.id)}
 						/>
 					))}
-			</div>
+				</div>
 			)}
 		</div>
 	);

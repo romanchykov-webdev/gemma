@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+import { ImageUpload } from "../../image-upload";
 import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from "../product-types";
 import { ProductIngredientsDashboard } from "./product-ingredients-dashboard";
 import { ProductVariantsDashboard } from "./product-variants-dashboard";
@@ -114,6 +115,13 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 					value={imageUrl}
 					onChange={(e) => setImageUrl(e.target.value)}
 					disabled={isCreating}
+				/>
+				<ImageUpload
+					imageUrl={imageUrl}
+					onImageChange={setImageUrl}
+					folder="products"
+					label="Immagine prodotto"
+					required
 				/>
 			</div>
 
