@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
+import React from "react";
 import { useProducts } from "../../hooks/use-products";
 import { ProductCardDashboard } from "./products/product-card/product-card";
 import { ProductCategoryFilter } from "./products/product-category-filter";
@@ -27,8 +27,6 @@ export const ProductsDashboard: React.FC<Props> = ({ className }) => {
 		handleUpdate,
 		handleDelete,
 	} = useProducts();
-
-	const [imageUrl, setImageUrl] = useState("");
 
 	// Loading state (initial load)
 	if (loading && categories.length === 0) {
