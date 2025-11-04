@@ -1,17 +1,11 @@
 import { cn } from "@/lib/utils";
-import { Ingredient as PrismaIngredient } from "@prisma/client";
 import React from "react";
+import { OptimizedIngredient } from "../../../@types/prisma";
 import { Ingredient } from "./ingredient";
-
-// ✅ Оптимизированный тип Ingredient (без обязательных createdAt/updatedAt)
-type IIngredient = Omit<PrismaIngredient, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
 
 interface Props {
 	onClickAdd: (id: number) => void;
-	ingredients: IIngredient[];
+	ingredients: OptimizedIngredient[];
 	selectedIds: Set<number>;
 	className?: string;
 }
@@ -25,7 +19,7 @@ export const IngredientsList: React.FC<Props> = ({ ingredients, selectedIds, onC
 					key={item.id}
 					name={item.name}
 					imageUrl={item.imageUrl}
-					price={item.price}
+					price={Number(item.price)}
 					active={selectedIds.has(item.id)}
 				/>
 			))}

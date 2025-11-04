@@ -16,6 +16,7 @@ export const CartButton: React.FC<Props> = ({ className }) => {
 	const items = useCartStore((state) => state.items);
 	const itemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
+	console.log("CartButton totalAmount", totalAmount);
 
 	return (
 		<LazyCartDrawer>

@@ -71,8 +71,20 @@ export const updateCartTotalAmount = async (token: string) => {
 						select: {
 							id: true,
 							price: true,
-							size: true,
-							pizzaType: true,
+							sizeId: true,
+							doughTypeId: true,
+							size: {
+								select: {
+									value: true,
+									name: true,
+								},
+							},
+							doughType: {
+								select: {
+									value: true,
+									name: true,
+								},
+							},
 							product: {
 								select: {
 									id: true,

@@ -13,7 +13,6 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 
-import { PizzaSize, PizzaType } from "@/constants/pizza";
 import { getCartItemDetails } from "@/lib";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -55,16 +54,13 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 					{/* <div className="flex flex-col overflow-auto scrollbar gap-2 max-h-[calc(100vh-200px)]"> */}
 					{items.length > 0 ? (
 						items.map((item) => (
+							// console.log("CartDrawer item", item),
 							<CartDriwerItem
 								key={item.id}
 								loading={loading || redirecting}
 								id={item.id}
 								imageUrl={item.imageUrl}
-								details={getCartItemDetails(
-									item.ingredients,
-									item.pizzaType as PizzaType,
-									item.pizzaSize as PizzaSize,
-								)}
+								details={getCartItemDetails(item.ingredients, item.sizeName, item.doughTypeName)}
 								name={item.name}
 								price={item.price}
 								quantity={item.quantity}

@@ -5,19 +5,17 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "../../../../../prisma/prisma-client";
 
-import { mapPizzaTypes } from "@/constants/pizza";
-
-// Тип позиции заказа
+// Обновленные типы
 type OrderItemIngredient = { id: number; name: string; price: number; imageUrl: string };
 type OrderItem = {
 	quantity?: number;
 	pizzaSize?: number;
 	type?: number;
 	productItem?: {
-		size?: number;
-		pizzaType?: number;
 		price?: number;
 		product?: { name?: string };
+		size?: { value?: number; name?: string };
+		doughType?: { value?: number; name?: string };
 	};
 	ingredients?: OrderItemIngredient[];
 };
@@ -71,7 +69,7 @@ export async function POST(req: Request) {
 			case "checkout.session.completed": {
 				const session = event.data.object as Stripe.Checkout.Session;
 
-				const orderId = session.metadata?.orderId; // UUID string теперь
+				const orderId = session.metadata?.orderId;
 				const cartToken = session.metadata?.cartToken;
 
 				if (!orderId || !cartToken) {
@@ -87,7 +85,7 @@ export async function POST(req: Request) {
 					},
 				});
 
-				// 2 Достаем заказ для формирования сообшения
+				// 2) Достаем заказ для формирования сообщения
 				const order = await prisma.order.findUnique({
 					where: { id: orderId },
 				});
@@ -114,16 +112,14 @@ export async function POST(req: Request) {
 					for (const it of items) {
 						const qty = it.quantity ?? 1;
 						const name = it.productItem?.product?.name ?? "Prodotto";
-						const size =
-							(it.pizzaSize ?? it.productItem?.size)
-								? ` (${it.pizzaSize ?? it.productItem?.size} см)`
-								: "";
 
-						const doughType = it.type ?? it.productItem?.pizzaType;
-						const doughName = doughType
-							? mapPizzaTypes[doughType as keyof typeof mapPizzaTypes]
-							: undefined;
-						const doughLine = doughName ? `, impasto: ${doughName}` : "";
+						// ✅ Используем реальное значение size
+						const sizeValue = it.productItem?.size?.value;
+						const size = sizeValue ? ` (${sizeValue} cm)` : "";
+
+						// ✅ Используем реальное название doughType
+						const doughType = it.productItem?.doughType;
+						const doughLine = doughType ? `, impasto: ${doughType.name}` : "";
 
 						const ing = (it.ingredients ?? []).map((x: OrderItemIngredient) => x.name).filter(Boolean);
 						const ingLine = ing.length ? `\n  + Ingredienti: ${ing.join(", ")}` : "";
@@ -160,7 +156,6 @@ export async function POST(req: Request) {
 				break;
 			}
 
-			//
 			case "checkout.session.async_payment_failed":
 			case "payment_intent.payment_failed": {
 				try {
@@ -197,7 +192,6 @@ export async function POST(req: Request) {
 			}
 
 			default:
-				//
 				console.log("[WEBHOOK] Unhandled event type:", event.type);
 				break;
 		}

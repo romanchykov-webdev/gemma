@@ -26,37 +26,6 @@ type ProductPageProps = {
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { id } = await params;
 
-	// const product = await prisma.product.findFirst({
-	//   where: {
-	//     id: Number(id),
-	//   },
-	//   include: {
-	//     ingredients: true,
-	//     // TODO: вынести в отдельный запрос
-	//     category: {
-	//       include: {
-	//         products: {
-	//           include: {
-	//             items: true,
-	//           },
-	//         },
-	//       },
-	//     },
-	//     items: {
-	//       orderBy: {
-	//         createdAt: 'desc',
-	//       },
-	//       include: {
-	//         product: {
-	//           include: {
-	//             items: true,
-	//           },
-	//         },
-	//       },
-	//     },
-	//   },
-	// });
-
 	// ✅ Оптимизация: используем select вместо include для загрузки только нужных полей
 	const product = await prisma.product.findFirst({
 		where: {
@@ -80,8 +49,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				select: {
 					id: true,
 					price: true,
-					size: true,
-					pizzaType: true,
+					sizeId: true,
+					doughTypeId: true,
 					productId: true,
 				},
 				orderBy: {
@@ -94,7 +63,53 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	if (!product) {
 		return notFound();
 	}
-	// console.log("ProductPage", JSON.stringify(product, null));
+
+	// ✅ Конвертируем Decimal в number для передачи в Client Component
+	const productWithNumbers = {
+		...product,
+		ingredients: product.ingredients.map((ing) => ({
+			...ing,
+			price: Number(ing.price),
+		})),
+		items: product.items.map((item) => ({
+			...item,
+			price: Number(item.price),
+		})),
+	};
+
+	// --- загрузка размеров и типов теста и приведение value к number ---
+	const [sizesRaw, doughTypesRaw] = await Promise.all([
+		prisma.productSize.findMany({
+			select: { id: true, name: true, value: true },
+			orderBy: { sortOrder: "asc" },
+		}),
+		prisma.doughType.findMany({
+			select: { id: true, name: true, value: true },
+			orderBy: { sortOrder: "asc" },
+		}),
+	]);
+
+	function toNumberValue(v: unknown): number {
+		if (typeof v === "number") return v;
+		// проверяем объект с методом toNumber (Prisma Decimal)
+		if (typeof v === "object" && v !== null && "toNumber" in v && typeof (v as { toNumber: unknown }).toNumber === "function") {
+		  return (v as { toNumber: () => number }).toNumber();
+		}
+		// fallback — пробуем преобразовать через Number
+		return Number(v);
+	  }
+	  
+	  const sizes = sizesRaw.map((s) => ({
+		id: s.id,
+		name: s.name,
+		value: toNumberValue(s.value),
+	  }));
+	  
+	  const doughTypes = doughTypesRaw.map((d) => ({
+		id: d.id,
+		name: d.name,
+		value: toNumberValue(d.value),
+	  }));
 
 	return (
 		<Container className="flex flex-col my-30 ">
@@ -106,7 +121,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 				<ReplyIcon size={20} />
 			</Link>
 
-			<ProductFormClient product={product} />
+			<ProductFormClient product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />
 		</Container>
 	);
 }

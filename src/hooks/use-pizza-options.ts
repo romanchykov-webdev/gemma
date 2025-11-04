@@ -1,15 +1,9 @@
 import { Variant } from "@/components/shared/group-variants";
 import { PizzaSize, PizzaType } from "@/constants/pizza";
 import { getAvailablePizzaSizes } from "@/lib";
-import { ProductItem } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { useSet } from "react-use";
-
-// ✅ Оптимизированный тип ProductItem (без обязательных createdAt/updatedAt)
-type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt"> & {
-	createdAt?: Date;
-	updatedAt?: Date;
-};
+import { OptimizedProductItem } from "../../@types/prisma";
 
 interface ReturnProps {
 	size: PizzaSize;
@@ -32,7 +26,7 @@ export const usePizzaOptions = (items: OptimizedProductItem[]): ReturnProps => {
 
 	const availableSizes = getAvailablePizzaSizes(type, items);
 
-	const currentItemId = items.find((item) => item.pizzaType === type && item.size === size)?.id;
+	const currentItemId = items.find((item) => item.doughType?.value === type && item.size?.value === size)?.id;
 
 	useEffect(() => {
 		const isAvailableSize = availableSizes?.find((item) => Number(item.value) === size && !item.disabled);
