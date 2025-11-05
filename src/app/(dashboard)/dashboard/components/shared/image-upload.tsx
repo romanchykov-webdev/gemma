@@ -11,6 +11,8 @@ interface Props {
 	label?: string;
 	required?: boolean;
 	disabled?: boolean;
+	isUploading: boolean;
+	setIsUploading: (isUploading: boolean) => void;
 }
 
 export const ImageUpload: React.FC<Props> = ({
@@ -20,8 +22,10 @@ export const ImageUpload: React.FC<Props> = ({
 	label = "Изображение",
 	required = false,
 	disabled = false,
+	isUploading,
+	setIsUploading,
 }) => {
-	const [isUploading, setIsUploading] = useState(false);
+	// const [isUploading, setIsUploading] = useState(false);
 	const [previewUrl, setPreviewUrl] = useState(imageUrl);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,8 +35,6 @@ export const ImageUpload: React.FC<Props> = ({
 
 		try {
 			setIsUploading(true);
-
-			// Динамический импорт для использования в клиентском компоненте
 
 			const url = await uploadImage(file, folder);
 
@@ -50,13 +52,13 @@ export const ImageUpload: React.FC<Props> = ({
 		}
 	};
 
-	const handleRemove = () => {
-		setPreviewUrl("");
-		onImageChange("");
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
-		}
-	};
+	// const handleRemove = () => {
+	// 	setPreviewUrl("");
+	// 	onImageChange("");
+	// 	if (fileInputRef.current) {
+	// 		fileInputRef.current.value = "";
+	// 	}
+	// };
 
 	return (
 		<div className="space-y-2">
