@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { uploadImage } from "../../lib/supabase";
 interface Props {
@@ -65,7 +65,8 @@ export const ImageUpload: React.FC<Props> = ({
 			</label>
 
 			{/* Preview */}
-			{previewUrl ? (
+			{/* {previewUrl 
+			? (
 				<div className="relative w-full h-40 border rounded overflow-hidden bg-gray-100">
 					<img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
 					<Button
@@ -79,12 +80,13 @@ export const ImageUpload: React.FC<Props> = ({
 						<X className="h-4 w-4" />
 					</Button>
 				</div>
-			) : (
+			) : 
+			(
 				<div className="border-2 border-dashed rounded p-8 text-center">
 					<Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
 					<p className="text-sm text-gray-500">Выберите изображение</p>
 				</div>
-			)}
+			)} */}
 
 			{/* File Input */}
 			<input
@@ -107,17 +109,17 @@ export const ImageUpload: React.FC<Props> = ({
 				{isUploading ? (
 					<>
 						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-						Загрузка...
+						Loading...
 					</>
 				) : (
 					<>
 						<Upload className="h-4 w-4 mr-2" />
-						{previewUrl ? "Изменить изображение" : "Загрузить изображение"}
+						{previewUrl ? "Change image" : "Upload image"}
 					</>
 				)}
 			</Button>
 
-			<p className="text-xs text-gray-500">Форматы: JPG, PNG, WebP, GIF. Макс. размер: 5MB</p>
+			<p className="text-xs text-gray-500">Format: JPG, PNG, WebP, GIF.</p>
 		</div>
 	);
 };

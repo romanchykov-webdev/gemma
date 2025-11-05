@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { Plus } from "lucide-react";
+import { Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -104,25 +104,52 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 
 			{/* Основные поля */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-				<Input
-					placeholder="Nome prodotto..."
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					disabled={isCreating}
-				/>
-				<Input
-					placeholder="URL immagine..."
-					value={imageUrl}
-					onChange={(e) => setImageUrl(e.target.value)}
-					disabled={isCreating}
-				/>
-				<ImageUpload
-					imageUrl={imageUrl}
-					onImageChange={setImageUrl}
-					folder="products"
-					label="Immagine prodotto"
-					required
-				/>
+				{/* form */}
+				<div className="flex flex-col gap-3">
+					<Input
+						placeholder="Nome prodotto..."
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						disabled={isCreating}
+					/>
+					<Input
+						placeholder="URL immagine..."
+						value={imageUrl}
+						onChange={(e) => setImageUrl(e.target.value)}
+						disabled={isCreating}
+					/>
+					<ImageUpload
+						imageUrl={imageUrl}
+						onImageChange={setImageUrl}
+						folder="products"
+						label="Immagine prodotto"
+						required
+					/>
+				</div>
+
+				{/* Preview */}
+				<div>
+					{imageUrl ? (
+						<div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
+							<img src={imageUrl} alt="Preview" className=" h-50 object-cover" />
+							<Button
+								type="button"
+								onClick={() => setImageUrl("")}
+								size="sm"
+								variant="destructive"
+								className="absolute top-2 right-2"
+								// disabled={disabled || isUploading}
+							>
+								<X className="h-4 w-4" />
+							</Button>
+						</div>
+					) : (
+						<div className="border-2 border-dashed h-full rounded p-8 text-center">
+							<Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+							<p className="text-sm text-gray-500">Preview image</p>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* Категории */}
