@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { UserRole } from "@prisma/client";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import React, { JSX } from "react";
 import { MenuList } from "./menu-list";
@@ -11,6 +12,7 @@ interface Props {
 	setIsOpen: (isOpen: boolean) => void;
 	toggleMenu: (item: string) => void;
 	activeSection: string;
+	userRole: UserRole;
 }
 
 export const Menu: React.FC<Props> = ({
@@ -20,6 +22,7 @@ export const Menu: React.FC<Props> = ({
 	setIsOpen,
 	toggleMenu,
 	activeSection,
+	userRole,
 }): JSX.Element => {
 	return (
 		<div className={cn("", className)}>
@@ -37,7 +40,7 @@ export const Menu: React.FC<Props> = ({
 					</SheetHeader>
 
 					<div className="flex-1  pr-12 pb-6">
-						<MenuList toggleMenu={toggleMenu} activeSection={activeSection} />
+						<MenuList toggleMenu={toggleMenu} activeSection={activeSection} userRole={userRole} />
 					</div>
 				</SheetContent>
 			</Sheet>

@@ -1,8 +1,9 @@
 "use client";
 
 import { Button, Input } from "@/components/ui";
-import { Plus } from "lucide-react";
+import { ImageIcon, Plus, X } from "lucide-react";
 import React, { useState } from "react";
+import { ImageUpload } from "../image-upload";
 import { CreateIngredientData } from "./ingredient-types";
 
 interface Props {
@@ -14,6 +15,7 @@ export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = f
 	const [name, setName] = useState("");
 	const [price, setPrice] = useState<number>(0);
 	const [imageUrl, setImageUrl] = useState("");
+	const [isUploading, setIsUploading] = useState(false);
 
 	const handleSubmit = () => {
 		onSubmit({
@@ -27,7 +29,9 @@ export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = f
 		setPrice(0);
 		setImageUrl("");
 	};
-
+	const upLoading = (item: string) => {
+		setImageUrl(item);
+	};
 	const isFormValid = name.trim() && price > 0 && imageUrl.trim();
 
 	return (
@@ -54,10 +58,44 @@ export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = f
 				<Input
 					placeholder="URL immagine..."
 					value={imageUrl}
-					onChange={(e) => setImageUrl(e.target.value)}
+					onChange={(e) => upLoading(e.target.value)}
 					disabled={isCreating}
 					onKeyPress={(e) => e.key === "Enter" && isFormValid && handleSubmit()}
 				/>
+				<ImageUpload
+					imageUrl={imageUrl}
+					onImageChange={setImageUrl}
+					folder="products"
+					label="Immagine prodotto"
+					required
+					isUploading={isUploading}
+					setIsUploading={setIsUploading}
+				/>
+				<div>
+					{/* Preview */}
+					<div className="flex items-center justify-center ">
+						{imageUrl ? (
+							<div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
+								<img src={imageUrl} alt="Preview" className=" h-50 object-cover" />
+								<Button
+									type="button"
+									onClick={() => setImageUrl("")}
+									size="sm"
+									variant="destructive"
+									className="absolute top-2 right-2"
+									// disabled={disabled || isUploading}
+								>
+									<X className="h-4 w-4" />
+								</Button>
+							</div>
+						) : (
+							<div className="border-2 border-dashed w-full h-full flex flex-col items-center justify-center rounded p-8 text-center">
+								<ImageIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+								<p className="text-sm text-gray-500">Preview image</p>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 			<Button onClick={handleSubmit} disabled={isCreating || !isFormValid} className="w-full md:w-auto">
 				<Plus className="w-4 h-4 mr-2" />

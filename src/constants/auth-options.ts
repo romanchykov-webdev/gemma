@@ -209,3 +209,5 @@ export const authOptions: AuthOptions = {
 		},
 	},
 };
+
+export const adminRoles = ["ADMIN", "CONTENT_MAKER", "OWNER"];
