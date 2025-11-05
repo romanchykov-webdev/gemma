@@ -1,5 +1,9 @@
 import { ProfileForm } from "@/components/shared";
+import { Button } from "@/components/ui";
+import { adminRoles } from "@/constants/auth-options";
 import { getUserSession } from "@/lib/get-user-session";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "../../../../prisma/prisma-client";
 
@@ -27,7 +31,23 @@ export default async function ProfilePage() {
 		return redirect("/");
 	}
 
-	console.log("ProfilePage user", user);
+	const isAdmin = adminRoles.includes(user?.role);
 
-	return <ProfileForm data={user} />;
+	console.log("ProfilePage user", user?.role);
+
+	return (
+		<>
+			{isAdmin && (
+				<div className="flex items-center justify-center mt-5">
+					<Button variant="outline" className="text-brand-primary">
+						<Link href="/dashboard" className="flex gap-2 items-center">
+							Admin panel
+							<ArrowRight size={16} />
+						</Link>
+					</Button>
+				</div>
+			)}
+			<ProfileForm data={user} />
+		</>
+	);
 }

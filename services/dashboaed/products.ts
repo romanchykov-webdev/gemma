@@ -2,33 +2,6 @@
 import { Product } from "@/app/(dashboard)/dashboard/components/shared/products/product-types";
 import { axiosInstance } from "../instance";
 
-// export type ProductItem = {
-// 	id: number;
-// 	price: number | Decimal;
-// 	sizeId: number | null;
-// 	doughTypeId: number | null;
-// };
-
-// export type Ingredient = {
-// 	id: number;
-// 	name: string;
-// 	price: number | Decimal;
-// 	imageUrl: string;
-// };
-
-// export type Product = {
-// 	id: number;
-// 	name: string;
-// 	imageUrl: string;
-// 	categoryId: number;
-// 	category: {
-// 		id: number;
-// 		name: string;
-// 	};
-// 	items: ProductItem[];
-// 	ingredients?: Ingredient[];
-// };
-
 export const getProducts = async (categoryId?: number): Promise<Product[]> => {
 	const url = categoryId ? `/dashboaed/products?categoryId=${categoryId}` : "/dashboaed/products";
 	const { data } = await axiosInstance.get<Product[]>(url);
