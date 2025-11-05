@@ -1,3 +1,5 @@
+// dashboard client
+export { DashboardClient } from "./dashboard-client";
 // categories
 export { CategoriesDashboard } from "./categories-dashboard";
 export { CategoryCard } from "./categories/category-card";

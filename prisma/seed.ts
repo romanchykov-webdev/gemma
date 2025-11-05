@@ -31,7 +31,7 @@ async function up() {
 	const user1 = await prisma.user.create({
 		data: {
 			fullName: "User Test",
-			email: "user@test.ru",
+			email: "user@test.com",
 			password: hashSync("111111", 10),
 			verified: new Date(),
 			role: "USER",
@@ -41,13 +41,32 @@ async function up() {
 	const user2 = await prisma.user.create({
 		data: {
 			fullName: "Admin Admin",
-			email: "admin@test.ru",
+			email: "admin@test.com",
 			password: hashSync("111111", 10),
 			verified: new Date(),
 			role: "ADMIN",
 		},
 	});
-
+	// Создаем пользователя content maker
+	await prisma.user.create({
+		data: {
+			fullName: "Content Maker",
+			email: "content@test.com",
+			password: hashSync("111111", 10),
+			verified: new Date(),
+			role: "CONTENT_MAKER",
+		},
+	});
+	// Создаем пользователя owner
+	await prisma.user.create({
+		data: {
+			fullName: "Owner Owner",
+			email: "owner@test.com",
+			password: hashSync("111111", 10),
+			verified: new Date(),
+			role: "OWNER",
+		},
+	});
 	await prisma.category.createMany({
 		data: categories,
 	});

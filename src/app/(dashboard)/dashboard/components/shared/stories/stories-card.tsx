@@ -323,6 +323,7 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 														preload="metadata"
 														onError={(e) => {
 															console.error("Failed to load video:", item.sourceUrl);
+															e.currentTarget.src = "/assets/images/not-found.png";
 														}}
 													>
 														Il tuo browser non supporta il tag video.
