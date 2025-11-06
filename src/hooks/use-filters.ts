@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSet } from "react-use";
 
 interface PriceProps {
@@ -37,10 +37,6 @@ export const useFilters = (): ReturnProps => {
 		new Set<string>(searchParams.get("ingredients")?.split(",")),
 	);
 
-	// const { ingredients, loading, onAddId, selectedIngredients } = useFilterIngredients(
-	//   searchParams.get('ingredients')?.split(','),
-	// );
-
 	/*Фильтр размeров*/
 	const [sizes, { toggle: toggleSizes, reset: resetSizes }] = useSet(
 		new Set<string>(searchParams.has("sizes") ? searchParams.get("sizes")?.split(",") : []),
@@ -48,7 +44,7 @@ export const useFilters = (): ReturnProps => {
 
 	/*Фильтр типа пиццы*/
 	const [pizzaTypes, { toggle: togglePizzaTypes, reset: resetPizzaTypes }] = useSet(
-		new Set<string>(searchParams.has("sizes") ? searchParams.get("sizes")?.split(",") : []),
+		new Set<string>(searchParams.has("pizzaTypes") ? searchParams.get("pizzaTypes")?.split(",") : []),
 	);
 
 	/*Фильтр цены*/
@@ -57,18 +53,19 @@ export const useFilters = (): ReturnProps => {
 		priceTo: Number(searchParams.get("priceTo")) || undefined,
 	});
 
-	const updatePrice = (name: keyof PriceProps, value: number) => {
+	const updatePrice = useCallback((name: keyof PriceProps, value: number) => {
 		setPrices((prev) => ({
 			...prev,
 			[name]: value,
 		}));
-	};
-	const resetFilters = () => {
+	}, []);
+
+	const resetFilters = useCallback(() => {
 		resetIngredients();
 		resetSizes();
 		resetPizzaTypes();
 		setPrices({});
-	};
+	}, [resetIngredients, resetSizes, resetPizzaTypes]);
 
 	const hasFilters =
 		sizes.size > 0 ||
@@ -90,7 +87,17 @@ export const useFilters = (): ReturnProps => {
 			resetFilters,
 			hasFilters,
 		}),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[sizes, pizzaTypes, selectedIngredients, prices],
+		[
+			sizes,
+			pizzaTypes,
+			selectedIngredients,
+			prices,
+			updatePrice,
+			togglePizzaTypes,
+			toggleSizes,
+			toggleIngredients,
+			resetFilters,
+			hasFilters,
+		],
 	);
 };

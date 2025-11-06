@@ -48,8 +48,8 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
 					className="mt-5"
 					name="impasto"
 					items={[
-						{ text: "sottile", value: "1" },
-						{ text: "tradizionale", value: "2" },
+						{ text: "tradizionale", value: "1" },
+						{ text: "sottile", value: "2" },
 					]}
 					onClickCheckbox={filters.setPizzaTypes}
 					selected={filters.pizzaTypes}
@@ -60,9 +60,9 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
 					className="mt-5"
 					name="size"
 					items={[
-						{ text: "20 cm", value: "20" },
-						{ text: "30 cm", value: "30" },
-						{ text: "40 cm", value: "40" },
+						{ text: "20 cm", value: "1" },
+						{ text: "30 cm", value: "2" },
+						{ text: "40 cm", value: "3" },
 					]}
 					onClickCheckbox={filters.setSizes}
 					selected={filters.sizes}
