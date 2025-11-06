@@ -7,7 +7,6 @@ import { Input } from "@/components/ui";
 import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from "@/constants/pizza";
 import { useFilters, useIngredients, useQueryFilters } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
 import React, { JSX } from "react";
 
 interface IFiltersProps {
@@ -35,11 +34,11 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
 			<div className="flex items-center justify-between  mb-5">
 				<Title text="Filtrazione" size="sm" className=" font-bold" />
 
-				{filters.hasFilters && (
+				{/* {filters.hasFilters && (
 					<div className="cursor-pointer" onClick={filters.resetFilters}>
 						<Trash2 className="text-red-500 w-5 h-5" />
 					</div>
-				)}
+				)} */}
 			</div>
 			<div className="flex flex-col gap-4">
 				{/*selected impasto*/}
