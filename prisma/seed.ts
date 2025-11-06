@@ -301,7 +301,7 @@ async function up() {
 			generateProductItem({ productId: pizza9.id, doughTypeId: 2, sizeId: 3, price: 15 }),
 
 			// Пицца "Деревенская"
-			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 1, price: 5 }),
+			// generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 1, price: 5 }),
 			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 2, price: 10 }),
 			generateProductItem({ productId: pizza10.id, doughTypeId: 1, sizeId: 3, price: 15 }),
 			generateProductItem({ productId: pizza10.id, doughTypeId: 2, sizeId: 1, price: 5 }),
