@@ -14,7 +14,7 @@ function useDebouncedValue<T>(value: T, delay = 500): T {
 	return v;
 }
 
-// 2) Скип первого рендера (возвращает функцию-предикат)
+// 2) Скип первого рендера
 function useSkipFirstRender() {
 	const first = React.useRef(true);
 	return () => {
@@ -31,17 +31,6 @@ function setEqual(a: Set<string>, b: Set<string>) {
 	return a.size === b.size && [...a].every((x) => b.has(x));
 }
 
-// // 4) Сериализация фильтров в query (?a=1&b=2&sizes=20,30)
-// function serializeFiltersToQuery(params: {
-// 	priceFrom: number;
-// 	priceTo: number;
-// 	pizzaTypes: number[];
-// 	sizes: number[];
-// 	ingredients: number[];
-// }) {
-// 	return qs.stringify(params, { arrayFormat: "comma", skipNulls: true, addQueryPrefix: true });
-// }
-// 4) Сериализация фильтров в query (?a=1&b=2&sizes=20,30)
 function serializeFiltersToQuery(params: {
 	priceFrom?: number;
 	priceTo?: number;
@@ -49,19 +38,14 @@ function serializeFiltersToQuery(params: {
 	sizes: number[];
 	ingredients: number[];
 }) {
-	// // Создаем копию параметров для модификации
-	// const filteredParams = { ...params };
 	// Создаем пустой объект вместо копии
-	const filteredParams: any = {};
-
-	// Удаляем параметры цены, если они равны 0 или undefined
-	// if (filteredParams.priceFrom === 0 || filteredParams.priceFrom === undefined) {
-	//   delete filteredParams.priceFrom;
-	// }
-
-	// if (filteredParams.priceTo === 0 || filteredParams.priceTo === undefined) {
-	//   delete filteredParams.priceTo;
-	// }
+	const filteredParams: {
+		priceFrom?: number;
+		priceTo?: number;
+		pizzaTypes?: number[];
+		sizes?: number[];
+		ingredients?: number[];
+	} = {};
 
 	// Добавляем параметры цены только если они не равны 0 или undefined
 	if (params.priceFrom && params.priceFrom > 0) {
