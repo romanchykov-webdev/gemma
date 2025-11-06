@@ -113,17 +113,19 @@ export const updateCartTotalAmount = async (token: string) => {
 		return acc + calcCatItemTotalPrice(item);
 	}, 0);
 
+	const roundedTotal = Math.round(totalAmount * 100) / 100;
+
 	await prisma.cart.update({
 		where: {
 			id: userCart.id,
 		},
 		data: {
-			totalAmount,
+			totalAmount: roundedTotal,
 		},
 	});
 
 	return {
 		...userCart,
-		totalAmount,
+		totalAmount: roundedTotal,
 	};
 };
