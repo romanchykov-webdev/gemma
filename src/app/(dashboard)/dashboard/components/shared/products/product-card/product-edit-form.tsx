@@ -35,6 +35,8 @@ export const ProductEditForm: React.FC<Props> = ({
 	const [variants, setVariants] = useState(product.items);
 	const [showIngredients, setShowIngredients] = useState(false);
 
+	// console.log(ProductEditForm, { product, categories, ingredients, sizes, doughTypes });
+
 	const handleSubmit = () => {
 		onSave({
 			name: name.trim(),
@@ -81,7 +83,7 @@ export const ProductEditForm: React.FC<Props> = ({
 				onChange={setVariants}
 			/>
 
-			{/* 🔥 ДОБАВЛЕНО: Выбор ингредиентов */}
+			{/* Выбор ингредиентов */}
 			<ProductIngredientsDashboard
 				availableIngredients={ingredients}
 				selectedIngredientIds={selectedIngredientIds}
