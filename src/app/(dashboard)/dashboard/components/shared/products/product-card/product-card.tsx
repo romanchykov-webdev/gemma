@@ -63,6 +63,9 @@ export const ProductCardDashboard: React.FC<Props> = ({
 			onEdit={() => setIsEditing(true)}
 			onDelete={handleDelete}
 			isLoading={isLoading}
+			//
+			sizes={sizes}
+			doughTypes={doughTypes}
 		/>
 	);
 };

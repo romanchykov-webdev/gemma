@@ -4,7 +4,7 @@ import { Button } from "@/components/ui";
 import { ChevronDown, ChevronUp, Loader2, Pencil, Trash2 } from "lucide-react";
 import React from "react";
 import { ProductImagePreview } from "../product-image-preview";
-import { Category, Product } from "../product-types";
+import { Category, DoughType, Product, ProductSize } from "../product-types";
 import { formatPrice, getCategoryName, getVariantsCount } from "../product-utils";
 
 interface Props {
@@ -15,6 +15,8 @@ interface Props {
 	onEdit: () => void;
 	onDelete: () => void;
 	isLoading?: boolean;
+	sizes: ProductSize[];
+	doughTypes: DoughType[];
 }
 
 export const ProductCardView: React.FC<Props> = ({
@@ -25,7 +27,10 @@ export const ProductCardView: React.FC<Props> = ({
 	onEdit,
 	onDelete,
 	isLoading,
+	sizes,
+	doughTypes,
 }) => {
+	console.log(ProductCardView, { sizes, doughTypes });
 	const categoryName = getCategoryName(product.categoryId, categories);
 	const variantsCount = getVariantsCount(product);
 	const ingredientsCount = product.ingredients?.length || 0;
@@ -38,25 +43,27 @@ export const ProductCardView: React.FC<Props> = ({
 				</div>
 			)}
 			<div className="p-4">
-				<div className="flex gap-4">
-					<ProductImagePreview
-						imageUrl={product.imageUrl}
-						alt={product.name}
-						className="w-24 h-24 rounded-md"
-					/>
+				<div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+					<div className="flex flex-wrap gap-4">
+						<ProductImagePreview
+							imageUrl={product.imageUrl}
+							alt={product.name}
+							className="w-24 h-24 rounded-md"
+						/>
 
-					<div className="flex-1 min-w-0">
-						<h3 className="font-semibold text-lg mb-1">{product.name}</h3>
-						<p className="text-sm text-gray-600 mb-2">
-							<span className="font-medium">Categoria:</span> {categoryName}
-						</p>
-						<div className="flex gap-4 text-sm text-gray-600">
-							<span>{variantsCount} varianti</span>
-							{ingredientsCount > 0 && <span>{ingredientsCount} ingredienti</span>}
+						<div className="flex-1 min-w-0">
+							<h3 className="font-semibold text-lg mb-1">{product.name}</h3>
+							<p className="text-sm text-gray-600 mb-2">
+								<span className="font-medium">Categoria:</span> {categoryName}
+							</p>
+							<div className="flex gap-4 text-sm text-gray-600 flex-wrap">
+								{variantsCount > 0 && <span>{variantsCount} varianti</span>}
+								{ingredientsCount > 0 && <span>{ingredientsCount} ingredienti</span>}
+							</div>
 						</div>
 					</div>
 
-					<div className="flex flex-col gap-2">
+					<div className="flex  flex-row sm:flex-col gap-4">
 						<Button size="sm" variant="outline" onClick={onEdit} className="text-blue-600 hover:bg-blue-50">
 							<Pencil className="w-4 h-4 mr-1" />
 							Modifica
@@ -76,12 +83,18 @@ export const ProductCardView: React.FC<Props> = ({
 				<div className="border-t bg-gray-50 p-4">
 					<h4 className="font-semibold mb-2">Varianti del prodotto:</h4>
 					<div className="space-y-1 text-sm">
-						{product.items.map((item, idx) => (
-							<div key={item.id} className="flex justify-between">
-								<span>Variante {idx + 1}</span>
-								<span className="font-medium">{formatPrice(item.price)}</span>
-							</div>
-						))}
+						{product.items.map((item) => {
+							const size = sizes.find((s) => s.id === item.sizeId);
+							const doughType = doughTypes.find((d) => d.id === item.doughTypeId);
+							return (
+								<div key={item.id} className="flex justify-between">
+									<span>
+										{size?.name} - {doughType?.name}
+									</span>
+									<span className="font-medium">{formatPrice(item.price)}</span>
+								</div>
+							);
+						})}
 					</div>
 
 					{ingredientsCount > 0 && (
