@@ -3,11 +3,13 @@ import { ReactNode } from "react";
 
 import { Providers } from "@/components/shared/providers";
 import { authOptions } from "@/constants/auth-options";
+import { SEO_CONFIG } from "@/constants/seo";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
+	metadataBase: new URL(SEO_CONFIG.siteUrl),
 	icons: { icon: "/logo.png" },
 };
 
@@ -26,7 +28,7 @@ export default async function RootLayout({
 	const session = await getServerSession(authOptions);
 
 	return (
-		<html lang="it-IT" suppressHydrationWarning>
+		<html lang="it-IT" suppressHydrationWarning data-scroll-behavior="smooth">
 			<body className={nunito.className}>
 				<Providers session={session}>{children}</Providers>
 			</body>
