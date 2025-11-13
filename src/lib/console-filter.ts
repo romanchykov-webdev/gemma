@@ -12,10 +12,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 		// 🔇 Список предупреждений для игнорирования
 		const ignoreWarnings = [
 			"Image with src", // Next.js Image warnings
-			"has either width or height modified", // Aspect ratio warnings
-			// Добавьте сюда другие предупреждения для фильтрации:
-			// 'React DevTools',
-			// 'Download the React DevTools',
+			"has either width or height modified",
 		];
 
 		// Проверяем, содержит ли сообщение игнорируемые фразы
