@@ -43,7 +43,7 @@ if (typeof window !== "undefined") {
 // 🎯 Функция для инициализации DevTools (вызвать один раз при старте)
 export const initDevTools = () => {
 	if (typeof window !== "undefined") {
-		console.log("🔧 DevTools initialized - все stores объединены в 🎯 AllStores");
+		// console.log("🔧 DevTools initialized - все stores объединены в 🎯 AllStores");
 
 		// Начальная синхронизация
 		useDevToolsStore.setState({
@@ -53,10 +53,10 @@ export const initDevTools = () => {
 		});
 
 		// Логируем текущее состояние
-		console.log("📊 Current stores:", {
-			cart: useCartStore.getState(),
-			category: useCategoryStore.getState(),
-			ingredients: useIngredientsStore.getState(),
-		});
+		// console.log("📊 Current stores:", {
+		// 	cart: useCartStore.getState(),
+		// 	category: useCategoryStore.getState(),
+		// 	ingredients: useIngredientsStore.getState(),
+		// });
 	}
 };

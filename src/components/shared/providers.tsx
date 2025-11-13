@@ -8,6 +8,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import NextTopLoader from "nextjs-toploader";
 import React, { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { GoogleMapsProvider } from "./providers/google-maps-provider";
 
 const AuthLoadingOverlay: React.FC = () => {
 	const { status } = useSession();
@@ -23,7 +24,7 @@ const AuthLoadingOverlay: React.FC = () => {
 
 interface ProvidersProps {
 	children: React.ReactNode;
-	session?: Session | null; // ✅ Сессия из SSR
+	session?: Session | null;
 }
 
 export const Providers: React.FC<ProvidersProps> = ({ children, session }) => {
@@ -37,13 +38,11 @@ export const Providers: React.FC<ProvidersProps> = ({ children, session }) => {
 
 	return (
 		<>
-			<SessionProvider
-				session={session} // ✅ Используем SSR сессию (0 запросов!)
-				refetchInterval={0} // ✅ Не обновлять автоматически
-				refetchOnWindowFocus={false} // ✅ Не обновлять при фокусе
-			>
-				{children}
-				<AuthLoadingOverlay />
+			<SessionProvider session={session} refetchInterval={0} refetchOnWindowFocus={false}>
+				<GoogleMapsProvider>
+					{children}
+					<AuthLoadingOverlay />
+				</GoogleMapsProvider>
 			</SessionProvider>
 			<Toaster />
 			<NextTopLoader />
