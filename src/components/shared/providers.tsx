@@ -1,6 +1,5 @@
 "use client";
 
-import "@/lib/console-filter";
 import { initDevTools, useCartStore } from "@/store";
 import { Loader2 } from "lucide-react";
 import { Session } from "next-auth";
