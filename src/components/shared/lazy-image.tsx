@@ -45,6 +45,11 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 					width={width}
 					height={height}
 					className={cn("transition-opacity duration-300", isLoaded ? "opacity-100" : "opacity-0")}
+					style={{
+						width: "100%",
+						height: "100%",
+						objectFit: "cover",
+					}}
 					quality={quality}
 					priority={priority}
 					onLoad={() => setIsLoaded(true)}
@@ -57,6 +62,11 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 					width={width}
 					height={height}
 					className={cn("transition-opacity duration-300", isLoaded ? "opacity-100" : "opacity-0")}
+					style={{
+						width: "100%",
+						height: "100%",
+						objectFit: "cover",
+					}}
 					onLoad={() => setIsLoaded(true)}
 				/>
 			)}
