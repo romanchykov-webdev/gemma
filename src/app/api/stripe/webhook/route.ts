@@ -41,7 +41,7 @@ export const dynamic = "force-dynamic";
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
-	console.log("[WEBHOOK] Received webhook request");
+	// console.log("[WEBHOOK] Received webhook request");
 
 	const sig = req.headers.get("stripe-signature");
 	if (!sig) {
@@ -50,14 +50,14 @@ export async function POST(req: Request) {
 	}
 
 	const secret = WEBHOOK_SECRET;
-	console.log("[WEBHOOK] Using webhook secret:", secret.substring(0, 5) + "...");
+	// console.log("[WEBHOOK] Using webhook secret:", secret.substring(0, 5) + "...");
 
 	const rawBody = await req.text();
 
 	let event: Stripe.Event;
 	try {
 		event = stripe.webhooks.constructEvent(rawBody, sig, secret);
-		console.log("[WEBHOOK] Event received:", event.type);
+		// console.log("[WEBHOOK] Event received:", event.type);
 	} catch (err) {
 		const error = err as Error;
 		console.error("[WEBHOOK] Bad signature", error.message);
@@ -169,10 +169,10 @@ export async function POST(req: Request) {
 						(dataObject as Stripe.Checkout.Session)?.metadata ??
 						null;
 
-					console.log("[WEBHOOK] Payment failed event:", {
-						type: event.type,
-						metadata,
-					});
+					// console.log("[WEBHOOK] Payment failed event:", {
+					// 	type: event.type,
+					// 	metadata,
+					// });
 
 					const orderId = (metadata as Record<string, unknown> | null)?.orderId as string | undefined;
 					if (orderId) {
@@ -180,7 +180,7 @@ export async function POST(req: Request) {
 							where: { id: orderId },
 							data: { status: OrderStatus.CANCELLED },
 						});
-						console.log("[WEBHOOK] Order cancelled:", orderId);
+						// console.log("[WEBHOOK] Order cancelled:", orderId);
 					} else {
 						console.error("[WEBHOOK] No orderId in metadata for failed payment");
 					}
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
 				break;
 		}
 
-		console.log("[WEBHOOK] Successfully processed event:", event.type);
+		// console.log("[WEBHOOK] Successfully processed event:", event.type);
 		return NextResponse.json({ received: true });
 	} catch (err) {
 		console.error("[WEBHOOK] Handler error", err);

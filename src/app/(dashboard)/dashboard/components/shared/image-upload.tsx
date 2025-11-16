@@ -25,7 +25,6 @@ export const ImageUpload: React.FC<Props> = ({
 	isUploading,
 	setIsUploading,
 }) => {
-	// const [isUploading, setIsUploading] = useState(false);
 	const [previewUrl, setPreviewUrl] = useState(imageUrl);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,14 +50,6 @@ export const ImageUpload: React.FC<Props> = ({
 			setIsUploading(false);
 		}
 	};
-
-	// const handleRemove = () => {
-	// 	setPreviewUrl("");
-	// 	onImageChange("");
-	// 	if (fileInputRef.current) {
-	// 		fileInputRef.current.value = "";
-	// 	}
-	// };
 
 	return (
 		<div className="space-y-2">

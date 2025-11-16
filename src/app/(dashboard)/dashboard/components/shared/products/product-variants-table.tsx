@@ -29,10 +29,6 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 		}
 	};
 
-	// const hasVariant = (sizeId: number, doughTypeId: number): ProductItem | undefined => {
-	// 	return product.items.find((item) => item.sizeId === sizeId && item.doughTypeId === doughTypeId);
-	// };
-
 	if (sizes.length === 0 || doughTypes.length === 0) {
 		return <div className="px-4 pb-4 pt-2">Caricamento...</div>;
 	}

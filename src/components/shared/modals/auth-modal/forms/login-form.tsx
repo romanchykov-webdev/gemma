@@ -47,7 +47,7 @@ export const LoginForm: React.FC<Props> = ({ onClose, onBusyChange }) => {
 			onClose?.();
 			onBusyChange?.(false);
 		} catch (error) {
-			console.log("Error [LOGIN]", error);
+			// console.log("Error [LOGIN]", error);
 			toast.error("Impossibile effettuare l'accesso", {
 				icon: "❌",
 			});

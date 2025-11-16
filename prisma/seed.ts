@@ -481,7 +481,7 @@ async function up() {
 	SELECT setval('"StoryItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "StoryItem"));
   `);
 
-	console.log("✅ Sequences сброшены");
+	// console.log("✅ Sequences сброшены");
 }
 
 async function down() {

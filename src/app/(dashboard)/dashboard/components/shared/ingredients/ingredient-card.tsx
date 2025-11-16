@@ -17,28 +17,28 @@ interface Props {
 export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete, isLoading }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingName, setEditingName] = useState(ingredient.name);
-	// 🔥 Конвертируем price в number при инициализации
+
 	const [editingPrice, setEditingPrice] = useState(Number(ingredient.price));
 	const [editingImageUrl, setEditingImageUrl] = useState(ingredient.imageUrl);
 
 	const startEditing = () => {
 		setIsEditing(true);
 		setEditingName(ingredient.name);
-		setEditingPrice(Number(ingredient.price)); // 🔥 Конвертируем
+		setEditingPrice(Number(ingredient.price));
 		setEditingImageUrl(ingredient.imageUrl);
 	};
 
 	const cancelEditing = () => {
 		setIsEditing(false);
 		setEditingName(ingredient.name);
-		setEditingPrice(Number(ingredient.price)); // 🔥 Конвертируем
+		setEditingPrice(Number(ingredient.price));
 		setEditingImageUrl(ingredient.imageUrl);
 	};
 
 	const handleUpdate = () => {
 		onUpdate(ingredient.id, {
 			name: editingName.trim(),
-			price: editingPrice, // Теперь это точно number
+			price: editingPrice,
 			imageUrl: editingImageUrl.trim(),
 		});
 		setIsEditing(false);

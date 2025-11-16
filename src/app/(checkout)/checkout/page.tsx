@@ -36,9 +36,8 @@ export default function CheckoutPage() {
 		},
 	});
 
-	// ✅ Синхронизация корзины с сервером при входе на checkout
 	useEffect(() => {
-		console.log("🔄 Checkout mounted - syncing cart with server...");
+		// console.log("🔄 Checkout mounted - syncing cart with server...");
 		refetchCart();
 	}, [refetchCart]);
 

@@ -4,14 +4,6 @@ import { Button } from "@/components/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-// Функция для получения значения куки
-// function getCookie(name: string): string | undefined {
-// 	const value = `; ${document.cookie}`;
-// 	const parts = value.split(`; ${name}=`);
-// 	if (parts.length === 2) return parts.pop()?.split(";").shift();
-// 	return undefined;
-// }
-
 const SuccessContent = () => {
 	const params = useSearchParams();
 	const router = useRouter();

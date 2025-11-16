@@ -1,10 +1,3 @@
-// Основной тип размера продукта
-// export type ProductSize = {
-// 	id: number;
-// 	name: string;
-// 	value: number;
-// 	sortOrder: number;
-// };
 export type ProductSize = {
 	id: number;
 	name: string;

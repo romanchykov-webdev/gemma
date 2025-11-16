@@ -27,7 +27,7 @@ export const DashboardClient: React.FC<Props> = ({ className, userRole }): JSX.E
 	const [activeSection, setActiveSection] = useState("");
 	//
 	const toggleMenu = (item: string) => {
-		console.log("DashBoardPage toggleMenu", item);
+		// console.log("DashBoardPage toggleMenu", item);
 		setActiveSection(item);
 		setIsOpen(false);
 	};

@@ -27,46 +27,46 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	// ✅ Загружаем продукт, размеры и типы теста параллельно (один раз на сервере)
 	const [product, sizes, doughTypes] = await Promise.all([
 		prisma.product.findFirst({
-		where: {
-			id: Number(id),
-		},
-		select: {
-			id: true,
-			name: true,
-			imageUrl: true,
-			categoryId: true,
-			// Убираем createdAt, updatedAt для ускорения
-			ingredients: {
-				select: {
-					id: true,
-					name: true,
-					price: true,
-					imageUrl: true,
-				},
+			where: {
+				id: Number(id),
 			},
-			items: {
-				select: {
-					id: true,
-					price: true,
-					sizeId: true,
-					doughTypeId: true,
-					productId: true,
-					size: {
-						select: {
-							value: true,
-						},
-					},
-					doughType: {
-						select: {
-							value: true,
-						},
+			select: {
+				id: true,
+				name: true,
+				imageUrl: true,
+				categoryId: true,
+				// Убираем createdAt, updatedAt для ускорения
+				ingredients: {
+					select: {
+						id: true,
+						name: true,
+						price: true,
+						imageUrl: true,
 					},
 				},
-				orderBy: {
-					createdAt: "desc",
+				items: {
+					select: {
+						id: true,
+						price: true,
+						sizeId: true,
+						doughTypeId: true,
+						productId: true,
+						size: {
+							select: {
+								value: true,
+							},
+						},
+						doughType: {
+							select: {
+								value: true,
+							},
+						},
+					},
+					orderBy: {
+						createdAt: "desc",
+					},
 				},
 			},
-		},
 		}),
 		// 🔥 Загружаем все размеры
 		prisma.productSize.findMany({
@@ -105,8 +105,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		})),
 	};
 
-	// ✅ Передаем sizes и doughTypes в модальное окно
-	console.log("ProductPage sizes:", sizes);
-	console.log("ProductPage doughTypes:", doughTypes);
+	// console.log("ProductPage sizes:", sizes);
+	// console.log("ProductPage doughTypes:", doughTypes);
 	return <ChooseProductModal product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />;
 }

@@ -25,25 +25,6 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 	const handleSave = async () => {
 		const updateData: UpdateStoryData = {};
 
-		// // Проверяем изменения
-		// if (editingPreviewUrl !== story.previewImageUrl) {
-		// 	updateData.previewImageUrl = editingPreviewUrl;
-		// }
-
-		// // Проверяем изменения в items
-		// const itemsChanged =
-		// 	editingItems.length !== story.items.length ||
-		// 	editingItems.some((item, index) => item.sourceUrl !== story.items[index]?.sourceUrl);
-
-		// if (itemsChanged) {
-		// 	updateData.items = editingItems;
-		// }
-
-		// if (Object.keys(updateData).length === 0) {
-		// 	setIsEditing(false);
-		// 	return;
-		// }
-
 		await onUpdate(story.id, updateData);
 		setIsEditing(false);
 	};
@@ -243,15 +224,6 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 										{item.sourceUrl && (
 											<div className="relative w-full h-32 rounded border overflow-hidden bg-gray-100 ml-[38px]">
 												{fileType === "image" ? (
-													// <Image
-													// 	src={item.sourceUrl}
-													// 	alt={`Edit preview ${index + 1}`}
-													// 	fill
-													// 	className="object-cover"
-													// 	onError={(e) => {
-													// 		console.error("Failed to load item:", item.sourceUrl);
-													// 	}}
-													// />
 													<img
 														src={item.sourceUrl}
 														alt={`Story ${story.id} item ${index + 1}`}
@@ -294,15 +266,6 @@ export const StoryCard: React.FC<Props> = ({ story, isLoading, onUpdate, onDelet
 											{/* Превью медиа */}
 											<div className="relative group w-full h-32 rounded border overflow-hidden bg-gray-100">
 												{fileType === "image" ? (
-													// <Image
-													// 	src={item.sourceUrl}
-													// 	alt={`Story item ${index + 1}`}
-													// 	fill
-													// 	className="object-cover"
-													// 	onError={(e) => {
-													// 		console.error("Failed to load item:", item.sourceUrl);
-													// 	}}
-													// />
 													<img
 														src={item.sourceUrl}
 														alt={`Story ${story.id} preview`}

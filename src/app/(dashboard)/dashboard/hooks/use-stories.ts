@@ -71,7 +71,7 @@ export const useStories = (): UseStoriesReturn => {
 
 	// Обновление story
 	const handleUpdate = async (id: number, data: UpdateStoryData) => {
-		console.log("[USE_STORIES] Update start:", id, data); // 🔥 DEBUG
+		console.log("[USE_STORIES] Update start:", id, data);
 
 		// Валидация
 		const validationError = validateUpdateStoryData(data);
@@ -83,17 +83,17 @@ export const useStories = (): UseStoriesReturn => {
 		// Добавляем ID в состояние загрузки
 		setLoadingStoryIds((prev) => {
 			const newSet = new Set(prev).add(id);
-			console.log("[USE_STORIES] Loading IDs after add:", Array.from(newSet)); // 🔥 DEBUG
+			console.log("[USE_STORIES] Loading IDs after add:", Array.from(newSet));
 			return newSet;
 		});
 
 		try {
 			const updated = await Api.stories_dashboard.updateStory(id, data);
-			console.log("[USE_STORIES] Update success:", updated); // 🔥 DEBUG
+			console.log("[USE_STORIES] Update success:", updated);
 			setStories(stories.map((story) => (story.id === id ? updated : story)));
 			toast.success("Storia aggiornata con successo");
 		} catch (error: unknown) {
-			console.error("[USE_STORIES] Update error:", error); // 🔥 DEBUG
+			console.error("[USE_STORIES] Update error:", error);
 			const message =
 				error instanceof Error && "response" in error
 					? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -106,7 +106,7 @@ export const useStories = (): UseStoriesReturn => {
 			setLoadingStoryIds((prev) => {
 				const newSet = new Set(prev);
 				newSet.delete(id);
-				console.log("[USE_STORIES] Loading IDs after delete:", Array.from(newSet)); // 🔥 DEBUG
+				console.log("[USE_STORIES] Loading IDs after delete:", Array.from(newSet));
 				return newSet;
 			});
 		}
@@ -118,18 +118,18 @@ export const useStories = (): UseStoriesReturn => {
 			return;
 		}
 
-		console.log("[USE_STORIES] Delete start:", id); // 🔥 DEBUG
+		console.log("[USE_STORIES] Delete start:", id);
 
 		// Добавляем ID в состояние загрузки
 		setLoadingStoryIds((prev) => new Set(prev).add(id));
 
 		try {
 			await Api.stories_dashboard.deleteStory(id);
-			console.log("[USE_STORIES] Delete success"); // 🔥 DEBUG
+			console.log("[USE_STORIES] Delete success");
 			setStories(stories.filter((story) => story.id !== id));
 			toast.success("Storia eliminata con successo");
 		} catch (error: unknown) {
-			console.error("[USE_STORIES] Delete error:", error); // 🔥 DEBUG
+			console.error("[USE_STORIES] Delete error:", error);
 			const message =
 				error instanceof Error && "response" in error
 					? (error as { response?: { data?: { message?: string } } }).response?.data?.message

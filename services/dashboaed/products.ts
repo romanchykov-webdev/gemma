@@ -1,4 +1,3 @@
-// import { Decimal } from "@prisma/client/runtime/library";
 import { Product } from "@/app/(dashboard)/dashboard/components/shared/products/product-types";
 import { axiosInstance } from "../instance";
 
