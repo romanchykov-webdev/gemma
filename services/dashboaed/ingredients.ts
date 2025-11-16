@@ -1,11 +1,5 @@
 import { Ingredient } from "@/app/(dashboard)/dashboard/components/shared/ingredients/ingredient-types";
 import { axiosInstance } from "../instance";
-// export type Ingredient = {
-// 	id: number;
-// 	name: string;
-// 	price: number;
-// 	imageUrl: string;
-// };
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
 	const { data } = await axiosInstance.get<Ingredient[]>("/ingredients");

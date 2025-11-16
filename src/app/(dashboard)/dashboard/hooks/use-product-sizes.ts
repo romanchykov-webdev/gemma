@@ -18,7 +18,7 @@ interface UseProductSizesReturn {
 	sizes: ProductSize[];
 	loading: boolean;
 	isCreating: boolean;
-	loadingProductSizeIds: Set<number>; // Добавить
+	loadingProductSizeIds: Set<number>;
 	loadSizes: () => Promise<void>;
 	handleCreate: (data: CreateProductSizeData) => Promise<void>;
 	handleUpdate: (id: number, data: UpdateProductSizeData) => Promise<void>;
@@ -33,7 +33,7 @@ export const useProductSizes = (): UseProductSizesReturn => {
 	const [sizes, setSizes] = useState<ProductSize[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isCreating, setIsCreating] = useState(false);
-	const [loadingProductSizeIds, setLoadingProductSizeIds] = useState<Set<number>>(new Set()); // Добавить
+	const [loadingProductSizeIds, setLoadingProductSizeIds] = useState<Set<number>>(new Set());
 
 	// Загрузка размеров
 	const loadSizes = async () => {

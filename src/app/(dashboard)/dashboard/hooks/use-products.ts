@@ -95,7 +95,6 @@ export const useProducts = (): UseProductsReturn => {
 				Api.dough_types_dashboard.getDoughTypes(),
 			]);
 
-			// ✅ Нормализуем ингредиенты (конвертируем Decimal в number)
 			setIngredients(
 				ingredientsData.map((ing) => ({
 					...ing,

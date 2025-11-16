@@ -10,7 +10,7 @@ interface UseDoughTypesReturn {
 	doughTypes: DoughType[];
 	loading: boolean;
 	isCreating: boolean;
-	loadingDoughTypeIds: Set<number>; // Добавить
+	loadingDoughTypeIds: Set<number>;
 	loadDoughTypes: () => Promise<void>;
 	handleCreate: (data: CreateDoughTypeData) => Promise<void>;
 	handleUpdate: (id: number, data: UpdateDoughTypeData) => Promise<void>;
@@ -25,7 +25,7 @@ export const useDoughTypes = (): UseDoughTypesReturn => {
 	const [doughTypes, setDoughTypes] = useState<DoughType[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isCreating, setIsCreating] = useState(false);
-	const [loadingDoughTypeIds, setLoadingDoughTypeIds] = useState<Set<number>>(new Set()); // Добавить
+	const [loadingDoughTypeIds, setLoadingDoughTypeIds] = useState<Set<number>>(new Set());
 
 	// Загрузка типов теста
 	const loadDoughTypes = async () => {

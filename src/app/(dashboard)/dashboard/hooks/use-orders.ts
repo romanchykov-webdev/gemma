@@ -9,7 +9,7 @@ interface UseOrdersReturn {
 	orders: Order[];
 	loading: boolean;
 	expandedOrderId: string | null;
-	loadingOrderIds: Set<string>; // Добавить
+	loadingOrderIds: Set<string>;
 	loadOrders: () => Promise<void>;
 	handleStatusChange: (orderId: string, newStatus: OrderStatus) => Promise<void>;
 	handleDelete: (orderId: string) => Promise<void>;

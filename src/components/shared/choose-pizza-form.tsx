@@ -48,7 +48,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 		usePizzaOptions(items);
 
 	const { textDetails, totalPrice } = getPizzaDetails(type, size, items, ingredients, selectedIngredients);
-	console.log("ChoosePizzaForm items", items);
+	// console.log("ChoosePizzaForm items", items);
 	// console.log("ChoosePizzaForm currentItemId", currentItemId);
 	// console.log("ChoosePizzaForm selectedIngredients", selectedIngredients);
 

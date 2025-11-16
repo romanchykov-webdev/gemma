@@ -26,7 +26,6 @@ export const validateIngredientData = (data: CreateIngredientData | UpdateIngred
 
 // Форматирование цены
 export const formatPrice = (price: number | string | { toString(): string }): string => {
-	// 🔥 Конвертируем в number, если это Decimal или строка
 	const numericPrice = typeof price === "number" ? price : Number(price);
 	return `${numericPrice.toFixed(2)} €`;
 };
