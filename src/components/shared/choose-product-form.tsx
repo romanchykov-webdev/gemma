@@ -35,8 +35,8 @@ export const ChooseProductForm: React.FC<Props> = ({
 	// 🔥 Состояние для выбранного варианта
 	const [selectedVariantId, setSelectedVariantId] = useState<number>(items[0]?.id);
 
-	console.log("ChooseProductForm sizes:", sizes);
-	console.log("ChooseProductForm items:", items);
+	// console.log("ChooseProductForm sizes:", sizes);
+	// console.log("ChooseProductForm items:", items);
 
 	// 🔥 Создаем варианты для отображения (с проверкой sizes)
 	const variants: Variant[] = items.map((item) => {

@@ -1,5 +1,3 @@
-// import { Decimal } from "@prisma/client/runtime/library";
-
 // Категория
 export type Category = {
 	id: number;

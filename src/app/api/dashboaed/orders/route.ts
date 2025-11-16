@@ -17,14 +17,14 @@ export async function GET() {
 				totalAmount: true,
 				status: true,
 				paymentId: true,
-				items: true, // JSON с товарами
+				items: true,
 				comment: true,
 				createdAt: true,
 				updatedAt: true,
 				userId: true,
 			},
 			orderBy: {
-				createdAt: "desc", // Сначала новые
+				createdAt: "desc",
 			},
 		});
 

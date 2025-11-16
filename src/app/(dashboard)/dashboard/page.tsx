@@ -14,12 +14,11 @@ export default async function DashBoardPage() {
 		return redirect("/not-auth");
 	}
 
-	// // ✅ Валидация UUID: проверяем что id корректный (36 символов с дефисами или 32 без)
 	const isValidUUID = session.id && (session.id.length === 36 || session.id.length === 32);
 
 	if (!isValidUUID) {
 		console.error("[PROFILE] Invalid UUID format:", session.id);
-		// Перенаправляем на главную для повторного логина
+
 		return redirect("/api/auth/signout?callbackUrl=/");
 	}
 
@@ -34,7 +33,7 @@ export default async function DashBoardPage() {
 		return redirect("/not-auth");
 	}
 
-	console.log("ProfilePage user", user.role);
+	// console.log("ProfilePage user", user.role);
 
 	return (
 		<Container className="mt-10">

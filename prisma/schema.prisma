@@ -126,7 +126,7 @@ model CartItem {
   updatedAt     DateTime     @updatedAt
   userId        String?      @db.Uuid
   
-  // Временно с дефолтом
+
   compositionKey String @default("")
   
   cart          Cart         @relation(fields: [cartId], references: [id], onDelete: Cascade)

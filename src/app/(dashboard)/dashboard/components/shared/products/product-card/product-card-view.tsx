@@ -30,7 +30,7 @@ export const ProductCardView: React.FC<Props> = ({
 	sizes,
 	doughTypes,
 }) => {
-	console.log(ProductCardView, { sizes, doughTypes });
+	// console.log(ProductCardView, { sizes, doughTypes });
 	const categoryName = getCategoryName(product.categoryId, categories);
 	const variantsCount = getVariantsCount(product);
 	const ingredientsCount = product.ingredients?.length || 0;

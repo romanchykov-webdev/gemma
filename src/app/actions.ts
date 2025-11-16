@@ -14,8 +14,6 @@ import { getUserSession } from "@/lib/get-user-session";
 import { hashSync } from "bcrypt";
 import { CartItemDTO } from "../../services/dto/cart.dto";
 
-// const APP_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
-// const APP_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://pizza-next-neon.vercel.app";
 const APP_URL =
 	process.env.NEXT_PUBLIC_API_BASE_URL ??
 	(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -54,13 +52,11 @@ export async function createOrder(data: CheckoutFormValues) {
 		});
 
 		if (!cart) throw new Error("Cart not found");
-		// if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+
 		if (!cart.items.length || cart.totalAmount.lte(0)) {
 			throw new Error("Cart is empty");
 		}
 
-		// Считаем на СЕРВЕРЕ (в центах, чтобы не ловить округления)
-		// const itemsCents = Math.round(cart.totalAmount * 100);
 		const itemsCents = Number(cart.totalAmount) * 100;
 		const taxCents = Number((itemsCents * VAT_PERCENT) / 100);
 		const deliveryCents = Number(DELIVERY_EUR * 100);
@@ -82,8 +78,6 @@ export async function createOrder(data: CheckoutFormValues) {
 			},
 		});
 
-		// Собираем line_items для Stripe (пример: одна строка общая)
-		// Вариант А: одна строка
 		const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
 			{
 				quantity: 1,
@@ -150,7 +144,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
 		});
 
 		if (!cart) throw new Error("Cart not found");
-		// if (!cart.items.length || cart.totalAmount <= 0) throw new Error("Cart is empty");
+
 		if (!cart.items.length || cart.totalAmount.lte(0)) {
 			throw new Error("Cart is empty");
 		}
@@ -172,7 +166,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
 				phone: data.phone,
 				address: data.address,
 				comment: data.comment ?? "",
-				paymentId: "COD", // метка, что оплата будет курьеру
+				paymentId: "courier",
 			},
 		});
 

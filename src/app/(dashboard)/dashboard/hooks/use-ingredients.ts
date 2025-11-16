@@ -29,7 +29,7 @@ export const useIngredients = (): UseIngredientsReturn => {
 	const [ingredients, setIngredients] = useState<Ingredient[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isCreating, setIsCreating] = useState(false);
-	const [loadingIngredientIds, setLoadingIngredientIds] = useState<Set<number>>(new Set()); // Добавить
+	const [loadingIngredientIds, setLoadingIngredientIds] = useState<Set<number>>(new Set());
 
 	// Загрузка ингредиентов
 	const loadIngredients = async () => {

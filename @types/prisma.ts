@@ -2,7 +2,6 @@ import { Ingredient, Product, ProductItem } from "@prisma/client";
 
 export type IProduct = Product & { items: ProductItem[]; ingredients: Ingredient[] };
 
-// ✅ Экспортируем типы для использования в других файлах
 export type OptimizedProductItem = Omit<ProductItem, "createdAt" | "updatedAt" | "price"> & {
 	price: number;
 	createdAt?: Date;
