@@ -12,6 +12,7 @@ interface IProductFormClientProps {
 	product: ProductWithRelations;
 	sizes: Array<{ id: number; name: string; value: number }>;
 	doughTypes: Array<{ id: number; name: string; value: number }>;
+	handleClose: () => void;
 }
 
 export const ProductFormClient: React.FC<IProductFormClientProps> = ({
@@ -19,6 +20,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	sizes,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	doughTypes,
+	handleClose,
 }): JSX.Element => {
 	const router = useRouter();
 
@@ -30,9 +32,9 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	// pizza два типа 1 2 и больше не пицца
 	const isPizzaForm = Boolean(firstItem.doughTypeId && firstItem.doughTypeId < 3);
 
-	console.log("ProductFormClient isPizzaForm", isPizzaForm);
-	console.log("ProductFormClient doughTypeId", firstItem);
-	console.log("ProductFormClient doughTypeId", firstItem.doughTypeId);
+	// console.log("ProductFormClient isPizzaForm", isPizzaForm);
+	// console.log("ProductFormClient doughTypeId", firstItem);
+	// console.log("ProductFormClient doughTypeId", firstItem.doughTypeId);
 
 	// 🔥 Для пиццы (с ингредиентами)
 	const onSubmitPizza = async (
@@ -70,6 +72,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 			console.error(error);
 		} finally {
 			setSubmitting(false);
+			handleClose();
 		}
 	};
 
@@ -100,6 +103,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 			console.error(error);
 		} finally {
 			setSubmitting(false);
+			handleClose();
 		}
 	};
 

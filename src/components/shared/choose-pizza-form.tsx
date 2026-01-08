@@ -114,7 +114,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 					/>
 				</div>
 
-				<div className="bg-gray-50 px-2 py-5 rounded-md mb-5 h-[350px] overflow-auto ">
+				<div className="bg-gray-50 p-5 pb-8 rounded-md mb-5 h-[350px] overflow-auto ">
 					{ingredients.length > 0 && (
 						<IngredientsList
 							ingredients={ingredients}

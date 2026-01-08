@@ -6,9 +6,9 @@ interface State {
 	setActiveId: (activeId: number) => void;
 }
 
-// export const useCategoryStore = create<State>()(set => ({
-//   activeId: 1,
-//   setActiveId: (activeId: number) => set({ activeId }),
+// export const useCategoryStore = create<State>()((set) => ({
+// 	activeId: 1,
+// 	setActiveId: (activeId: number) => set({ activeId }),
 // }));
 
 export const useCategoryStore = create<State>()(
