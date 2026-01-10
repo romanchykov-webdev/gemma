@@ -137,12 +137,8 @@ export const useCartStore = create<CartState>()(
 					});
 				}
 
-				// ✅ Передаем productId и variantId (или productItemId для обратной совместимости)
 				Api.cart
 					.addCartItem({
-						productId: values.productId, // ✅ Новое поле
-						variantId: values.variantId, // ✅ Новое поле
-						// Для обратной совместимости (если старый формат)
 						productItemId: values.productItemId,
 						ingredients: values.ingredients,
 					})

@@ -38,7 +38,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 
 	// 🔥 Для пиццы (с ингредиентами)
 	const onSubmitPizza = async (
-		variantId: number, // ✅ Было: productItemId, теперь variantId
+		productItemId: number,
 		ingredients: number[],
 		totalPrice?: number,
 		pizzaSize?: number | null,
@@ -47,13 +47,16 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	) => {
 		try {
 			setSubmitting(true);
+
+			// 1) Мгновенно показываем тост
 			toast.success(product.name + " aggiunto al carrello");
+
+			// 2) Мгновенно закрываем окно
 			router.back();
 
-			// ✅ Передаем productId и variantId
+			// 3) ⚡ Запрос идёт в фоне с optimistic update!
 			addCartItem({
-				productId: product.id, // ✅ Добавляем productId
-				variantId: variantId, // ✅ variantId вместо productItemId
+				productItemId,
 				ingredients,
 				optimistic: {
 					name: product.name,
@@ -74,17 +77,19 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	};
 
 	// 🔥 Для обычных продуктов (без ингредиентов)
-	const onSubmitProduct = async (variantId: number, totalPrice: number) => {
-		// ✅ variantId вместо productItemId
+	const onSubmitProduct = async (productItemId: number, totalPrice: number) => {
 		try {
 			setSubmitting(true);
+
+			// 1) Мгновенно показываем тост
 			toast.success(product.name + " aggiunto al carrello");
+
+			// 2) Мгновенно закрываем окно
 			router.back();
 
-			// ✅ Передаем productId и variantId
+			// 3) ⚡ Запрос идёт в фоне с optimistic update!
 			addCartItem({
-				productId: product.id, // ✅ Добавляем productId
-				variantId: variantId, // ✅ variantId вместо productItemId
+				productItemId,
 				optimistic: {
 					name: product.name,
 					imageUrl: product.imageUrl,

@@ -1,11 +1,21 @@
-import { buildCompositionKey } from "@/lib/build-composition-key";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
 
-// ✅ Кеширование для корзины (5 секунд)
 export const revalidate = 5;
+
+// Вспомогательная функция для подсчета цены одной позиции
+// (понадобится, так как SQL запрос больше не сработает из-за JSON)
+const calculateCartItemTotal = (item: any): number => {
+	const variants = item.product.variants as any[];
+	const variant = variants.find((v) => v.variantId === item.variantId);
+
+	if (!variant) return 0;
+
+	const ingredientsPrice = item.ingredients.reduce((acc: number, ing: any) => acc + Number(ing.price), 0);
+	return (variant.price + ingredientsPrice) * item.quantity;
+};
 
 export async function GET(req: NextRequest) {
 	try {
@@ -19,50 +29,14 @@ export async function GET(req: NextRequest) {
 			where: {
 				tokenId: token,
 			},
-			select: {
-				id: true,
-				totalAmount: true,
-				tokenId: true,
+			include: {
 				items: {
 					orderBy: {
 						createdAt: "desc",
 					},
-					select: {
-						id: true,
-						quantity: true,
-						productItem: {
-							select: {
-								id: true,
-								price: true,
-								size: {
-									select: {
-										value: true,
-										name: true,
-									},
-								},
-								doughType: {
-									select: {
-										value: true,
-										name: true,
-									},
-								},
-								product: {
-									select: {
-										id: true,
-										name: true,
-										imageUrl: true,
-									},
-								},
-							},
-						},
-						ingredients: {
-							select: {
-								id: true,
-								name: true,
-								price: true,
-								imageUrl: true,
-							},
-						},
+					include: {
+						product: true, // Получаем продукт целиком (включая JSON variants)
+						ingredients: true,
 					},
 				},
 			},
@@ -72,14 +46,205 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ totalAmount: 0, items: [] });
 		}
 
-		return NextResponse.json(cart);
+		// Загружаем справочники, чтобы подставить названия размеров и типов теста
+		// (так как в JSON variants лежат только ID: sizeId, typeId)
+		const sizes = await prisma.size.findMany();
+		const types = await prisma.type.findMany();
+
+		// Трансформируем данные в формат, который ожидает фронтенд
+		// Мы "симулируем" наличие productItem
+		const items = cart.items.map((item) => {
+			const variants = item.product.variants as any[];
+			const currentVariant = variants.find((v) => v.variantId === item.variantId);
+
+			// Находим названия из справочников
+			const size = sizes.find((s) => s.id === currentVariant?.sizeId);
+			const type = types.find((t) => t.id === currentVariant?.typeId);
+
+			return {
+				id: item.id,
+				quantity: item.quantity,
+				// Собираем объект, похожий на старый ProductItem, чтобы не ломать фронтенд
+				productItem: {
+					id: item.variantId,
+					price: currentVariant?.price || 0,
+					productId: item.productId,
+					size: size
+						? {
+								value: size.value,
+								name: size.name,
+							}
+						: null,
+					doughType: type
+						? {
+								value: type.value, // или type.name, в зависимости от схемы
+								name: type.name,
+							}
+						: null,
+					product: {
+						id: item.product.id,
+						name: item.product.name,
+						imageUrl: item.product.imageUrl,
+					},
+				},
+				ingredients: item.ingredients.map((ing) => ({
+					id: ing.id,
+					name: ing.name,
+					price: Number(ing.price),
+					imageUrl: ing.imageUrl,
+				})),
+			};
+		});
+
+		return NextResponse.json({
+			id: cart.id,
+			totalAmount: Number(cart.totalAmount),
+			tokenId: cart.tokenId,
+			items: items,
+		});
 	} catch (error) {
 		console.error("[CART_GET] Server error", error);
 		return NextResponse.json({ message: "Impossibile recuperare il carrello" }, { status: 500 });
 	}
 }
 
-// ⚡ СУПЕР-ОПТИМИЗИРОВАННЫЙ POST (~800-1000ms вместо 2200ms)
+// export async function POST(req: NextRequest) {
+// 	try {
+// 		let token = req.cookies.get("cartToken")?.value;
+
+// 		if (!token) {
+// 			token = crypto.randomUUID();
+// 		}
+
+// 		const data = (await req.json()) as CreateCartItemValues;
+
+// 		/* ВАЖНО: Ваш фронтенд сейчас, скорее всего, присылает productItemId.
+//            В новой схеме нам нужны productId и variantId.
+
+//            Если вы еще не обновили фронтенд, вам нужно решить, откуда брать productId.
+//            Предположим, что data.productItemId теперь содержит ID продукта,
+//            а variantId нужно передавать отдельно или вычислять.
+
+//            Ниже пример, если фронтенд отправляет { productId, variantId, ingredients }.
+//         */
+
+// 		// Временно для совместимости:
+// 		// Если вы не меняли DTO, предположим, что вы передаете нужные ID.
+// 		// Вам нужно обновить DTO: productItemId -> productId + variantId
+// 		const productId = data.productId; // ВАЖНО: нужно добавить это поле в запрос с фронта
+// 		const variantId = data.variantId || 1; // ВАЖНО: нужно добавить это поле
+
+// 		const result = await prisma.$transaction(async (tx) => {
+// 			// 1. Находим или создаем корзину
+// 			let cart = await tx.cart.findFirst({
+// 				where: { tokenId: token },
+// 			});
+
+// 			if (!cart) {
+// 				cart = await tx.cart.create({
+// 					data: { tokenId: token! },
+// 				});
+// 			}
+
+// 			// ✅ Убеждаемся, что cart точно определен
+// 			if (!cart) {
+// 				throw new Error("Failed to create or find cart");
+// 			}
+
+// 			// 2. Ищем, есть ли уже такой товар в корзине с такими же ингредиентами
+// 			// Prisma не умеет делать upsert по массивам (addedIngredientIds),
+// 			// поэтому делаем поиск + create/update вручную или через findFirst
+
+// 			// Сортируем ID ингредиентов для точного сравнения
+// 			const sortedIngredients = (data.ingredients || []).sort((a, b) => a - b);
+
+// 			// Более надежный поиск существующего товара (с учетом ингредиентов)
+// 			const findItemInCart = await tx.cartItem.findFirst({
+// 				where: {
+// 					cartId: cart.id,
+// 					productId: productId,
+// 					variantId: variantId,
+// 					// Проверяем совпадение добавленных ингредиентов
+// 					addedIngredientIds: { equals: sortedIngredients },
+// 				},
+// 			});
+
+// 			if (findItemInCart) {
+// 				await tx.cartItem.update({
+// 					where: { id: findItemInCart.id },
+// 					data: { quantity: { increment: 1 } },
+// 				});
+// 			} else {
+// 				await tx.cartItem.create({
+// 					data: {
+// 						cartId: cart.id,
+// 						productId: productId,
+// 						variantId: variantId,
+// 						quantity: 1,
+// 						addedIngredientIds: sortedIngredients, // Записываем ID добавок
+// 						ingredients: {
+// 							connect: sortedIngredients.map((id) => ({ id })),
+// 						},
+// 					},
+// 				});
+// 			}
+
+// 			// 3. Пересчитываем TotalAmount
+// 			// Мы не можем использовать старый SQL запрос, так как цены в JSON
+// 			// Придется вытащить все товары корзины и посчитать сумму
+// 			const updatedItems = await tx.cartItem.findMany({
+// 				where: { cartId: cart.id },
+// 				include: {
+// 					product: true,
+// 					ingredients: true,
+// 				},
+// 			});
+
+// 			const totalAmount = updatedItems.reduce((acc, item) => {
+// 				return acc + calculateCartItemTotal(item);
+// 			}, 0);
+
+// 			// Обновляем корзину
+// 			const updatedCart = await tx.cart.update({
+// 				where: { id: cart.id },
+// 				data: {
+// 					totalAmount: totalAmount,
+// 					updatedAt: new Date(),
+// 				},
+// 				include: {
+// 					items: {
+// 						orderBy: { createdAt: "desc" },
+// 						include: {
+// 							product: true,
+// 							ingredients: true,
+// 						},
+// 					},
+// 				},
+// 			});
+
+// 			return updatedCart;
+// 		});
+
+// 		// Формируем ответ, аналогичный GET (маппинг)
+// 		// ... (здесь повторить логику маппинга из GET для result, если нужно вернуть полный объект)
+// 		// Для краткости вернем result, но фронтенду может понадобиться формат из GET
+
+// 		const resp = NextResponse.json(result);
+// 		resp.cookies.set("cartToken", token, {
+// 			httpOnly: true,
+// 			secure: process.env.NODE_ENV === "production",
+// 			sameSite: "lax",
+// 			maxAge: 60 * 60 * 24 * 30,
+// 		});
+
+// 		return resp;
+// 	} catch (error) {
+// 		console.error("[CART_POST] Server error", error);
+// 		return NextResponse.json({ message: "Impossibile aggiungere al carrello" }, { status: 500 });
+// 	}
+// }
+
+// new cart route
 export async function POST(req: NextRequest) {
 	try {
 		let token = req.cookies.get("cartToken")?.value;
@@ -89,17 +254,18 @@ export async function POST(req: NextRequest) {
 		}
 
 		const data = (await req.json()) as CreateCartItemValues;
-		const compositionKey = buildCompositionKey({
-			productItemId: data.productItemId,
-			ingredientIds: data.ingredients,
-		});
 
-		// ⚡ ВСЁ В ОДНОЙ ТРАНЗАКЦИИ - ГЛАВНАЯ ОПТИМИЗАЦИЯ!
-		const result = await prisma.$transaction(async (tx) => {
-			// 1️⃣ Найти или создать корзину ВНУТРИ транзакции
+		// ✅ Валидация входных данных
+		if (!data.productId || !data.variantId) {
+			return NextResponse.json({ message: "productId и variantId обязательны" }, { status: 400 });
+		}
+
+		// ⚡ УПРОЩЕННАЯ ТРАНЗАКЦИЯ - только INSERT/UPDATE
+		const itemId = await prisma.$transaction(async (tx) => {
+			// 1. Находим или создаем корзину (минимальная выборка)
 			let cart = await tx.cart.findFirst({
 				where: { tokenId: token },
-				select: { id: true },
+				select: { id: true }, // ← Только ID!
 			});
 
 			if (!cart) {
@@ -109,113 +275,66 @@ export async function POST(req: NextRequest) {
 				});
 			}
 
-			// 2️⃣ Upsert товара
-			await tx.cartItem.upsert({
+			// 2. Сортируем ингредиенты для корректного сравнения
+			const sortedIngredients = (data.ingredients || []).sort((a, b) => a - b);
+
+			// 3. Проверяем дубликат (минимальная выборка)
+			const existingItem = await tx.cartItem.findFirst({
 				where: {
-					cartId_compositionKey: {
-						cartId: cart.id,
-						compositionKey,
-					},
-				},
-				update: {
-					quantity: { increment: 1 },
-				},
-				create: {
 					cartId: cart.id,
-					productItemId: data.productItemId,
-					quantity: 1,
-					compositionKey,
-					ingredients: {
-						connect: (data.ingredients ?? []).map((id) => ({ id })),
-					},
+					productId: data.productId,
+					variantId: data.variantId,
+					addedIngredientIds: { equals: sortedIngredients },
 				},
+				select: { id: true }, // ← Только ID!
 			});
 
-			// 3️⃣ Быстрый пересчёт totalAmount (коррелированный подзапрос)
-			await tx.$executeRaw`
-				UPDATE "Cart" c
-				SET 
-					"totalAmount" = COALESCE((
-						SELECT SUM(
-							(pi.price + COALESCE(
-								(SELECT SUM(ing.price)::numeric   
-								FROM "_CartItemToIngredient" m
-								JOIN "Ingredient" ing ON ing.id = m."B"
-								WHERE m."A" = ci.id), 
-							0)) * ci.quantity
-						)::numeric 
-						FROM "CartItem" ci
-						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-						WHERE ci."cartId" = c.id
-					), 0),
-					"updatedAt" = NOW()
-				WHERE c.id = ${cart.id}::uuid
-			`;
-
-			// 4️⃣ Получаем обновлённую корзину ВНУТРИ транзакции
-			const updatedCart = await tx.cart.findUnique({
-				where: { id: cart.id },
-				select: {
-					id: true,
-					totalAmount: true,
-					tokenId: true,
-					items: {
-						orderBy: { createdAt: "desc" },
-						select: {
-							id: true,
-							quantity: true,
-							productItem: {
-								select: {
-									id: true,
-									price: true,
-									size: {
-										select: {
-											value: true,
-											name: true,
-										},
-									},
-									doughType: {
-										select: {
-											value: true,
-											name: true,
-										},
-									},
-									product: {
-										select: {
-											id: true,
-											name: true,
-											imageUrl: true,
-										},
-									},
-								},
-							},
-							ingredients: {
-								select: {
-									id: true,
-									name: true,
-									price: true,
-									imageUrl: true,
-								},
-							},
+			if (existingItem) {
+				// Увеличиваем количество
+				await tx.cartItem.update({
+					where: { id: existingItem.id },
+					data: { quantity: { increment: 1 } },
+				});
+				return existingItem.id;
+			} else {
+				// Создаем новый товар
+				const newItem = await tx.cartItem.create({
+					data: {
+						cartId: cart.id,
+						productId: data.productId,
+						variantId: data.variantId,
+						quantity: 1,
+						addedIngredientIds: sortedIngredients,
+						ingredients: {
+							connect: sortedIngredients.map((id) => ({ id })),
 						},
 					},
-				},
-			});
+					select: { id: true }, // ← Только ID!
+				});
+				return newItem.id;
+			}
 
-			return updatedCart;
+			// ❌ НЕ пересчитываем totalAmount!
+			// ❌ НЕ загружаем все товары!
+			// ✅ Клиент сам пересчитает локально
 		});
 
-		const resp = NextResponse.json(result);
+		// ✅ Возвращаем минимум данных
+		const resp = NextResponse.json({
+			success: true,
+			itemId,
+		});
+
 		resp.cookies.set("cartToken", token, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "lax",
-			maxAge: 60 * 60 * 24 * 30, // 30 дней
+			maxAge: 60 * 60 * 24 * 30,
 		});
 
 		return resp;
 	} catch (error) {
 		console.error("[CART_POST] Server error", error);
-		return NextResponse.json({ message: "Impossibile aggiungere al carrello" }, { status: 500 });
+		return NextResponse.json({ message: "Не удалось добавить товар в корзину" }, { status: 500 });
 	}
 }

@@ -1,5 +1,3 @@
-import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from "@/constants/pizza";
-import { cache } from "react";
 import { prisma } from "../../prisma/prisma-client";
 
 export interface GetSearchParams {
@@ -10,122 +8,124 @@ export interface GetSearchParams {
 	ingredients?: string;
 	priceFrom?: string;
 	priceTo?: string;
-	// limit?: string;
-	// page?: string;
 }
 
-// export const DEFAULT_MIN_PRICE = 0;
-// export const DEFAULT_MAX_PRICE = 20;
+const DEFAULT_MIN_PRICE = 0;
+const DEFAULT_MAX_PRICE = 1000;
 
-// TODO: Добавить лимит и страницу
-// const DEFAULT_LIMIT = 12;
-// const DEFAULT_PAGE = 1;
-
-// ✅ Кешируем запрос для избежания дублирования
-export const findPizzas = cache(async (params: GetSearchParams) => {
-	//
-
-	// console.log("priceFilter", priceFilter);
-	const size = params.sizes?.split(",").map(Number);
-
-	const pizzaType = params.pizzaTypes?.split(",").map(Number);
-
+export const findPizzas = async (params: GetSearchParams) => {
+	const sizes = params.sizes?.split(",").map(Number);
+	const pizzaTypes = params.pizzaTypes?.split(",").map(Number);
 	const ingredientsIdArr = params.ingredients?.split(",").map(Number);
 
-	// Обработка фильтров цены
 	const minPrice = Number(params.priceFrom) || DEFAULT_MIN_PRICE;
 	const maxPrice = Number(params.priceTo) || DEFAULT_MAX_PRICE;
 
-	// let priceFilter = {};
-	// if (Number.isFinite(minPrice)) priceFilter = { ...priceFilter, gte: minPrice };
-	// if (Number.isFinite(maxPrice)) priceFilter = { ...priceFilter, lte: maxPrice };
-
+	// 1. Загружаем все категории с продуктами
+	// Так как фильтрация по JSON сложна в БД, мы фильтруем на уровне приложения
 	const categories = await prisma.category.findMany({
-		select: {
-			id: true,
-			name: true,
+		include: {
 			products: {
 				orderBy: {
 					id: "desc",
 				},
 				where: {
-					// Фильтрация по ингредиентам
-					...(ingredientsIdArr && ingredientsIdArr.length > 0
-						? {
-								ingredients: {
-									some: {
-										id: {
-											in: ingredientsIdArr,
-										},
-									},
-								},
-							}
-						: {}),
-
-					items: {
-						some: {
-							// Фильтр по цене
-							price: {
-								gte: minPrice,
-								lte: maxPrice,
-							},
-							// Дополнительные фильтры по размеру и типу пиццы
-							...(size && size.length > 0 ? { sizeId: { in: size } } : {}),
-							...(pizzaType && pizzaType.length > 0 ? { doughTypeId: { in: pizzaType } } : {}),
-						},
-					},
-				},
-				select: {
-					id: true,
-					name: true,
-					imageUrl: true,
-					categoryId: true,
-					ingredients: {
-						select: {
-							id: true,
-							name: true,
-							price: true,
-							imageUrl: true,
-						},
-					},
-					items: {
-						select: {
-							id: true,
-							price: true,
-							sizeId: true,
-							doughTypeId: true,
-							productId: true,
-							size: {
-								select: {
-									value: true,
-								},
-							},
-							doughType: {
-								select: {
-									value: true,
-								},
-							},
-						},
-					},
+					// Если есть ингредиенты, проверим их позже в JS,
+					// так как baseIngredients - это JSON
+					// Но можем отфильтровать по наличию variants (если это важно)
 				},
 			},
 		},
 	});
 
-	// ✅ Конвертируем Decimal в number для передачи в Client Components
-	return categories.map((category) => ({
-		...category,
-		products: category.products.map((product) => ({
-			...product,
-			ingredients: product.ingredients.map((ingredient) => ({
-				...ingredient,
-				price: Number(ingredient.price),
-			})),
-			items: product.items.map((item) => ({
-				...item,
-				price: Number(item.price),
-			})),
-		})),
-	}));
-	//
-});
+	// 2. Загружаем справочники, чтобы "развернуть" данные (так как в JSON только ID)
+	// Это нужно, чтобы вернуть данные в том виде, в котором их ждет фронтенд (с названиями, ценами и т.д.)
+	const ingredientsDB = await prisma.ingredient.findMany();
+	const sizesDB = await prisma.size.findMany();
+	const typesDB = await prisma.type.findMany();
+
+	// 3. Фильтрация и трансформация данных
+	return (
+		categories
+			.map((category) => {
+				// Фильтруем продукты внутри категории
+				const filteredProducts = category.products.filter((product) => {
+					// Типизируем JSON поля
+					const variants = product.variants as any[];
+					const baseIngredients = product.baseIngredients as any[]; // [{ id: 1, removable: true }, ...]
+
+					// --- ФИЛЬТР ПО ЦЕНЕ, РАЗМЕРУ, ТИПУ ---
+					// Проверяем, есть ли ХОТЯ БЫ ОДИН вариант, подходящий под условия
+					const isPriceMatch = variants.some((v) => v.price >= minPrice && v.price <= maxPrice);
+					const isSizeMatch =
+						sizes && sizes.length > 0 ? variants.some((v) => sizes.includes(v.sizeId)) : true;
+					const isTypeMatch =
+						pizzaTypes && pizzaTypes.length > 0
+							? variants.some((v) => pizzaTypes.includes(v.typeId))
+							: true;
+
+					if (!isPriceMatch || !isSizeMatch || !isTypeMatch) return false;
+
+					// --- ФИЛЬТР ПО ИНГРЕДИЕНТАМ ---
+					// Если выбраны ингредиенты, проверяем, содержит ли пицца эти ингредиенты в базовом составе
+					if (ingredientsIdArr && ingredientsIdArr.length > 0) {
+						// Получаем массив ID ингредиентов пиццы
+						const productIngredientIds = baseIngredients.map((i) => i.id);
+
+						// Проверяем пересечение (или полное вхождение, зависит от логики).
+						// Обычно ищем "содержит хотя бы один из выбранных" (some)
+						// или "исключает запрещенные". В оригинале было "some".
+						const isIngredientsMatch = ingredientsIdArr.some((id) => productIngredientIds.includes(id));
+
+						if (!isIngredientsMatch) return false;
+					}
+
+					return true;
+				});
+
+				// Формируем итоговый объект, совместимый с фронтендом
+				return {
+					...category,
+					products: filteredProducts.map((product) => {
+						const variants = product.variants as any[];
+						const baseIngredients = product.baseIngredients as any[];
+
+						return {
+							...product,
+							// Восстанавливаем массив ингредиентов (находим полные объекты по ID из JSON)
+							ingredients: baseIngredients
+								.map((bi) => ingredientsDB.find((i) => i.id === bi.id))
+								.filter(Boolean) // Убираем undefined, если вдруг ID не найден
+								.map((i) => ({
+									...i,
+									price: Number(i!.price), // Конвертация Decimal
+								})),
+
+							// Преобразуем variants обратно в items (как было раньше)
+							items: variants.map((v) => {
+								const sizeObj = sizesDB.find((s) => s.id === v.sizeId);
+								const typeObj = typesDB.find((t) => t.id === v.typeId);
+
+								return {
+									id: v.variantId, // или генерируем уникальный ключ
+									price: v.price,
+									sizeId: v.sizeId,
+									doughTypeId: v.typeId,
+									productId: product.id,
+									// Добавляем вложенные объекты, как ждет фронтенд
+									size: {
+										value: sizeObj?.value || 0,
+									},
+									doughType: {
+										value: typeObj?.name || "", // В новой схеме у типа может не быть value, или это name
+									},
+								};
+							}),
+						};
+					}),
+				};
+			})
+			// Убираем категории, в которых не осталось продуктов после фильтрации
+			.filter((category) => category.products.length > 0)
+	);
+};

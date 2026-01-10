@@ -121,3 +121,89 @@
 		}
 	]
 }
+[
+	{
+		"category_id": 1,
+		"category_name": "Pizze",
+		"products": [
+			{
+				"id": 27,
+				"name": "Villaggio",
+				"imageUrl": "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Villaggio.webp",
+				"categoryId": 1,
+				"ingredients_base_ids": [8, 9, 10, 11, 12, 13, 14],	
+				"ingredients_base_ids": [
+				{
+					"id": 8,
+					"removed": false
+				},
+				{
+					"id": 9,
+					"removed": true
+				},
+				{
+					"id": 10,
+					"removed": true
+
+				},
+				{
+					"id": 11,
+					"removed": false
+				},
+				{
+					"id": 12,
+					"removed": true
+				},
+				{
+					"id": 13,
+					"removed": true
+				},
+				{
+					"id": 14,
+					"removed": true
+				}
+			],
+				"ingredients_add_ids": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],			
+				"items": [
+					{
+						"item_id": 56,
+						"price": 5,
+						"size_id": 1,
+						"type_id": 1,					
+					},
+					{
+						"id": 57,
+						"price": 10,
+						"size_id": 2,
+						"type_id": 1,			
+					},
+					{
+						"id": 58,
+						"price": 15,
+						"size_id": 3,
+						"type_id": 1,					
+					},
+					{
+						"item_id": 59,
+						"price": 5,
+						"size_id": 1,
+						"type_id": 2,					
+					},
+					{
+						"id": 60,
+						"price": 10,
+						"size_id": 2,
+						"type_id": 2,			
+					},
+					{
+						"id": 61,
+						"price": 15,
+						"size_id": 3,
+						"type_id": 2,					
+					},
+				]
+			}
+		]
+	}
+]
+

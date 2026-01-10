@@ -26,7 +26,7 @@ const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
 export type CartItemDTO = Prisma.CartItemGetPayload<typeof cartItemWithRelations>;
 
 export type CartDTO = {
-	id: string; // ✅ UUID строка
+	id: string; // ✅ Теперь UUID строка
 	userId: string | null;
 	tokenId: string | null;
 	totalAmount: number;
@@ -35,25 +35,10 @@ export type CartDTO = {
 	items: CartItemDTO[];
 };
 
-// ✅ Обновленный интерфейс с поддержкой старого и нового формата
+// ✅ Обновленный интерфейс для создания элемента корзины
 export interface CreateCartItemValues {
-	// Старый формат (для обратной совместимости)
-	productItemId?: number;
-	// Новый формат
-	productId?: number;
-	variantId?: number;
-	ingredients?: number[];
-	removedIngredients?: number[];
-}
-
-// ✅ Версия для optimistic updates
-export interface CreateCartItemValuesOptimistic extends CreateCartItemValues {
-	optimistic?: {
-		name: string;
-		imageUrl: string;
-		price: number;
-		pizzaSize?: number | null;
-		pizzaType?: number | null;
-		ingredientsData?: Array<{ id: number; name: string; price: number }>;
-	};
+	productId: number; // ✅ ID продукта
+	variantId: number; // ✅ ID варианта из JSON variants
+	ingredients?: number[]; // ID добавленных ингредиентов
+	removedIngredients?: number[]; // ID удаленных базовых ингредиентов (опционально)
 }
