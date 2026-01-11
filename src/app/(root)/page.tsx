@@ -41,7 +41,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
 	const categories = await findPizzas(sp);
 
-	console.log(JSON.stringify(categories[0], null, 2));
+	// console.log(JSON.stringify(categories[0], null, 2));
 	//
 	return (
 		<>

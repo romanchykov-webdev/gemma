@@ -91,6 +91,7 @@ async function up() {
 			{ name: "Sottile", value: 2, sortOrder: 2 },
 			{ name: "Null", value: 3, sortOrder: 3 },
 			{ name: "Standart", value: 4, sortOrder: 4 },
+			{ name: "Vegetariano", value: 5, sortOrder: 5 },
 		],
 	});
 

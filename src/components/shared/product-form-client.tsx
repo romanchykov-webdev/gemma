@@ -1,12 +1,10 @@
 "use client";
 
 import { useCartStore } from "@/store";
-import { useRouter } from "next/navigation";
 import React, { JSX, useState } from "react";
 import toast from "react-hot-toast";
 import { ProductWithRelations } from "../../../@types/prisma";
 import { ChoosePizzaForm } from "./choose-pizza-form";
-import { ChooseProductForm } from "./choose-product-form";
 
 interface IProductFormClientProps {
 	product: ProductWithRelations;
@@ -17,12 +15,12 @@ interface IProductFormClientProps {
 
 export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	product,
-	sizes,
+	// sizes,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	doughTypes,
+	// doughTypes,
 	handleClose,
 }): JSX.Element => {
-	const router = useRouter();
+	// const router = useRouter();
 
 	const addCartItem = useCartStore((state) => state.addCartItem);
 
@@ -30,7 +28,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 
 	const firstItem = product.items[0];
 	// pizza два типа 1 2 и больше не пицца
-	const isPizzaForm = Boolean(firstItem.doughTypeId && firstItem.doughTypeId < 3);
+	// const isPizzaForm = Boolean(firstItem.doughTypeId && firstItem.doughTypeId < 3);
 
 	// console.log("ProductFormClient isPizzaForm", isPizzaForm);
 	// console.log("ProductFormClient doughTypeId", firstItem);
@@ -38,7 +36,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 
 	// 🔥 Для пиццы (с ингредиентами)
 	const onSubmitPizza = async (
-		variantId: number, // ✅ Было: productItemId, теперь variantId
+		variantId: number,
 		ingredients: number[],
 		totalPrice?: number,
 		pizzaSize?: number | null,
@@ -47,13 +45,11 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	) => {
 		try {
 			setSubmitting(true);
-			toast.success(product.name + " aggiunto al carrello");
-			router.back();
 
-			// ✅ Передаем productId и variantId
+			// ✅ СНАЧАЛА добавляем в корзину (асинхронно)
 			addCartItem({
-				productId: product.id, // ✅ Добавляем productId
-				variantId: variantId, // ✅ variantId вместо productItemId
+				productId: product.id,
+				variantId: variantId,
 				ingredients,
 				optimistic: {
 					name: product.name,
@@ -64,68 +60,72 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 					ingredientsData,
 				},
 			});
+
+			// ✅ ПОТОМ показываем toast и закрываем модалку
+			toast.success(product.name + " aggiunto al carrello");
+			handleClose(); // ✅ Используем handleClose вместо router.back()
 		} catch (error) {
 			toast.error("Si è verificato un errore durante l'aggiunta al carrello");
 			console.error(error);
 		} finally {
 			setSubmitting(false);
-			handleClose();
 		}
 	};
 
 	// 🔥 Для обычных продуктов (без ингредиентов)
-	const onSubmitProduct = async (variantId: number, totalPrice: number) => {
-		// ✅ variantId вместо productItemId
-		try {
-			setSubmitting(true);
-			toast.success(product.name + " aggiunto al carrello");
-			router.back();
+	// const onSubmitProduct = async (variantId: number, totalPrice: number) => {
+	// 	// ✅ variantId вместо productItemId
+	// 	try {
+	// 		setSubmitting(true);
+	// 		toast.success(product.name + " aggiunto al carrello");
+	// 		router.back();
 
-			// ✅ Передаем productId и variantId
-			addCartItem({
-				productId: product.id, // ✅ Добавляем productId
-				variantId: variantId, // ✅ variantId вместо productItemId
-				optimistic: {
-					name: product.name,
-					imageUrl: product.imageUrl,
-					price: totalPrice,
-					pizzaSize: null,
-					pizzaType: null,
-				},
-			});
-		} catch (error) {
-			toast.error("Si è verificato un errore durante l'aggiunta al carrello");
-			console.error(error);
-		} finally {
-			setSubmitting(false);
-			handleClose();
-		}
-	};
+	// 		// ✅ Передаем productId и variantId
+	// 		addCartItem({
+	// 			productId: product.id, // ✅ Добавляем productId
+	// 			variantId: variantId, // ✅ variantId вместо productItemId
+	// 			optimistic: {
+	// 				name: product.name,
+	// 				imageUrl: product.imageUrl,
+	// 				price: totalPrice,
+	// 				pizzaSize: null,
+	// 				pizzaType: null,
+	// 			},
+	// 		});
+	// 	} catch (error) {
+	// 		toast.error("Si è verificato un errore durante l'aggiunta al carrello");
+	// 		console.error(error);
+	// 	} finally {
+	// 		setSubmitting(false);
+	// 		handleClose();
+	// 	}
+	// };
 
 	// 🔥 Форма выбора пиццы
-	if (isPizzaForm) {
-		return (
-			<ChoosePizzaForm
-				imageUrl={product.imageUrl}
-				name={product.name}
-				ingredients={product.ingredients}
-				items={product.items ?? []}
-				onSubmit={onSubmitPizza}
-				loading={submitting}
-			/>
-		);
-	}
-
-	// 🔥 Форма выбора продукта (не пицца)
+	// if (isPizzaForm) {
 	return (
-		<ChooseProductForm
+		<ChoosePizzaForm
 			imageUrl={product.imageUrl}
 			name={product.name}
-			onSubmit={onSubmitProduct}
+			onSubmit={onSubmitPizza}
 			loading={submitting}
 			ingredients={product.ingredients}
 			items={product.items ?? []}
-			sizes={sizes}
+			// sizes={sizes}
 		/>
 	);
+	// }
+
+	// 🔥 Форма выбора продукта (не пицца)
+	// return (
+	// 	<ChooseProductForm
+	// 		imageUrl={product.imageUrl}
+	// 		name={product.name}
+	// 		onSubmit={onSubmitProduct}
+	// 		loading={submitting}
+	// 		ingredients={product.ingredients}
+	// 		items={product.items ?? []}
+	// 		sizes={sizes}
+	// 	/>
+	// );
 };

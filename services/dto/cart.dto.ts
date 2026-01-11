@@ -37,13 +37,14 @@ export type CartDTO = {
 
 // ✅ Обновленный интерфейс с поддержкой старого и нового формата
 export interface CreateCartItemValues {
-	// Старый формат (для обратной совместимости)
-	productItemId?: number;
-	// Новый формат
-	productId?: number;
-	variantId?: number;
+	// Новый формат (обязательные поля)
+	productId: number; // ✅ Убрали ?
+	variantId: number; // ✅ Убрали ?
 	ingredients?: number[];
 	removedIngredients?: number[];
+
+	// Старый формат (для обратной совместимости - опциональные)
+	productItemId?: number;
 }
 
 // ✅ Версия для optimistic updates

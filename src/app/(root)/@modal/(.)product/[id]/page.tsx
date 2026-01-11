@@ -1,5 +1,11 @@
 import { ChooseProductModal } from "@/components/shared/modals/choose-product-modal";
 import { notFound } from "next/navigation";
+import {
+	BaseIngredient,
+	OptimizedProductItem,
+	ProductVariant,
+	ProductWithRelations,
+} from "../../../../../../@types/prisma";
 import { prisma } from "../../../../../../prisma/prisma-client";
 
 export async function generateStaticParams() {
@@ -60,28 +66,41 @@ export default async function ProductPage({ params }: ProductPageProps) {
 			price: Number(ing.price),
 		}));
 
-	// Преобразуем JSON variants в массив items, который ждет ChooseProductModal
+	// Преобразуем JSON variants в массив items для UI
 	const variants = (product.variants as any[]) || [];
-	const items = variants.map((v) => {
+	const items: OptimizedProductItem[] = variants.map((v) => {
 		const sizeObj = sizes.find((s) => s.id === v.sizeId);
 		const typeObj = doughTypes.find((t) => t.id === v.typeId);
-
 		return {
-			id: v.variantId, // Используем внутренний ID варианта
+			id: v.variantId,
 			price: Number(v.price),
 			sizeId: v.sizeId,
 			doughTypeId: v.typeId,
 			productId: product.id,
-			size: sizeObj ? { value: sizeObj.value } : null,
-			doughType: typeObj ? { value: typeObj.value } : null,
+			// ✅ Добавляем названия из справочников
+			size: sizeObj
+				? {
+						value: sizeObj.value,
+						name: sizeObj.name, // ✅ Добавляем name
+					}
+				: null,
+			doughType: typeObj
+				? {
+						value: typeObj.value,
+						name: typeObj.name, // ✅ Добавляем name
+					}
+				: null,
 		};
 	});
 
-	const productWithNumbers = {
+	// ✅ Формируем финальный объект продукта с правильными типами
+	const productWithNumbers: ProductWithRelations = {
 		...product,
 		ingredients: productIngredients,
 		items: items,
+		variants: variants as ProductVariant[], // ✅ Сохраняем оригинальные variants
+		baseIngredients: baseIngrs as BaseIngredient[], // ✅ Сохраняем baseIngredients
 	};
 
-	return <ChooseProductModal product={productWithNumbers as any} sizes={sizes} doughTypes={doughTypes} />;
+	return <ChooseProductModal product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />;
 }
