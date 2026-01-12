@@ -1,33 +1,16 @@
 import { Prisma } from "@prisma/client";
+import { BaseIngredient } from "../../@types/prisma";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// ✅ Обновленный тип для новой схемы
 const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
 	include: {
-		productItem: {
+		product: {
 			select: {
 				id: true,
-				price: true,
-				sizeId: true,
-				doughTypeId: true,
-				size: {
-					select: {
-						value: true,
-						name: true,
-					},
-				},
-				doughType: {
-					select: {
-						value: true,
-						name: true,
-					},
-				},
-				product: {
-					select: {
-						id: true,
-						name: true,
-						imageUrl: true,
-					},
-				},
+				name: true,
+				imageUrl: true,
+				variants: true, // JSON
+				baseIngredients: true, // JSON
 			},
 		},
 		ingredients: {
@@ -43,25 +26,35 @@ const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
 
 export type CartItemDTO = Prisma.CartItemGetPayload<typeof cartItemWithRelations>;
 
-// Определяем CartDTO используя CartItemDTO
 export type CartDTO = {
-	id: number;
+	id: string; // ✅ UUID строка
 	userId: string | null;
-	tokenId: string;
+	tokenId: string | null;
 	totalAmount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	items: CartItemDTO[];
 };
 
+// ✅ Обновленный интерфейс с поддержкой нового формата
 export interface CreateCartItemValues {
-	productItemId: number;
-	ingredients?: number[];
+	// Основные поля
+	productId: number;
+	variantId: number;
+	ingredients?: number[]; // ID добавленных ингредиентов
+
+	// ✅ НОВОЕ - полный snapshot базовых ингредиентов с флагами isDisabled
+	baseIngredientsSnapshot?: BaseIngredient[];
+
+	// ⚠️ СТАРОЕ - оставляем для обратной совместимости (можно удалить позже)
+	removedIngredients?: number[];
+
+	// Старый формат (для обратной совместимости - опциональные)
+	productItemId?: number;
 }
 
-// ✅  версия для optimistic updates
+// ✅ Версия для optimistic updates
 export interface CreateCartItemValuesOptimistic extends CreateCartItemValues {
-	// Данные для мгновенного отображения в UI
 	optimistic?: {
 		name: string;
 		imageUrl: string;

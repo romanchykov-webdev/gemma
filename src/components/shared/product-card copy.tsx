@@ -36,12 +36,9 @@ export const ProductCard: React.FC<Props> = ({
 
 	// Быстрое добавление в корзину
 	const handleAddToCart = () => {
-		// ⚠️ ПРОБЛЕМА: В ProductCard нет информации о variantId
-		// Нужно либо передавать variantId в пропсы, либо использовать первый вариант
-		// ВРЕМЕННОЕ РЕШЕНИЕ: используем itemId как variantId и id как productId
+		// ⚡ Мгновенно добавляем с optimistic update!
 		addCartItem({
-			productId: id, // ✅ ID продукта
-			variantId: itemId, // ✅ variantId (предполагаем что itemId = variantId)
+			productItemId: itemId,
 			optimistic: {
 				name,
 				imageUrl,
@@ -52,6 +49,7 @@ export const ProductCard: React.FC<Props> = ({
 			},
 		});
 
+		// Мгновенный тост
 		toast.success(name + " aggiunto al carrello");
 	};
 	//

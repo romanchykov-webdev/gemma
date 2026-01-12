@@ -29,6 +29,8 @@ export const ProductsGroupList: React.FC<Props> = ({
 	//
 	const HEADER_OFFSET = 100; // высота sticky-зоны (TopBar + отступы)
 
+	// console.log("ProductsGroupList items", items);
+
 	const setActiveCategoryId = useCategoryStore((state) => state.setActiveId);
 
 	const intersectionRef = useRef<HTMLDivElement>(null);
