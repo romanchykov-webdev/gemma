@@ -60,7 +60,15 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 								loading={loading || redirecting}
 								id={item.id}
 								imageUrl={item.imageUrl}
-								details={getCartItemDetails(item.ingredients, item.sizeName, item.doughTypeName)}
+								details={(() => {
+									console.log("🔍 [CartDrawer] item.removedIngredients:", item.removedIngredients);
+									return getCartItemDetails(
+										item.ingredients,
+										item.sizeName,
+										item.doughTypeName,
+										item.removedIngredients,
+									);
+								})()}
 								name={item.name}
 								price={item.price}
 								quantity={item.quantity}

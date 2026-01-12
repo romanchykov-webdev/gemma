@@ -1,25 +1,31 @@
 import { Variant } from "@/components/shared/group-variants";
 import { useEffect, useState } from "react";
 import { useSet } from "react-use";
-import { OptimizedProductItem } from "../../@types/prisma";
+import { BaseIngredient, OptimizedProductItem } from "../../@types/prisma";
 
 interface ReturnProps {
 	selectedSize: number | null;
 	selectedType: number | null;
 	selectedIngredients: Set<number>;
+	baseIngredientsState: BaseIngredient[]; // ✅ НОВОЕ - управляемый массив
 	availableSizes: Variant[];
 	availableTypes: Variant[];
 	currentItemId?: number;
 	setSize: (size: number) => void;
 	setType: (type: number) => void;
 	addIngredient: (id: number) => void;
+	toggleBaseIngredientDisabled: (id: number) => void; // ✅ НОВОЕ - переименовано
 }
 
 /**
  * 🎯 Универсальный хук для выбора опций продукта
  * Работает с любыми размерами и типами из справочников
+ * Управляет состоянием базовых ингредиентов с флагом isDisabled
  */
-export const useProductOptions = (items: OptimizedProductItem[]): ReturnProps => {
+export const useProductOptions = (
+	items: OptimizedProductItem[],
+	initialBaseIngredients?: BaseIngredient[],
+): ReturnProps => {
 	// Получаем первый доступный вариант для инициализации
 	const firstItem = items[0];
 	const initialSize = firstItem?.size?.value ?? null;
@@ -28,6 +34,16 @@ export const useProductOptions = (items: OptimizedProductItem[]): ReturnProps =>
 	const [selectedSize, setSelectedSize] = useState<number | null>(initialSize);
 	const [selectedType, setSelectedType] = useState<number | null>(initialType);
 	const [selectedIngredients, { toggle: addIngredient }] = useSet(new Set<number>([]));
+
+	// ✅ НОВОЕ - состояние базовых ингредиентов с флагами isDisabled
+	const [baseIngredientsState, setBaseIngredientsState] = useState<BaseIngredient[]>(initialBaseIngredients || []);
+
+	// ✅ НОВОЕ - функция переключения флага isDisabled для базового ингредиента
+	const toggleBaseIngredientDisabled = (id: number) => {
+		setBaseIngredientsState((prev) =>
+			prev.map((ing) => (ing.id === id ? { ...ing, isDisabled: !ing.isDisabled } : ing)),
+		);
+	};
 
 	// ✅ Динамически определяем доступные размеры
 	const availableSizes: Variant[] = (() => {
@@ -130,11 +146,13 @@ export const useProductOptions = (items: OptimizedProductItem[]): ReturnProps =>
 		selectedSize,
 		selectedType,
 		selectedIngredients,
+		baseIngredientsState,
 		availableSizes,
 		availableTypes,
 		currentItemId,
 		setSize: setSelectedSize,
 		setType: setSelectedType,
 		addIngredient,
+		toggleBaseIngredientDisabled,
 	};
 };

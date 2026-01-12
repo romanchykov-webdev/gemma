@@ -35,6 +35,7 @@ export const getCartItemDetails = (
 	ingredients: CartStateItem["ingredients"],
 	sizeName?: string | null,
 	doughTypeName?: string | null,
+	removedIngredients?: Array<{ name: string }>,
 ): string => {
 	const details = [];
 	// console.log("getCartItemDetails sizeName", sizeName);
@@ -53,8 +54,20 @@ export const getCartItemDetails = (
 	}
 
 	// Добавляем ингредиенты
+	// if (ingredients && ingredients.length > 0) {
+	// 	details.push(...ingredients.map((ingredient) => ingredient.name));
+	// }
+
+	// ✅ Добавленные ингредиенты
 	if (ingredients && ingredients.length > 0) {
-		details.push(...ingredients.map((ingredient) => ingredient.name));
+		const addedText = ingredients.map((ing) => `+${ing.name}`).join(", ");
+		details.push(addedText);
+	}
+
+	// ✅ НОВОЕ - Удаленные ингредиенты
+	if (removedIngredients && removedIngredients.length > 0) {
+		const removedText = removedIngredients.map((ing) => `-${ing.name}`).join(", ");
+		details.push(removedText);
 	}
 
 	return details.join(", ");

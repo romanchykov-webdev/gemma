@@ -5,18 +5,6 @@ import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
 
 export const revalidate = 5;
 
-// Вспомогательная функция для подсчета цены одной позиции
-// (понадобится, так как SQL запрос больше не сработает из-за JSON)
-const calculateCartItemTotal = (item: any): number => {
-	const variants = item.product.variants as any[];
-	const variant = variants.find((v) => v.variantId === item.variantId);
-
-	if (!variant) return 0;
-
-	const ingredientsPrice = item.ingredients.reduce((acc: number, ing: any) => acc + Number(ing.price), 0);
-	return (variant.price + ingredientsPrice) * item.quantity;
-};
-
 /**
  * GET /api/cart
  * Загружает товары из корзины (RAW данные)
@@ -43,6 +31,8 @@ export async function GET(req: NextRequest) {
 				variantId: true,
 				quantity: true,
 				addedIngredientIds: true,
+				baseIngredientsSnapshot: true, // ✅ НОВОЕ - загружаем snapshot
+				removedBaseIngredientIds: true, // ⚠️ для совместимости
 				createdAt: true,
 				// Минимум данных о продукте для UI
 				product: {
@@ -51,6 +41,7 @@ export async function GET(req: NextRequest) {
 						name: true,
 						imageUrl: true,
 						variants: true,
+						baseIngredients: true, // на случай если snapshot пустой
 					},
 				},
 				// Минимум данных об ингредиентах для UI
@@ -69,8 +60,6 @@ export async function GET(req: NextRequest) {
 		});
 
 		// ✅ Возвращаем RAW данные
-		// ❌ НЕ считаем цены (клиент сделает это сам)
-		// ❌ НЕ загружаем sizes/types (они уже в store)
 		return NextResponse.json({ items: cartItems });
 	} catch (error) {
 		console.error("[CART_GET] Server error", error);
@@ -80,13 +69,11 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/cart
- * Добавляет товар в корзину (простой INSERT)
- * Без вычислений - только сохранение в БД
+ * Добавляет товар в корзину с поддержкой baseIngredientsSnapshot
  */
 export async function POST(req: NextRequest) {
 	try {
 		console.log("📦 [CART_POST] Received request");
-		console.log("📦 Headers:", req.headers.get("content-type"));
 		let token = req.cookies.get("cartToken")?.value;
 
 		if (!token) {
@@ -100,12 +87,19 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ message: "productId и variantId обязательны" }, { status: 400 });
 		}
 
-		// ⚡ УПРОЩЕННАЯ ТРАНЗАКЦИЯ - только INSERT/UPDATE
+		console.log("📦 [CART_POST] Data received:", {
+			productId: data.productId,
+			variantId: data.variantId,
+			ingredients: data.ingredients?.length || 0,
+			baseIngredientsSnapshot: data.baseIngredientsSnapshot?.length || 0,
+		});
+
+		// ⚡ УПРОЩЕННАЯ ТРАНЗАКЦИЯ
 		const itemId = await prisma.$transaction(async (tx) => {
-			// 1. Находим или создаем корзину (минимальная выборка)
+			// 1. Находим или создаем корзину
 			let cart = await tx.cart.findFirst({
 				where: { tokenId: token },
-				select: { id: true }, // ← Только ID!
+				select: { id: true },
 			});
 
 			if (!cart) {
@@ -115,54 +109,72 @@ export async function POST(req: NextRequest) {
 				});
 			}
 
-			// 2. Сортируем ингредиенты для корректного сравнения
+			// 2. Подготавливаем данные
+			// 2. Подготавливаем данные
 			const sortedIngredients = (data.ingredients || []).sort((a, b) => a - b);
+			const baseSnapshot = data.baseIngredientsSnapshot || [];
 
-			// 3. Проверяем дубликат (минимальная выборка)
+			// ✅ ДОБАВИТЬ: Извлекаем ID удаленных ингредиентов из snapshot
+			const removedBaseIds = baseSnapshot
+				.filter((ing) => ing.isDisabled && ing.removable)
+				.map((ing) => ing.id)
+				.sort((a, b) => a - b);
+
+			// 3. ✅ ИСПРАВИТЬ: Проверяем дубликат с учетом removedBaseIngredientIds
 			const existingItem = await tx.cartItem.findFirst({
 				where: {
 					cartId: cart.id,
 					productId: data.productId,
 					variantId: data.variantId,
 					addedIngredientIds: { equals: sortedIngredients },
+					removedBaseIngredientIds: { equals: removedBaseIds }, // ✅ ДОБАВИТЬ!
 				},
-				select: { id: true }, // ← Только ID!
+				select: {
+					id: true,
+					baseIngredientsSnapshot: true,
+				},
 			});
 
+			// 4. Если нашли - увеличиваем количество
 			if (existingItem) {
-				// Увеличиваем количество
-				await tx.cartItem.update({
-					where: { id: existingItem.id },
-					data: { quantity: { increment: 1 } },
-				});
-				return existingItem.id;
-			} else {
-				// Создаем новый товар
-				const newItem = await tx.cartItem.create({
-					data: {
-						cartId: cart.id,
-						productId: data.productId,
-						variantId: data.variantId,
-						quantity: 1,
-						addedIngredientIds: sortedIngredients,
-						// ✅ ВАЖНО: Связываем ингредиенты только если они есть
-						...(sortedIngredients.length > 0 && {
-							ingredients: {
-								connect: sortedIngredients.map((id) => ({ id })),
-							},
-						}),
-					},
-					select: { id: true }, // ← Только ID!
-				});
-				return newItem.id;
+				// Сравниваем JSON строки для точности
+				const existingSnapshot = JSON.stringify(existingItem.baseIngredientsSnapshot || []);
+				const newSnapshot = JSON.stringify(baseSnapshot);
+
+				if (existingSnapshot === newSnapshot) {
+					await tx.cartItem.update({
+						where: { id: existingItem.id },
+						data: { quantity: { increment: 1 } },
+					});
+					console.log("📦 [CART_POST] Item already exists, incremented quantity");
+					return existingItem.id;
+				}
+				// Если snapshot разный - создаем новый товар
 			}
 
-			// ❌ НЕ пересчитываем totalAmount!
-			// ❌ НЕ загружаем все товары!
-			// ✅ Клиент сам пересчитает локально
+			// 5. ✅ ИСПРАВИТЬ: Создаем новый товар с removedBaseIngredientIds
+			const newItem = await tx.cartItem.create({
+				data: {
+					cartId: cart.id,
+					productId: data.productId,
+					variantId: data.variantId,
+					quantity: 1,
+					addedIngredientIds: sortedIngredients,
+					removedBaseIngredientIds: removedBaseIds, // ✅ ДОБАВИТЬ!
+					baseIngredientsSnapshot: baseSnapshot.length > 0 ? (baseSnapshot as any) : null,
+					...(sortedIngredients.length > 0 && {
+						ingredients: {
+							connect: sortedIngredients.map((id) => ({ id })),
+						},
+					}),
+				},
+				select: { id: true },
+			});
+			console.log("📦 [CART_POST] New item created:", newItem.id);
+			return newItem.id;
 		});
 
-		// ✅ Возвращаем минимум данных
+		// ✅ Возвращаем успешный результат
 		const resp = NextResponse.json({
 			success: true,
 			itemId,

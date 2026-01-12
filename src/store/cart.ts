@@ -255,6 +255,7 @@ function transformCartItems(rawItems: RawCartItem[]): {
 				name: ing.name,
 				price: Number(ing.price),
 			})),
+			removedIngredients: calculated.removedIngredients,
 		};
 	});
 
@@ -390,6 +391,9 @@ export const useCartStore = create<CartState>()(
 						productId: values.productId,
 						variantId: values.variantId,
 						ingredients: values.ingredients,
+						baseIngredientsSnapshot: values.baseIngredientsSnapshot, // ✅ ДОБАВЛЕНО!
+						// ⚠️ Для совместимости (можно удалить позже)
+						removedIngredients: values.removedIngredients,
 					})
 					.then(() => {
 						// После успешного добавления - перезагружаем корзину

@@ -11,7 +11,10 @@ export interface ProductVariant {
 // ✅ Определяем структуру базового ингредиента (из JSON)
 export interface BaseIngredient {
 	id: number;
+	name: string;
+	imageUrl?: string;
 	removable: boolean;
+	isDisabled: boolean;
 }
 
 // ✅ Оптимизированный элемент продукта (для UI)

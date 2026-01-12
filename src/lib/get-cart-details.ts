@@ -12,6 +12,7 @@ export type CartStateItem = {
 	sizeName?: string | null;
 	doughTypeName?: string | null;
 	ingredients: Array<{ name: string; price: number }>;
+	removedIngredients?: Array<{ name: string }>;
 };
 
 interface ReturnProps {

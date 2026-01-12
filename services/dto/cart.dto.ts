@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { BaseIngredient } from "../../@types/prisma";
 
 // ✅ Обновленный тип для новой схемы
 const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
@@ -35,12 +36,17 @@ export type CartDTO = {
 	items: CartItemDTO[];
 };
 
-// ✅ Обновленный интерфейс с поддержкой старого и нового формата
+// ✅ Обновленный интерфейс с поддержкой нового формата
 export interface CreateCartItemValues {
-	// Новый формат (обязательные поля)
-	productId: number; // ✅ Убрали ?
-	variantId: number; // ✅ Убрали ?
-	ingredients?: number[];
+	// Основные поля
+	productId: number;
+	variantId: number;
+	ingredients?: number[]; // ID добавленных ингредиентов
+
+	// ✅ НОВОЕ - полный snapshot базовых ингредиентов с флагами isDisabled
+	baseIngredientsSnapshot?: BaseIngredient[];
+
+	// ⚠️ СТАРОЕ - оставляем для обратной совместимости (можно удалить позже)
 	removedIngredients?: number[];
 
 	// Старый формат (для обратной совместимости - опциональные)

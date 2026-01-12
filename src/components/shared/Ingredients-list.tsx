@@ -21,6 +21,7 @@ export const IngredientsList: React.FC<Props> = ({ ingredients, selectedIds, onC
 					imageUrl={item.imageUrl}
 					price={Number(item.price)}
 					active={selectedIds.has(item.id)}
+					removable={item.removable ?? true}
 				/>
 			))}
 		</div>

@@ -19,6 +19,99 @@ async function down() {
 }
 
 async function up() {
+	// ✅ HELPER ФУНКЦИЯ - Получение данных ингредиента по ID
+	const getIngredient = (id: number) => {
+		const ingredientsMap: Record<number, { name: string; imageUrl: string }> = {
+			1: {
+				name: "Bordo del formaggio",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Bordo_del_formaggio.webp",
+			},
+			2: {
+				name: "Mocarella cremosa",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Mozzarella_cremosa.webp",
+			},
+			3: {
+				name: "Formaggi Cheddar e Parmigiano",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Formaggi_Cheddar_e_Parmigiano.webp",
+			},
+			4: {
+				name: "Peperoncino jalapeño piccante",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Peper_piccante.webp",
+			},
+			5: {
+				name: "Pollo tenero",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Pollo_tenero.webp",
+			},
+			6: {
+				name: "Funghi prataioli",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Funghi_prataioli.webp",
+			},
+			7: {
+				name: "Prosciutto",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Prosciutto.webp",
+			},
+			8: {
+				name: "Pepperoni piccante",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Pepperoni_piccante.webp",
+			},
+			9: {
+				name: "Chorizo ​​piccante",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Chorizo_piccante.webp",
+			},
+			10: {
+				name: "Cetrioli sottaceto",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Cetrioli_sottaceto.webp",
+			},
+			11: {
+				name: "Pomodori freschi",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Pomodori_freschi.webp",
+			},
+			12: {
+				name: "Cipolla rossa",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Cipolla_rossa.webp",
+			},
+			13: {
+				name: "Ananas succosi",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Ananas_succosi-1.webp",
+			},
+			14: {
+				name: "Erbe italiane",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Erbe_italiane.webp",
+			},
+			15: {
+				name: "Peperone dolce",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Peperone_dolce.webp",
+			},
+			16: {
+				name: "Cubetti di formaggio feta",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Cubetti_di_formaggio_feta.webp",
+			},
+			17: {
+				name: "Polpette",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/ingredients/Polpette.webp",
+			},
+		};
+
+		return ingredientsMap[id] || { name: `Ingredient ${id}`, imageUrl: "" };
+	};
+
 	// 1️⃣ Создаем пользователей
 	const user1 = await prisma.user.create({
 		data: {
@@ -67,7 +160,7 @@ async function up() {
 			{ name: "Piccola", value: 20, sortOrder: 1 },
 			{ name: "Media", value: 30, sortOrder: 2 },
 			{ name: "Grande", value: 40, sortOrder: 3 },
-			{ name: "0.33L", value: 33, sortOrder: 4 }, // Для напитков
+			{ name: "0.33L", value: 33, sortOrder: 4 },
 			{ name: "0.5L", value: 50, sortOrder: 5 },
 			{ name: "1L", value: 100, sortOrder: 6 },
 			{ name: "Null", value: 0, sortOrder: 7 },
@@ -90,9 +183,9 @@ async function up() {
 		data: _ingredients,
 	});
 
-	console.log("✅ Базовые данные созданы (пользователи, категории, размеры, типы, ингредиенты)");
+	console.log("✅ Базовые данные созданы");
 
-	// 🍕 СОЗДАЕМ ПИЦЦЫ - каждая отдельно с явными параметрами
+	// 🍕 СОЗДАЕМ ПИЦЦЫ с полными данными baseIngredients
 
 	// Пицца 1: Pepperoni fresh 🌶️
 	await prisma.product.create({
@@ -100,20 +193,20 @@ async function up() {
 			name: "Pepperoni fresh",
 			imageUrl:
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Pepperoni_freshJPG.webp",
-			categoryId: 1, // Pizze
+			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa (обязательна)
-				{ id: 8, removable: true }, // Pepperoni piccante
-				{ id: 11, removable: true }, // Pomodori freschi
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 8, ...getIngredient(8), removable: true, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 6, 7, 9, 10, 12, 13, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -125,24 +218,24 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/4_Formaggio.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 3, removable: true }, // Formaggi Cheddar e Parmigiano
-				{ id: 16, removable: true }, // Cubetti di formaggio feta
-				{ id: 1, removable: true }, // Bordo del formaggio
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 3, ...getIngredient(3), removable: true, isDisabled: false },
+				{ id: 16, ...getIngredient(16), removable: true, isDisabled: false },
+				{ id: 1, ...getIngredient(1), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
 
-	// Пицца 3: Chorizo ​​fresh 🌶️🌶️
+	// Пицца 3: Chorizo fresh 🌶️🌶️
 	await prisma.product.create({
 		data: {
 			name: "Chorizo ​​fresh",
@@ -150,19 +243,19 @@ async function up() {
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Chorizo%20__fresh.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 9, removable: true }, // Chorizo ​​piccante
-				{ id: 11, removable: true }, // Pomodori freschi
-				{ id: 12, removable: true }, // Cipolla rossa
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 9, ...getIngredient(9), removable: true, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
+				{ id: 12, ...getIngredient(12), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 6, 7, 8, 10, 13, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -174,18 +267,18 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Margherita.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 11, removable: true }, // Pomodori freschi
-				{ id: 14, removable: true }, // Erbe italiane
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
+				{ id: 14, ...getIngredient(14), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -198,43 +291,43 @@ async function up() {
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Pepperoni_freshJPG.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 7, removable: true }, // Prosciutto
-				{ id: 6, removable: true }, // Funghi prataioli
-				{ id: 11, removable: true }, // Pomodori freschi
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 7, ...getIngredient(7), removable: true, isDisabled: false },
+				{ id: 6, ...getIngredient(6), removable: true, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 8, 9, 10, 12, 13, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
 
-	// Пицца 6: Pollo e Ananas 🍍🍗 (Hawaiian style)
+	// Пицца 6: Pollo e Ananas 🍍🍗
 	await prisma.product.create({
 		data: {
 			name: "Pollo e Ananas",
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Villaggio.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 5, removable: true }, // Pollo tenero
-				{ id: 13, removable: true }, // Ananas succosi
-				{ id: 12, removable: true }, // Cipolla rossa
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 5, ...getIngredient(5), removable: true, isDisabled: false },
+				{ id: 13, ...getIngredient(13), removable: true, isDisabled: false },
+				{ id: 12, ...getIngredient(12), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -246,21 +339,21 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Hawaiano.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 11, removable: true }, // Pomodori freschi
-				{ id: 15, removable: true }, // Peperone dolce
-				{ id: 6, removable: true }, // Funghi prataioli
-				{ id: 12, removable: true }, // Cipolla rossa
-				{ id: 14, removable: true }, // Erbe italiane
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
+				{ id: 15, ...getIngredient(15), removable: true, isDisabled: false },
+				{ id: 6, ...getIngredient(6), removable: true, isDisabled: false },
+				{ id: 12, ...getIngredient(12), removable: true, isDisabled: false },
+				{ id: 14, ...getIngredient(14), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 10, 13, 16],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -272,20 +365,20 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/6_Formaggi.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 9, removable: true }, // Chorizo ​​piccante
-				{ id: 8, removable: true }, // Pepperoni piccante
-				{ id: 4, removable: true }, // Peperoncino jalapeño piccante
-				{ id: 11, removable: true }, // Pomodori freschi
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 9, ...getIngredient(9), removable: true, isDisabled: false },
+				{ id: 8, ...getIngredient(8), removable: true, isDisabled: false },
+				{ id: 4, ...getIngredient(4), removable: true, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 5, 6, 7, 10, 12, 13, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -297,20 +390,20 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/4_Carne.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 7, removable: true }, // Prosciutto
-				{ id: 8, removable: true }, // Pepperoni piccante
-				{ id: 9, removable: true }, // Chorizo ​​piccante
-				{ id: 17, removable: true }, // Polpette
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 7, ...getIngredient(7), removable: true, isDisabled: false },
+				{ id: 8, ...getIngredient(8), removable: true, isDisabled: false },
+				{ id: 9, ...getIngredient(9), removable: true, isDisabled: false },
+				{ id: 17, ...getIngredient(17), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
@@ -322,24 +415,24 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/pizza/Barbecue.webp",
 			categoryId: 1,
 			baseIngredients: [
-				{ id: 2, removable: false }, // Mocarella cremosa
-				{ id: 5, removable: true }, // Pollo tenero
-				{ id: 12, removable: true }, // Cipolla rossa
-				{ id: 6, removable: true }, // Funghi prataioli
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 5, ...getIngredient(5), removable: true, isDisabled: false },
+				{ id: 12, ...getIngredient(12), removable: true, isDisabled: false },
+				{ id: 6, ...getIngredient(6), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17],
 			variants: [
-				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 }, // Piccola + Tradizionale
-				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 }, // Piccola + Sottile
-				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 }, // Media + Tradizionale
-				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 }, // Media + Sottile
-				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 }, // Grande + Tradizionale
-				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 }, // Grande + Sottile
+				{ variantId: 1, sizeId: 1, typeId: 1, price: 5 },
+				{ variantId: 2, sizeId: 1, typeId: 2, price: 5 },
+				{ variantId: 3, sizeId: 2, typeId: 1, price: 10 },
+				{ variantId: 4, sizeId: 2, typeId: 2, price: 10 },
+				{ variantId: 5, sizeId: 3, typeId: 1, price: 15 },
+				{ variantId: 6, sizeId: 3, typeId: 2, price: 15 },
 			],
 		},
 	});
 
-	console.log("✅ Создано 10 пицц с явными параметрами");
+	console.log("✅ Создано 10 пицц");
 
 	// Завтрак ------------------------------------------------------------
 	// Завтрак 1: Frittata con prosciutto e funghi
@@ -348,16 +441,14 @@ async function up() {
 			name: "Frittata con prosciutto e funghi",
 			imageUrl:
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frittata_con_proscitto_e_funghi.webp",
-			categoryId: 2, // Colazione
+			categoryId: 2,
 			baseIngredients: [
-				{ id: 7, removable: false }, // Prosciutto
-				{ id: 6, removable: false }, // Funghi prataioli
-				{ id: 2, removable: false }, // Mocarella
+				{ id: 7, ...getIngredient(7), removable: false, isDisabled: false },
+				{ id: 6, ...getIngredient(6), removable: false, isDisabled: false },
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 8, 9, 10, 11, 12, 14, 15],
-			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 3, price: 5.99 }, // Стандартный размер
-			],
+			variants: [{ variantId: 1, sizeId: 4, typeId: 3, price: 5.99 }],
 		},
 	});
 
@@ -369,31 +460,32 @@ async function up() {
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frittata_al_salame_piccante.webp",
 			categoryId: 2,
 			baseIngredients: [
-				{ id: 8, removable: false }, // Pepperoni piccante
-				{ id: 2, removable: false }, // Mocarella
-				{ id: 4, removable: true }, // Peperoncino jalapeño
+				{ id: 8, ...getIngredient(8), removable: false, isDisabled: false },
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 4, ...getIngredient(4), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 3, price: 5.99 }],
 		},
 	});
+
 	// Завтрак 3: Caffè Latte
 	await prisma.product.create({
 		data: {
 			name: "Caffè Latte",
 			imageUrl:
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-latte.webp",
-			categoryId: 2, // Colazione
+			categoryId: 2,
 			baseIngredients: [],
 			addableIngredientIds: [],
 			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 }, // 0.33L
-				{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 }, // 0.5L
+				{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 },
+				{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 },
 			],
 		},
 	});
 
-	console.log("✅ Создано 3 завтрака (Colazione)");
+	console.log("✅ Создано 3 завтрака");
 
 	// Закуска ------------------------------------------------------------
 	// Закуска 1: Prosciutto e formaggio di Danwich
@@ -402,10 +494,10 @@ async function up() {
 			name: "Prosciutto e formaggio di Danwich",
 			imageUrl:
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Prosciutto_e_formaggio_di_Danwich.webp",
-			categoryId: 3, // Antipasti
+			categoryId: 3,
 			baseIngredients: [
-				{ id: 7, removable: false }, // Prosciutto
-				{ id: 2, removable: false }, // Mocarella
+				{ id: 7, ...getIngredient(7), removable: false, isDisabled: false },
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 6, 10, 11, 12, 14],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 4, price: 6.99 }],
@@ -419,10 +511,8 @@ async function up() {
 			imageUrl:
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Bocconcini_di_pollo.webp",
 			categoryId: 3,
-			baseIngredients: [
-				{ id: 5, removable: false }, // Pollo tenero
-			],
-			addableIngredientIds: [], // Без дополнений
+			baseIngredients: [{ id: 5, ...getIngredient(5), removable: false, isDisabled: false }],
+			addableIngredientIds: [],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 3, price: 7.49 }],
 		},
 	});
@@ -435,7 +525,7 @@ async function up() {
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Patate_al_forno_con_salsa.webp",
 			categoryId: 3,
 			baseIngredients: [],
-			addableIngredientIds: [14], // Можно добавить итальянские травы
+			addableIngredientIds: [14],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 5, price: 4.99 }],
 		},
 	});
@@ -447,9 +537,9 @@ async function up() {
 			imageUrl: "https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Dodster.webp",
 			categoryId: 3,
 			baseIngredients: [
-				{ id: 7, removable: false }, // Prosciutto
-				{ id: 2, removable: false }, // Mocarella
-				{ id: 11, removable: true }, // Pomodori
+				{ id: 7, ...getIngredient(7), removable: false, isDisabled: false },
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 11, ...getIngredient(11), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [6, 12, 14],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 4, price: 6.49 }],
@@ -464,152 +554,121 @@ async function up() {
 				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Sharp_Dodster.webp",
 			categoryId: 3,
 			baseIngredients: [
-				{ id: 8, removable: false }, // Pepperoni piccante
-				{ id: 2, removable: false }, // Mocarella
-				{ id: 4, removable: true }, // Peperoncino jalapeño
+				{ id: 8, ...getIngredient(8), removable: false, isDisabled: false },
+				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
+				{ id: 4, ...getIngredient(4), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [9, 11, 12],
 			variants: [{ variantId: 1, sizeId: 7, typeId: 4, price: 6.99 }],
 		},
 	});
-	console.log("✅ Создано 5 закусок (Antipasti)");
 
-	// Коктейль ------------------------------------------------------------
-	// Коктейль 1: Frullato di banana
-	await prisma.product.create({
-		data: {
-			name: "Frullato di banana",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_banana.webp",
-			categoryId: 4, // Cocktail
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 5, price: 2.99 },
-				{ variantId: 2, sizeId: 5, typeId: 5, price: 4.99 },
-			],
-		},
+	console.log("✅ Создано 5 закусок");
+
+	// Коктейли и напитки (без baseIngredients)
+	await prisma.product.createMany({
+		data: [
+			// Коктейли
+			{
+				name: "Frullato di banana",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_banana.webp",
+				categoryId: 4,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [
+					{ variantId: 1, sizeId: 4, typeId: 5, price: 2.99 },
+					{ variantId: 2, sizeId: 5, typeId: 5, price: 4.99 },
+				],
+			},
+			{
+				name: "Frullato di mele caramellate",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_mele_caramellate.webp",
+				categoryId: 4,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [{ variantId: 1, sizeId: 4, typeId: 5, price: 2.49 }],
+			},
+			{
+				name: "Frullato di biscotti Oreo",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_biscotti_Oreo.webp",
+				categoryId: 4,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [
+					{ variantId: 1, sizeId: 4, typeId: 5, price: 2.99 },
+					{ variantId: 2, sizeId: 5, typeId: 5, price: 4.99 },
+					{ variantId: 3, sizeId: 6, typeId: 5, price: 6.99 },
+				],
+			},
+			{
+				name: "Frullato classico 👶",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_classico.webp",
+				categoryId: 4,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [
+					{ variantId: 1, sizeId: 4, typeId: 5, price: 2.49 },
+					{ variantId: 2, sizeId: 5, typeId: 5, price: 4.49 },
+				],
+			},
+			// Напитки
+			{
+				name: "Cappuccino irlandese",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Cappuccino_irlandese.webp",
+				categoryId: 5,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [
+					{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 },
+					{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 },
+					{ variantId: 3, sizeId: 6, typeId: 3, price: 5.99 },
+				],
+			},
+			{
+				name: "Caffè al cappuccino al caramello",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-al-cappuccino-al-caramello.webp",
+				categoryId: 5,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [{ variantId: 1, sizeId: 5, typeId: 4, price: 4.49 }],
+			},
+			{
+				name: "Caffè Latte al Cocco",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-al-cappuccino-al-caramello.webp",
+				categoryId: 5,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 4.49 }],
+			},
+			{
+				name: "Caffè americano",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-amer.webp",
+				categoryId: 5,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 2.99 }],
+			},
+			{
+				name: "Caffè Latte2",
+				imageUrl:
+					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Caffe_Latte2.webp",
+				categoryId: 5,
+				baseIngredients: [],
+				addableIngredientIds: [],
+				variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 3.99 }],
+			},
+		],
 	});
 
-	// Коктейль 2: Frullato di mele caramellate
-	await prisma.product.create({
-		data: {
-			name: "Frullato di mele caramellate",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_mele_caramellate.webp",
-			categoryId: 4,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 4, typeId: 5, price: 2.49 }],
-		},
-	});
-
-	// Коктейль 3: Frullato di biscotti Oreo
-	await prisma.product.create({
-		data: {
-			name: "Frullato di biscotti Oreo",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_di_biscotti_Oreo.webp",
-			categoryId: 4,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 5, price: 2.99 },
-				{ variantId: 2, sizeId: 5, typeId: 5, price: 4.99 },
-				{ variantId: 3, sizeId: 6, typeId: 5, price: 6.99 },
-			],
-		},
-	});
-
-	// Коктейль 4: Frullato classico 👶
-	await prisma.product.create({
-		data: {
-			name: "Frullato classico 👶",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Frullato_classico.webp",
-			categoryId: 4,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 5, price: 2.49 },
-				{ variantId: 2, sizeId: 5, typeId: 5, price: 4.49 },
-			],
-		},
-	});
-	console.log("✅ Создано 4 коктейля (Cocktail)");
-
-	// Напиток ------------------------------------------------------------
-	// Напиток 1: Cappuccino irlandese
-	await prisma.product.create({
-		data: {
-			name: "Cappuccino irlandese",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Cappuccino_irlandese.webp",
-			categoryId: 5, // Bevande
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 },
-				{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 },
-				{ variantId: 3, sizeId: 6, typeId: 3, price: 5.99 },
-			],
-		},
-	});
-
-	// Напиток 2: Caffè al cappuccino al caramello
-	await prisma.product.create({
-		data: {
-			name: "Caffè al cappuccino al caramello",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-al-cappuccino-al-caramello.webp",
-			categoryId: 5,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 5, typeId: 4, price: 4.49 }],
-		},
-	});
-
-	// Напиток 3: Caffè Latte al Cocco
-	await prisma.product.create({
-		data: {
-			name: "Caffè Latte al Cocco",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-al-cappuccino-al-caramello.webp",
-			categoryId: 5,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 4.49 }],
-		},
-	});
-
-	// Напиток 4: Caffè americano
-	await prisma.product.create({
-		data: {
-			name: "Caffè americano",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/caffe-amer.webp",
-			categoryId: 5,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 2.99 }],
-		},
-	});
-
-	// Напиток 5: Caffè Latte2
-	await prisma.product.create({
-		data: {
-			name: "Caffè Latte2",
-			imageUrl:
-				"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Caffe_Latte2.webp",
-			categoryId: 5,
-			baseIngredients: [],
-			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 4, typeId: 4, price: 3.99 }],
-		},
-	});
-	console.log("✅ Создано 5 напитков (Bevande)");
-
-	// console.log(`✅ Создано ${products.length} дополнительных продуктов (завтраки, закуски, напитки)`);
+	console.log("✅ Создано 4 коктейля и 5 напитков");
 
 	// 7️⃣ Создаем тестовую корзину
 	const pepperoniPizza = await prisma.product.findFirst({ where: { name: "Pepperoni fresh" } });
@@ -624,7 +683,7 @@ async function up() {
 		});
 
 		const variants = pepperoniPizza.variants as any[];
-		const firstVariant = variants[0]; // Piccola + Tradizionale
+		const firstVariant = variants[0];
 
 		await prisma.cartItem.create({
 			data: {
@@ -632,8 +691,8 @@ async function up() {
 				productId: pepperoniPizza.id,
 				quantity: 2,
 				variantId: firstVariant.variantId,
-				addedIngredientIds: [6], // Добавили грибы
-				removedBaseIngredientIds: [],
+				addedIngredientIds: [6],
+				baseIngredientsSnapshot: [],
 			},
 		});
 
@@ -675,12 +734,9 @@ async function up() {
 		],
 	});
 
-	console.log("✅ Создано 6 Stories");
-
-	// Создаем StoryItems для каждой Story
+	// Создаем StoryItems
 	await prisma.storyItem.createMany({
 		data: [
-			// Story 1 - 2 элемента
 			{
 				storyId: 1,
 				sourceUrl:
@@ -691,8 +747,6 @@ async function up() {
 				sourceUrl:
 					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/story/storyItem/2.webp",
 			},
-
-			// Story 2 - 2 элемента
 			{
 				storyId: 2,
 				sourceUrl:
@@ -703,8 +757,6 @@ async function up() {
 				sourceUrl:
 					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/story/storyItem/4.webp",
 			},
-
-			// Story 3 - 2 элемента
 			{
 				storyId: 3,
 				sourceUrl:
@@ -715,8 +767,6 @@ async function up() {
 				sourceUrl:
 					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/story/storyItem/4.webp",
 			},
-
-			// Story 4 - 2 элемента
 			{
 				storyId: 4,
 				sourceUrl:
@@ -727,8 +777,6 @@ async function up() {
 				sourceUrl:
 					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/story/storyItem/3.webp",
 			},
-
-			// Story 5 - 2 элемента
 			{
 				storyId: 5,
 				sourceUrl:
@@ -739,8 +787,6 @@ async function up() {
 				sourceUrl:
 					"https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/story/storyItem/5.webp",
 			},
-
-			// Story 6 - 2 элемента
 			{
 				storyId: 6,
 				sourceUrl:
@@ -754,36 +800,22 @@ async function up() {
 		],
 	});
 
-	console.log("✅ Создано 12 StoryItems для 6 Stories");
+	console.log("✅ Создано 6 Stories с 12 StoryItems");
 
-	// 9️⃣ Сброс последовательностей (Sequences) для PostgreSQL
-	// await prisma.$executeRawUnsafe(
-	// 	// `SELECT setval('"Ingredient_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Ingredient"))`,
-	// );
+	// 9️⃣ Сброс последовательностей (Sequences)
 	await prisma.$executeRawUnsafe(
 		`SELECT setval('"Ingredient_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Ingredient"))`,
 	);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Category_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Category"))`);
 	await prisma.$executeRawUnsafe(`SELECT setval('"Category_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Category"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Product_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Product"))`);
 	await prisma.$executeRawUnsafe(`SELECT setval('"Product_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Product"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Size_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Size"))`);
 	await prisma.$executeRawUnsafe(`SELECT setval('"Size_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Size"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Type_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Type"))`);
 	await prisma.$executeRawUnsafe(`SELECT setval('"Type_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Type"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Story_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Story"))`);
 	await prisma.$executeRawUnsafe(`SELECT setval('"Story_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Story"))`);
-	// await prisma.$executeRawUnsafe(
-	// 	`SELECT setval('"StoryItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "StoryItem"))`,
-	// );
 	await prisma.$executeRawUnsafe(
 		`SELECT setval('"StoryItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "StoryItem"))`,
 	);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"Cart_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "Cart"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"CartItem_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "CartItem"))`);
-	// await prisma.$executeRawUnsafe(`SELECT setval('"User_id_seq"', (SELECT COALESCE(MAX(id), 1) FROM "User"))`);
 
-	console.log("✅ Сброс последовательностей (sequences) выполнен");
+	console.log("✅ Сброс последовательностей выполнен");
 }
 
 async function main() {

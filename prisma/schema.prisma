@@ -99,6 +99,7 @@ model CartItem {
   quantity      Int          @default(1)
 
   // Какие ингредиенты убраны из базовых (ID)
+  baseIngredientsSnapshot Json? @default("[]")
   removedBaseIngredientIds Int[] @default([])
 
   // Какие ингредиенты добавлены сверх базовых (ID)

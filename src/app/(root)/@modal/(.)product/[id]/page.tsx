@@ -28,17 +28,16 @@ type ProductPageProps = {
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { id } = await params;
 
-	// ✅ Используем правильные имена моделей: Size и Type вместо productSize и doughType
+	// ✅ Загружаем все необходимые данные параллельно
 	const [product, sizes, doughTypes, allIngredients] = await Promise.all([
 		prisma.product.findFirst({
 			where: { id: Number(id) },
-			// Поля из новой схемы
 			select: {
 				id: true,
 				name: true,
 				imageUrl: true,
 				categoryId: true,
-				baseIngredients: true, // JSON
+				baseIngredients: true, // JSON - может содержать или не содержать имена
 				variants: true, // JSON
 				addableIngredientIds: true,
 			},
@@ -49,24 +48,50 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		prisma.type.findMany({
 			orderBy: { sortOrder: "asc" },
 		}),
-		prisma.ingredient.findMany(),
+		prisma.ingredient.findMany({
+			select: {
+				id: true,
+				name: true,
+				imageUrl: true,
+				price: true,
+			},
+		}),
 	]);
 
 	if (!product) {
 		return notFound();
 	}
 
-	// ✅ Подготавливаем данные для модалки (имитируем старую структуру)
-	// Извлекаем базовые ингредиенты из общего списка по ID из JSON
-	const baseIngrs = (product.baseIngredients as any[]) || [];
+	// ✅ НОВОЕ - Обогащаем baseIngredients полными данными
+	const baseIngrsFromDB = (product.baseIngredients as any[]) || [];
+
+	// Обогащаем базовые ингредиенты данными из таблицы Ingredient
+	const enrichedBaseIngredients: BaseIngredient[] = baseIngrsFromDB.map((baseIng) => {
+		// Находим полные данные ингредиента
+		const fullIngredient = allIngredients.find((ing) => ing.id === baseIng.id);
+
+		// Если в БД уже есть name и imageUrl - используем их
+		// Иначе берем из таблицы Ingredient
+		return {
+			id: baseIng.id,
+			name: baseIng.name || fullIngredient?.name || `Ingredient ${baseIng.id}`,
+			imageUrl: baseIng.imageUrl || fullIngredient?.imageUrl || "",
+			removable: baseIng.removable ?? true,
+			isDisabled: baseIng.isDisabled ?? false, // по умолчанию не удален
+		};
+	});
+
+	console.log("📦 [ProductPage] Enriched baseIngredients:", enrichedBaseIngredients);
+
+	// ✅ Подготавливаем добавляемые ингредиенты для UI
 	const productIngredients = allIngredients
-		.filter((ing) => baseIngrs.some((bi) => bi.id === ing.id))
+		.filter((ing) => baseIngrsFromDB.some((bi) => bi.id === ing.id))
 		.map((ing) => ({
 			...ing,
 			price: Number(ing.price),
 		}));
 
-	// Преобразуем JSON variants в массив items для UI
+	// ✅ Преобразуем JSON variants в массив items для UI
 	const variants = (product.variants as any[]) || [];
 	const items: OptimizedProductItem[] = variants.map((v) => {
 		const sizeObj = sizes.find((s) => s.id === v.sizeId);
@@ -77,29 +102,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
 			sizeId: v.sizeId,
 			doughTypeId: v.typeId,
 			productId: product.id,
-			// ✅ Добавляем названия из справочников
-			size: sizeObj
-				? {
-						value: sizeObj.value,
-						name: sizeObj.name, // ✅ Добавляем name
-					}
-				: null,
-			doughType: typeObj
-				? {
-						value: typeObj.value,
-						name: typeObj.name, // ✅ Добавляем name
-					}
-				: null,
+			size: sizeObj ? { value: sizeObj.value, name: sizeObj.name } : null,
+			doughType: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
 		};
 	});
 
-	// ✅ Формируем финальный объект продукта с правильными типами
+	// ✅ Формируем финальный объект продукта с обогащенными baseIngredients
 	const productWithNumbers: ProductWithRelations = {
 		...product,
 		ingredients: productIngredients,
 		items: items,
-		variants: variants as ProductVariant[], // ✅ Сохраняем оригинальные variants
-		baseIngredients: baseIngrs as BaseIngredient[], // ✅ Сохраняем baseIngredients
+		variants: variants as ProductVariant[],
+		baseIngredients: enrichedBaseIngredients, // ✅ Используем обогащенные данные
 	};
 
 	return <ChooseProductModal product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />;

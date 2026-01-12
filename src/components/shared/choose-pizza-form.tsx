@@ -4,23 +4,24 @@ import { GroupVariants } from "@/components/shared/group-variants";
 import { IngredientsList } from "@/components/shared/Ingredients-list";
 import { ProductImage } from "@/components/shared/product-image";
 import { cn } from "@/lib/utils";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Title } from "./title";
 
-// ✅ НОВЫЙ импорт универсального хука
 import { useProductOptions } from "@/hooks/use-product-options";
-import { OptimizedIngredient, OptimizedProductItem } from "../../../@types/prisma";
+import { BaseIngredient, OptimizedIngredient, OptimizedProductItem } from "../../../@types/prisma";
 
 interface Props {
 	imageUrl: string;
 	name: string;
-	ingredients: OptimizedIngredient[];
+	ingredients: OptimizedIngredient[]; // добавляемые ингредиенты
+	baseIngredients: BaseIngredient[]; // базовые ингредиенты
 	loading: boolean;
 	items: OptimizedProductItem[];
 	onSubmit: (
 		itemId: number,
-		ingredients: number[],
+		addedIngredients: number[],
+		baseIngredientsSnapshot: BaseIngredient[], // ✅ ИЗМЕНЕНО - полный массив вместо ID
 		totalPrice?: number,
 		pizzaSize?: number | null,
 		pizzaType?: number | null,
@@ -34,34 +35,63 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 	items,
 	imageUrl,
 	ingredients,
+	baseIngredients,
 	onSubmit,
 	className,
 	loading,
 }) => {
-	// ✅ Используем новый универсальный хук
+	// ✅ Используем обновленный хук с новыми полями
 	const {
 		selectedSize,
 		selectedType,
 		selectedIngredients,
+		baseIngredientsState, // ✅ ИЗМЕНЕНО - управляемый массив вместо Set
 		availableSizes,
 		availableTypes,
 		currentItemId,
 		setSize,
 		setType,
 		addIngredient,
-	} = useProductOptions(items);
+		toggleBaseIngredientDisabled, // ✅ ИЗМЕНЕНО - новое имя функции
+	} = useProductOptions(items, baseIngredients);
 
-	// ✅ Вычисляем цену
+	const [ingredientView, setIngredientView] = useState<"addable" | "default">("addable");
+
+	// ✅ НОВОЕ - подготавливаем данные базовых ингредиентов для UI
+	const baseIngredientsForUI = useMemo(() => {
+		if (!baseIngredientsState || baseIngredientsState.length === 0) {
+			return [];
+		}
+
+		return baseIngredientsState.map((baseIng) => {
+			// Находим полные данные ингредиента (для цены и изображения)
+			const fullIngredient = ingredients.find((ing) => ing.id === baseIng.id);
+
+			return {
+				id: baseIng.id,
+				name: baseIng.name, // ✅ из baseIngredientsState
+				imageUrl: baseIng.imageUrl || fullIngredient?.imageUrl || "",
+				price: fullIngredient ? Number(fullIngredient.price) : 0,
+				removable: baseIng.removable,
+				// ✅ ВАЖНО: не передаем isDisabled, он внутри компонента
+			};
+		});
+	}, [baseIngredientsState, ingredients]);
+
+	// ✅ Вычисляем цену - ТОЛЬКО добавленные ингредиенты влияют на цену
 	const totalPrice = useMemo(() => {
 		const currentItem = items.find((item) => item.id === currentItemId);
 		if (!currentItem) return 0;
 
 		const basePrice = currentItem.price;
-		const ingredientsPrice = ingredients
+
+		// Цена добавленных ингредиентов
+		const addedIngredientsPrice = ingredients
 			.filter((ing) => selectedIngredients.has(ing.id))
 			.reduce((sum, ing) => sum + Number(ing.price), 0);
 
-		return basePrice + ingredientsPrice;
+		// ✅ Удаленные базовые ингредиенты НЕ влияют на цену
+		return basePrice + addedIngredientsPrice;
 	}, [currentItemId, items, ingredients, selectedIngredients]);
 
 	// ✅ Определяем какие элементы UI показывать
@@ -77,6 +107,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 		};
 	}, [availableSizes, availableTypes, ingredients]);
 
+	// ✅ ИЗМЕНЕНО - обработчик добавления в корзину
 	const handleClickAdd = async () => {
 		if (currentItemId) {
 			const selectedIngredientsData = ingredients
@@ -87,9 +118,11 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 					price: Number(ing.price),
 				}));
 
+			// ✅ ИЗМЕНЕНО - передаем полный массив baseIngredientsState
 			onSubmit(
 				currentItemId,
 				Array.from(selectedIngredients),
+				baseIngredientsState, // ✅ полный snapshot с флагами isDisabled
 				totalPrice,
 				selectedSize,
 				selectedType,
@@ -119,10 +152,9 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 				<div className="flex-1">
 					<Title text={name} size="md" className="font-extrabold mb-3" />
 
-					{/* ✅ Выбор размера - показываем только если есть варианты */}
+					{/* Выбор размера */}
 					{uiConfig.showSizeSelector && (
 						<div className="mb-5">
-							{/* <p className="text-sm text-gray-600 mb-2 font-medium">Размер:</p> */}
 							<GroupVariants
 								items={availableSizes}
 								selectedValue={String(selectedSize)}
@@ -131,10 +163,9 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 						</div>
 					)}
 
-					{/* ✅ Выбор типа - показываем только если есть варианты */}
+					{/* Выбор типа теста */}
 					{uiConfig.showTypeSelector && (
 						<div className="mb-5">
-							{/* <p className="text-sm text-gray-600 mb-2 font-medium">Тип:</p> */}
 							<GroupVariants
 								items={availableTypes}
 								selectedValue={String(selectedType)}
@@ -143,18 +174,36 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 						</div>
 					)}
 
-					{/* ✅ Ингредиенты - показываем только если есть */}
-					{uiConfig.showIngredients && (
-						<div className="mt-5">
-							{/* <p className="text-sm text-gray-600 mb-2 font-medium">Добавить ингредиенты:</p> */}
-							<div className="bg-gray-50 p-5 pb-8 rounded-md max-h-[350px] overflow-auto scrollbar">
-								<IngredientsList
-									ingredients={ingredients}
-									onClickAdd={addIngredient}
-									selectedIds={selectedIngredients}
-								/>
-							</div>
-						</div>
+					{/* ✅ Переключатель режима просмотра ингредиентов */}
+					<div className="mb-3">
+						<GroupVariants
+							items={[
+								{ name: "Aggiungi", value: "addable" },
+								{ name: "Base", value: "default" },
+							]}
+							selectedValue={ingredientView}
+							onClick={(value) => setIngredientView(value as "addable" | "default")}
+						/>
+					</div>
+
+					{/* ✅ Ингредиенты */}
+					{ingredientView === "addable" ? (
+						// Дополнительные ингредиенты (можно добавить)
+						<IngredientsList
+							ingredients={ingredients}
+							onClickAdd={addIngredient}
+							selectedIds={selectedIngredients}
+						/>
+					) : (
+						// ✅ ИЗМЕНЕНО - Базовые ингредиенты (можно удалить)
+						<IngredientsList
+							ingredients={baseIngredientsForUI}
+							onClickAdd={toggleBaseIngredientDisabled}
+							// ✅ ИЗМЕНЕНО - показываем как active те, у которых isDisabled = false
+							selectedIds={
+								new Set(baseIngredientsState.filter((ing) => !ing.isDisabled).map((ing) => ing.id))
+							}
+						/>
 					)}
 				</div>
 

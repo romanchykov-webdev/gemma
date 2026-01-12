@@ -9,9 +9,10 @@ export type CartStateItem = {
 	price: number;
 	pizzaSize?: number | null;
 	pizzaType?: number | null;
-	sizeName?: string | null; // 🔥 НОВОЕ: название размера из БД
-	doughTypeName?: string | null; // 🔥 НОВОЕ: название типа теста из БД
+	sizeName?: string | null;
+	doughTypeName?: string | null;
 	ingredients: Array<{ name: string; price: number }>;
+	removedIngredients?: Array<{ name: string }>;
 };
 
 interface ReturnProps {
