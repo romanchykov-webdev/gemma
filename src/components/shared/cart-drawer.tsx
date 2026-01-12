@@ -61,7 +61,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 								id={item.id}
 								imageUrl={item.imageUrl}
 								details={(() => {
-									console.log("🔍 [CartDrawer] item.removedIngredients:", item.removedIngredients);
+									// console.log("🔍 [CartDrawer] item.removedIngredients:", item.removedIngredients);
 									return getCartItemDetails(
 										item.ingredients,
 										item.sizeName,

@@ -94,7 +94,7 @@ export function calculateItemPrice(
 			.filter((ing) => ing.isDisabled && ing.removable)
 			.map((ing) => ({ name: ing.name }));
 
-		console.log("✅ [calculateItemPrice] Using snapshot, removed:", removedIngredients);
+		// console.log("✅ [calculateItemPrice] Using snapshot, removed:", removedIngredients);
 	} else if (item.removedBaseIngredientIds && item.removedBaseIngredientIds.length > 0) {
 		// ⚠️ СТАРЫЙ ПОДХОД - fallback для совместимости
 		const baseIngredients = (item.product.baseIngredients || []) as BaseIngredient[];

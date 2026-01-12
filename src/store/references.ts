@@ -48,7 +48,7 @@ export const useReferencesStore = create<ReferencesState>()(
 						isFetched: true,
 					});
 
-					console.log("✅ References cached:", { sizes: sizes.length, types: types.length });
+					// console.log("✅ References cached:", { sizes: sizes.length, types: types.length });
 				} catch (error) {
 					console.error("❌ Error fetching references:", error);
 					set({ error: true, loading: false });

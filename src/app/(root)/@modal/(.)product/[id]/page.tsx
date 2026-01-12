@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		};
 	});
 
-	console.log("📦 [ProductPage] Enriched baseIngredients:", enrichedBaseIngredients);
+	// console.log("📦 [ProductPage] Enriched baseIngredients:", enrichedBaseIngredients);
 
 	// ✅ Подготавливаем добавляемые ингредиенты для UI
 	const productIngredients = allIngredients
