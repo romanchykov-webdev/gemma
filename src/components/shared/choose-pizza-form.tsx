@@ -131,8 +131,12 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 		}
 	};
 
+	console.log("ChoosePizzaForm ingredientView", ingredientView);
+	console.log("ChoosePizzaForm ingredients", ingredients);
+	console.log("ChoosePizzaForm baseIngredientsForUI", baseIngredientsForUI);
+
 	return (
-		<div className={cn(className, "flex flex-col lg:flex-row flex-1 max-h-[90vh] overflow-auto")}>
+		<div className={cn(className, "flex flex-col justify-center lg:flex-row flex-1 max-h-[90vh] overflow-auto")}>
 			{/* Левая часть - изображение */}
 			<div className="w-full lg:w-[60%] h-auto min-h-[250px] sm:min-h-[300px] md:min-h-[400px] p-4 sm:p-6 flex justify-center items-center">
 				<ProductImage
@@ -163,7 +167,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 						</div>
 					)}
 
-					{/* Выбор типа теста */}
+					{/* Выбор типа или теста */}
 					{uiConfig.showTypeSelector && (
 						<div className="mb-5">
 							<GroupVariants
@@ -175,16 +179,19 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 					)}
 
 					{/* ✅ Переключатель режима просмотра ингредиентов */}
-					<div className="mb-3">
-						<GroupVariants
-							items={[
-								{ name: "Aggiungi", value: "addable" },
-								{ name: "Base", value: "default" },
-							]}
-							selectedValue={ingredientView}
-							onClick={(value) => setIngredientView(value as "addable" | "default")}
-						/>
-					</div>
+					{/* Показываем только если есть ОБА типа ингредиентов */}
+					{ingredients.length > 0 && baseIngredientsForUI.length > 0 && (
+						<div className="mb-3">
+							<GroupVariants
+								items={[
+									{ name: "Aggiungi", value: "addable" },
+									{ name: "Base", value: "default" },
+								]}
+								selectedValue={ingredientView}
+								onClick={(value) => setIngredientView(value as "addable" | "default")}
+							/>
+						</div>
+					)}
 
 					{/* ✅ Ингредиенты */}
 					{ingredientView === "addable" ? (

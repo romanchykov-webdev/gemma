@@ -92,6 +92,10 @@ async function up() {
 			{ name: "Null", value: 3, sortOrder: 3 },
 			{ name: "Standart", value: 4, sortOrder: 4 },
 			{ name: "Vegetariano", value: 5, sortOrder: 5 },
+			{ name: "Bevande", value: 6, sortOrder: 6 },
+			{ name: "Colazione", value: 7, sortOrder: 7 },
+			{ name: "Antipasti", value: 8, sortOrder: 8 },
+			{ name: "Cocktail", value: 9, sortOrder: 9 },
 		],
 	});
 
