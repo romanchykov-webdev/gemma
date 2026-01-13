@@ -80,7 +80,7 @@ async function up() {
 			{ name: "0.33L", value: 33, sortOrder: 4 }, // Для напитков
 			{ name: "0.5L", value: 50, sortOrder: 5 },
 			{ name: "1L", value: 100, sortOrder: 6 },
-			{ name: "Null", value: 0, sortOrder: 7 },
+			{ name: "Classico ", value: 0, sortOrder: 7 },
 		],
 	});
 
@@ -90,7 +90,7 @@ async function up() {
 			{ name: "Tradizionale", value: 1, sortOrder: 1 },
 			{ name: "Sottile", value: 2, sortOrder: 2 },
 			{ name: "Null", value: 3, sortOrder: 3 },
-			{ name: "Standart", value: 4, sortOrder: 4 },
+			{ name: "Classico", value: 4, sortOrder: 4 },
 			{ name: "Vegetariano", value: 5, sortOrder: 5 },
 			{ name: "Bevande", value: 6, sortOrder: 6 },
 			{ name: "Colazione", value: 7, sortOrder: 7 },

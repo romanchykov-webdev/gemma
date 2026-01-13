@@ -1,5 +1,3 @@
-// src/components/shared/structured-data.tsx
-
 "use client";
 
 import { SEO_CONFIG } from "@/constants/seo";

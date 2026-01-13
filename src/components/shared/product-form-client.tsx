@@ -8,16 +8,14 @@ import { ChoosePizzaForm } from "./choose-pizza-form";
 
 interface IProductFormClientProps {
 	product: ProductWithRelations;
-	sizes: Array<{ id: number; name: string; value: number }>;
-	doughTypes: Array<{ id: number; name: string; value: number }>;
+	// sizes: Array<{ id: number; name: string; value: number }>;
+	// doughTypes: Array<{ id: number; name: string; value: number }>;
 	handleClose: () => void;
 }
 
 export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	product,
-	// sizes,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	// doughTypes,
+
 	handleClose,
 }): JSX.Element => {
 	const addCartItem = useCartStore((state) => state.addCartItem);
@@ -55,7 +53,7 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 			});
 
 			toast.success(product.name + " aggiunto al carrello");
-			handleClose();
+			// handleClose();
 		} catch (error) {
 			toast.error("Si è verificato un errore durante l'aggiunta al carrello");
 			console.error(error);
