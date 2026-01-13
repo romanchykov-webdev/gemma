@@ -30,6 +30,9 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 
 	const [redirecting, setRedirecting] = useState(false);
 
+	// console.log("CartDrawer items", items);
+	const itemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
 	return (
 		<Sheet>
 			<SheetTrigger asChild>{children}</SheetTrigger>
@@ -41,7 +44,10 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 					<SheetTitle>
 						{items.length > 0 && (
 							<span>
-								Nel cestino <span className="font-bold">{items.length} merce</span>
+								Nel cestino
+								<span className="font-bold">
+									{/* {items.length}  */} {itemsCount} merce
+								</span>
 							</span>
 						)}
 					</SheetTitle>
