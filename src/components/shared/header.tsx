@@ -31,17 +31,6 @@ export const Header: React.FC<IHeaderProps> = ({ className, hasSearch = true, ha
 		</Link>
 	);
 
-	// const AuthButton = () => (
-	// 	<Button
-	// 		onClick={() => signIn("github", { callbackUrl: "/", redirect: true })}
-	// 		variant="outline"
-	// 		className="flex items-center gap-1"
-	// 	>
-	// 		<User size={16} />
-	// 		Войти
-	// 	</Button>
-	// );
-
 	const RightSide = () => (
 		<div className="flex items-center gap-3 justify-center md:justify-end">
 			<AuthModal open={openAuthModal} onClose={() => setOpenAuthModal(false)} />

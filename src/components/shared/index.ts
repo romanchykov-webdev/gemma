@@ -1,4 +1,5 @@
 export { CartButton } from "./cart-button";
+export { CartButtonSticky } from "./cart-button-sticky";
 export { CartDrawer } from "./cart-drawer";
 export { Categories } from "./categories";
 export { CheckboxFiltersGroup } from "./checkbox-filters-group";

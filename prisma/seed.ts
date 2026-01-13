@@ -163,7 +163,7 @@ async function up() {
 			{ name: "0.33L", value: 33, sortOrder: 4 },
 			{ name: "0.5L", value: 50, sortOrder: 5 },
 			{ name: "1L", value: 100, sortOrder: 6 },
-			{ name: "Null", value: 0, sortOrder: 7 },
+			{ name: "Classico", value: 0, sortOrder: 7 },
 		],
 	});
 
@@ -173,8 +173,12 @@ async function up() {
 			{ name: "Tradizionale", value: 1, sortOrder: 1 },
 			{ name: "Sottile", value: 2, sortOrder: 2 },
 			{ name: "Null", value: 3, sortOrder: 3 },
-			{ name: "Standart", value: 4, sortOrder: 4 },
+			{ name: "Classico", value: 4, sortOrder: 4 },
 			{ name: "Vegetariano", value: 5, sortOrder: 5 },
+			{ name: "Bevande", value: 6, sortOrder: 6 },
+			{ name: "Colazione", value: 7, sortOrder: 7 },
+			{ name: "Antipasti", value: 8, sortOrder: 8 },
+			{ name: "Cocktail", value: 9, sortOrder: 9 },
 		],
 	});
 
@@ -448,7 +452,7 @@ async function up() {
 				{ id: 2, ...getIngredient(2), removable: false, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 4, 5, 8, 9, 10, 11, 12, 14, 15],
-			variants: [{ variantId: 1, sizeId: 4, typeId: 3, price: 5.99 }],
+			variants: [{ variantId: 1, sizeId: 4, typeId: 7, price: 5.99 }],
 		},
 	});
 
@@ -465,7 +469,7 @@ async function up() {
 				{ id: 4, ...getIngredient(4), removable: true, isDisabled: false },
 			],
 			addableIngredientIds: [1, 3, 5, 6, 7, 9, 10, 11, 12, 14, 15],
-			variants: [{ variantId: 1, sizeId: 7, typeId: 3, price: 5.99 }],
+			variants: [{ variantId: 1, sizeId: 7, typeId: 7, price: 5.99 }],
 		},
 	});
 
@@ -479,8 +483,8 @@ async function up() {
 			baseIngredients: [],
 			addableIngredientIds: [],
 			variants: [
-				{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 },
-				{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 },
+				{ variantId: 1, sizeId: 4, typeId: 7, price: 2.99 },
+				{ variantId: 2, sizeId: 5, typeId: 7, price: 3.99 },
 			],
 		},
 	});
@@ -513,7 +517,7 @@ async function up() {
 			categoryId: 3,
 			baseIngredients: [{ id: 5, ...getIngredient(5), removable: false, isDisabled: false }],
 			addableIngredientIds: [],
-			variants: [{ variantId: 1, sizeId: 7, typeId: 3, price: 7.49 }],
+			variants: [{ variantId: 1, sizeId: 7, typeId: 8, price: 7.49 }],
 		},
 	});
 
@@ -624,9 +628,9 @@ async function up() {
 				baseIngredients: [],
 				addableIngredientIds: [],
 				variants: [
-					{ variantId: 1, sizeId: 4, typeId: 3, price: 2.99 },
-					{ variantId: 2, sizeId: 5, typeId: 3, price: 3.99 },
-					{ variantId: 3, sizeId: 6, typeId: 3, price: 5.99 },
+					{ variantId: 1, sizeId: 4, typeId: 6, price: 2.99 },
+					{ variantId: 2, sizeId: 5, typeId: 6, price: 3.99 },
+					{ variantId: 3, sizeId: 6, typeId: 6, price: 5.99 },
 				],
 			},
 			{
