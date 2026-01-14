@@ -131,9 +131,9 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 		}
 	};
 
-	console.log("ChoosePizzaForm ingredientView", ingredientView);
-	console.log("ChoosePizzaForm ingredients", ingredients);
-	console.log("ChoosePizzaForm baseIngredientsForUI", baseIngredientsForUI);
+	// console.log("ChoosePizzaForm ingredientView", ingredientView);
+	// console.log("ChoosePizzaForm ingredients", ingredients);
+	// console.log("ChoosePizzaForm baseIngredientsForUI", baseIngredientsForUI);
 
 	return (
 		<div className={cn(className, "flex flex-col justify-center lg:flex-row flex-1 max-h-[90vh] overflow-auto")}>
