@@ -77,8 +77,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 			doughTypeId: v.typeId,
 			productId: productData.id,
 			// Добавляем вложенные объекты для совместимости с ProductFormClient
-			size: sizeObj ? { value: sizeObj.value } : null,
-			doughType: typeObj ? { value: typeObj.value } : null,
+			size: sizeObj ? { value: sizeObj.value, name: sizeObj.name } : null,
+			doughType: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
 		};
 	});
 
