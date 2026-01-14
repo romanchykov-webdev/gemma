@@ -10,13 +10,13 @@ interface IProductFormClientProps {
 	product: ProductWithRelations;
 	// sizes: Array<{ id: number; name: string; value: number }>;
 	// doughTypes: Array<{ id: number; name: string; value: number }>;
-	handleClose: () => void;
+	// handleClose: () => void;
 }
 
 export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	product,
 
-	handleClose,
+	// handleClose,
 }): JSX.Element => {
 	const addCartItem = useCartStore((state) => state.addCartItem);
 

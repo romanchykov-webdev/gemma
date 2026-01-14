@@ -2,6 +2,7 @@ import { Container, ProductFormClient } from "@/components/shared";
 import { ReplyIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BaseIngredient, ProductVariant, ProductWithRelations } from "../../../../../@types/prisma";
 import { prisma } from "../../../../../prisma/prisma-client";
 
 export async function generateStaticParams() {
@@ -55,7 +56,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	}
 
 	// 2. Обработка ингредиентов (сопоставляем ID из JSON с объектами из БД)
-	const baseIngrsJson = (productData.baseIngredients as any[]) || [];
+	const baseIngrsJson = (productData.baseIngredients as unknown as BaseIngredient[]) || [];
 	const ingredients = allIngredients
 		.filter((ing) => baseIngrsJson.some((bi) => bi.id === ing.id))
 		.map((ing) => ({
@@ -64,7 +65,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		}));
 
 	// 3. Обработка вариаций (variants -> items)
-	const variantsJson = (productData.variants as any[]) || [];
+	const variantsJson = (productData.variants as unknown as ProductVariant[]) || [];
 	const items = variantsJson.map((v) => {
 		const sizeObj = sizesRaw.find((s) => s.id === v.sizeId);
 		const typeObj = doughTypesRaw.find((t) => t.id === v.typeId);
@@ -88,31 +89,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	};
 
 	// 4. Приведение справочников к числам (если value это Decimal)
-	const sizes = sizesRaw.map((s) => ({
-		...s,
-		value: Number(s.value),
-	}));
+	// const sizes = sizesRaw.map((s) => ({
+	// 	...s,
+	// 	value: Number(s.value),
+	// }));
 
-	const doughTypes = doughTypesRaw.map((d) => ({
-		...d,
-		value: Number(d.value),
-	}));
+	// const doughTypes = doughTypesRaw.map((d) => ({
+	// 	...d,
+	// 	value: Number(d.value),
+	// }));
 
 	return (
 		<Container className="flex flex-col my-10">
 			<Link
 				href="/"
 				className="mb-5 bg-gray-100 h-[50px] w-[50px] rounded-full 
-        flex items-center justify-center border border-gray-200 shadow-sm hover:scale-105 transition-all duration-300"
+        					flex items-center justify-center border border-gray-200 
+							shadow-sm hover:scale-105 transition-all duration-300"
 			>
 				<ReplyIcon size={20} />
 			</Link>
 
 			<ProductFormClient
-				product={productWithNumbers as any}
-				sizes={sizes}
-				doughTypes={doughTypes}
-				handleClose={() => {}}
+				product={productWithNumbers as unknown as ProductWithRelations}
+				// sizes={sizes}
+				// doughTypes={doughTypes}
+				// handleClose={() => {}}
 			/>
 		</Container>
 	);

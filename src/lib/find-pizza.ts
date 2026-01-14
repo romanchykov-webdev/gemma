@@ -1,3 +1,4 @@
+import { BaseIngredient, ProductVariant } from "../../@types/prisma";
 import { prisma } from "../../prisma/prisma-client";
 
 export interface GetSearchParams {
@@ -51,8 +52,8 @@ export const findPizzas = async (params: GetSearchParams) => {
 				// Фильтруем продукты внутри категории
 				const filteredProducts = category.products.filter((product) => {
 					// Типизируем JSON поля
-					const variants = product.variants as any[];
-					const baseIngredients = product.baseIngredients as any[]; // [{ id: 1, removable: true }, ...]
+					const variants = product.variants as unknown as ProductVariant[];
+					const baseIngredients = product.baseIngredients as unknown as BaseIngredient[];
 
 					// --- ФИЛЬТР ПО ЦЕНЕ, РАЗМЕРУ, ТИПУ ---
 					// Проверяем, есть ли ХОТЯ БЫ ОДИН вариант, подходящий под условия
@@ -87,8 +88,8 @@ export const findPizzas = async (params: GetSearchParams) => {
 				return {
 					...category,
 					products: filteredProducts.map((product) => {
-						const variants = product.variants as any[];
-						const baseIngredients = product.baseIngredients as any[];
+						const variants = product.variants as unknown as ProductVariant[];
+						const baseIngredients = product.baseIngredients as unknown as BaseIngredient[];
 
 						return {
 							...product,

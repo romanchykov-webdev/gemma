@@ -1,8 +1,8 @@
+import { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../prisma/prisma-client";
 import { CreateCartItemValues } from "../../../../services/dto/cart.dto";
-
 export const revalidate = 5;
 
 /**
@@ -160,8 +160,9 @@ export async function POST(req: NextRequest) {
 					variantId: data.variantId,
 					quantity: 1,
 					addedIngredientIds: sortedIngredients,
-					removedBaseIngredientIds: removedBaseIds, // ✅ ДОБАВИТЬ!
-					baseIngredientsSnapshot: baseSnapshot.length > 0 ? (baseSnapshot as any) : null,
+					removedBaseIngredientIds: removedBaseIds,
+					baseIngredientsSnapshot:
+						baseSnapshot.length > 0 ? (baseSnapshot as unknown as Prisma.InputJsonValue) : undefined,
 					...(sortedIngredients.length > 0 && {
 						ingredients: {
 							connect: sortedIngredients.map((id) => ({ id })),

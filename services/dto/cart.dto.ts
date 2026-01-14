@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { BaseIngredient } from "../../@types/prisma";
 
 // ✅ Обновленный тип для новой схемы
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const cartItemWithRelations = Prisma.validator<Prisma.CartItemDefaultArgs>()({
 	include: {
 		product: {
