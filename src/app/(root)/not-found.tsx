@@ -10,7 +10,7 @@ const MotionLink = motion.create(Link);
 
 export default function NotFoundPage() {
 	return (
-		<div className="flex flex-col items-center justify-center relative  mt-10 md:h-screen md:mt-0">
+		<div className="flex flex-col items-center justify-center relative  mt-10 md:h-screen overflow-hidden">
 			<AnimatePresence>
 				<MotionLink
 					href="/"
@@ -18,7 +18,7 @@ export default function NotFoundPage() {
 					animate={{ scale: 1, opacity: 1, y: 0 }}
 					exit={{ scale: 0, opacity: 0, y: 20 }}
 					whileTap={{ scale: 0.95 }}
-					className={cn("relative mb-10 flex items-center justify-center")}
+					className={cn("relative mb-10 mt-10 flex items-center justify-center")}
 				>
 					{/* Пульсирующий фон */}
 					<span className="absolute inset-0 rounded-full bg-[#FF6B00] animate-ping opacity-25" />

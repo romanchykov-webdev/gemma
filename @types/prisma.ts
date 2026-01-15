@@ -36,6 +36,8 @@ export type OptimizedProductItem = {
 
 // ✅ Оптимизированный ингредиент
 export type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt" | "price"> & {
+	id: number;
+	name: string;
 	price: number;
 	createdAt?: Date;
 	updatedAt?: Date;

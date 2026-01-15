@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { toast } from "react-hot-toast";
+import { BaseIngredient } from "../../../@types/prisma";
 import { Button } from "../ui";
 import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
@@ -14,6 +15,7 @@ interface Props {
 	price: number;
 	imageUrl: string;
 	ingredients: Array<{ id: number; name: string; price: number }>;
+	baseIngredients: BaseIngredient[];
 	className?: string;
 
 	itemId: number;
@@ -26,6 +28,7 @@ export const ProductCard: React.FC<Props> = ({
 	price,
 	imageUrl,
 	ingredients,
+	baseIngredients,
 	className,
 	itemId,
 	priority = false,
@@ -42,6 +45,8 @@ export const ProductCard: React.FC<Props> = ({
 		addCartItem({
 			productId: id, // ✅ ID продукта
 			variantId: itemId, // ✅ variantId (предполагаем что itemId = variantId)
+			ingredients: [],
+			baseIngredientsSnapshot: baseIngredients,
 			optimistic: {
 				name,
 				imageUrl,

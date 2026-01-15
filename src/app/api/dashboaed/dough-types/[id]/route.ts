@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		}
 
 		// Проверка существования
-		const existing = await prisma.doughType.findUnique({
+		const existing = await prisma.type.findUnique({
 			where: { id },
 		});
 
@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
 		// Проверка на дубликат по имени (если имя меняется)
 		if (data.name && data.name.trim() !== existing.name) {
-			const duplicateName = await prisma.doughType.findUnique({
+			const duplicateName = await prisma.type.findUnique({
 				where: { name: data.name.trim() },
 			});
 
@@ -46,16 +46,16 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		if (data.name) updateData.name = data.name.trim();
 		if (data.sortOrder !== undefined) updateData.sortOrder = Number(data.sortOrder);
 
-		const updated = await prisma.doughType.update({
+		const updated = await prisma.type.update({
 			where: { id },
 			data: updateData,
-			include: {
-				_count: {
-					select: {
-						productItems: true,
-					},
-				},
-			},
+			// include: {
+			// 	_count: {
+			// 		select: {
+			// 			productItems: true,
+			// 		},
+			// 	},
+			// },
 		});
 
 		return NextResponse.json(updated);
@@ -77,32 +77,54 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 		}
 
 		// Проверка существования и подсчет связанных ProductItem
-		const existing = await prisma.doughType.findUnique({
+		const existing = await prisma.type.findUnique({
 			where: { id },
-			include: {
-				_count: {
-					select: {
-						productItems: true,
-					},
-				},
-			},
+			// include: {
+			// 	_count: {
+			// 		select: {
+			// 			productItems: true,
+			// 		},
+			// 	},
+			// },
 		});
 
 		if (!existing) {
 			return NextResponse.json({ message: "Tipo di impasto non trovato" }, { status: 404 });
 		}
 
-		// Запрет удаления, если есть связанные продукты
-		if (existing._count.productItems > 0) {
+		// Проверка использования в продуктах
+		const allProducts = await prisma.product.findMany({
+			select: {
+				id: true,
+				variants: true,
+			},
+		});
+
+		const productsUsingType = allProducts.filter((product) => {
+			if (!Array.isArray(product.variants)) return false;
+			return product.variants.some((variant: any) => variant.typeId === id);
+		});
+
+		if (productsUsingType.length > 0) {
 			return NextResponse.json(
 				{
-					message: `Impossibile eliminare. Il tipo di impasto è utilizzato da ${existing._count.productItems} prodotti`,
+					message: `Impossibile eliminare. Il tipo di impasto è utilizzato da ${productsUsingType.length} prodotti`,
 				},
 				{ status: 400 },
 			);
 		}
 
-		await prisma.doughType.delete({
+		// Запрет удаления, если есть связанные продукты
+		// if (existing._count.productItems > 0) {
+		// 	return NextResponse.json(
+		// 		{
+		// 			message: `Impossibile eliminare. Il tipo di impasto è utilizzato da ${existing._count.productItems} prodotti`,
+		// 		},
+		// 		{ status: 400 },
+		// 	);
+		// }
+
+		await prisma.type.delete({
 			where: { id },
 		});
 
