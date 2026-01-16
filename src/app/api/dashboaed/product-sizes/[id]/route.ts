@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ProductVariant } from "../../../../../../@types/prisma";
 import { prisma } from "../../../../../../prisma/prisma-client";
-
 // PATCH
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
 	try {
@@ -67,7 +67,8 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 
 		const productsUsingSize = allProducts.filter((product) => {
 			if (!Array.isArray(product.variants)) return false;
-			return product.variants.some((variant: any) => variant.sizeId === id);
+			const variants = product.variants as unknown as ProductVariant[];
+			return variants.some((variant) => variant.sizeId === id);
 		});
 
 		if (productsUsingSize.length > 0) {

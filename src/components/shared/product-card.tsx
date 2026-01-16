@@ -51,8 +51,8 @@ export const ProductCard: React.FC<Props> = ({
 				name,
 				imageUrl,
 				price,
-				pizzaSize: null,
-				pizzaType: null,
+				size: null,
+				type: null,
 				ingredientsData: [],
 			},
 		});

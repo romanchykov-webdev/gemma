@@ -100,10 +100,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 			id: v.variantId,
 			price: Number(v.price),
 			sizeId: v.sizeId,
-			doughTypeId: v.typeId,
+			typeId: v.typeId,
 			productId: product.id,
 			size: sizeObj ? { value: sizeObj.value, name: sizeObj.name } : null,
-			doughType: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
+			type: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
 		};
 	});
 

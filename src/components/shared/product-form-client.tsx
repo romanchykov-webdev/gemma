@@ -8,14 +8,15 @@ import { ChoosePizzaForm } from "./choose-pizza-form";
 
 interface IProductFormClientProps {
 	product: ProductWithRelations;
-	// sizes: Array<{ id: number; name: string; value: number }>;
-	// doughTypes: Array<{ id: number; name: string; value: number }>;
-	// handleClose: () => void;
+	sizes?: Array<{ id: number; name: string; value: number }>;
+	doughTypes?: Array<{ id: number; name: string; value: number }>;
+	handleClose?: () => void;
 }
 
 export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 	product,
-
+	// sizes,
+	// doughTypes,
 	// handleClose,
 }): JSX.Element => {
 	const addCartItem = useCartStore((state) => state.addCartItem);
@@ -30,8 +31,8 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 		ingredients: number[],
 		baseIngredientsSnapshot: BaseIngredient[],
 		totalPrice?: number,
-		pizzaSize?: number | null,
-		pizzaType?: number | null,
+		size?: number | null,
+		type?: number | null,
 		ingredientsData?: Array<{ id: number; name: string; price: number }>,
 	) => {
 		try {
@@ -46,8 +47,8 @@ export const ProductFormClient: React.FC<IProductFormClientProps> = ({
 					name: product.name,
 					imageUrl: product.imageUrl,
 					price: totalPrice ?? firstItem.price,
-					pizzaSize,
-					pizzaType,
+					size,
+					type,
 					ingredientsData,
 				},
 			});

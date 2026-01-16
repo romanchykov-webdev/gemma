@@ -38,10 +38,10 @@ function transformCartItems(rawItems: RawCartItem[]): {
 			name: rawItem.product.name,
 			imageUrl: rawItem.product.imageUrl,
 			price: calculated.price,
-			pizzaSize: calculated.pizzaSize,
-			pizzaType: calculated.pizzaType,
+			size: calculated.pizzaSize,
+			type: calculated.pizzaType,
 			sizeName: calculated.sizeName,
-			doughTypeName: calculated.doughTypeName,
+			typeName: calculated.doughTypeName,
 			ingredients: rawItem.ingredients.map((ing) => ({
 				name: ing.name,
 				price: Number(ing.price),
@@ -160,10 +160,10 @@ export const useCartStore = create<CartState>()(
 						name: values.optimistic.name,
 						imageUrl: values.optimistic.imageUrl,
 						price: values.optimistic.price,
-						pizzaSize: values.optimistic.pizzaSize,
-						pizzaType: values.optimistic.pizzaType,
+						size: values.optimistic.size ?? null,
+						type: values.optimistic.type ?? null,
 						sizeName: null,
-						doughTypeName: null,
+						typeName: null,
 						ingredients: values.optimistic.ingredientsData || [],
 					};
 

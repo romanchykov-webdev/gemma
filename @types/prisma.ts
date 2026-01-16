@@ -22,13 +22,13 @@ export type OptimizedProductItem = {
 	id: number; // variantId
 	price: number;
 	sizeId: number;
-	doughTypeId: number;
+	typeId: number;
 	productId: number;
 	size?: {
 		value: number;
 		name: string;
 	} | null;
-	doughType?: {
+	type?: {
 		value: number;
 		name: string;
 	} | null;
@@ -39,6 +39,7 @@ export type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt" | "
 	id: number;
 	name: string;
 	price: number;
+	removable?: boolean;
 	createdAt?: Date;
 	updatedAt?: Date;
 };

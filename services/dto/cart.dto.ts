@@ -60,8 +60,8 @@ export interface CreateCartItemValuesOptimistic extends CreateCartItemValues {
 		name: string;
 		imageUrl: string;
 		price: number;
-		pizzaSize?: number | null;
-		pizzaType?: number | null;
+		size?: number | null;
+		type?: number | null;
 		ingredientsData?: Array<{ id: number; name: string; price: number }>;
 	};
 }

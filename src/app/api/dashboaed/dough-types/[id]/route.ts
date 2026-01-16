@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ProductVariant } from "../../../../../../@types/prisma";
 import { prisma } from "../../../../../../prisma/prisma-client";
 
 // PATCH - Обновление типа теста (value НЕ меняется!)
@@ -102,7 +103,8 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 
 		const productsUsingType = allProducts.filter((product) => {
 			if (!Array.isArray(product.variants)) return false;
-			return product.variants.some((variant: any) => variant.typeId === id);
+			const variants = product.variants as unknown as ProductVariant[];
+			return variants.some((variant) => variant.typeId === id);
 		});
 
 		if (productsUsingType.length > 0) {

@@ -71,7 +71,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 									return getCartItemDetails(
 										item.ingredients,
 										item.sizeName,
-										item.doughTypeName,
+										item.typeName,
 										item.removedIngredients,
 									);
 								})()}

@@ -8,10 +8,10 @@ export type CartStateItem = {
 	name: string;
 	imageUrl: string;
 	price: number;
-	pizzaSize: number | null;
-	pizzaType: number | null;
+	size: number | null;
+	type: number | null;
 	sizeName: string | null;
-	doughTypeName: string | null;
+	typeName: string | null;
 	ingredients: Array<{ name: string; price: number }>;
 	removedIngredients?: Array<{ name: string }>;
 };
@@ -48,10 +48,10 @@ export const getCartDetails = (data: CartDTO): ReturnProps => {
 				name: product.name,
 				imageUrl: product.imageUrl,
 				price: calcCatItemTotalPrice(item),
-				pizzaSize: variant?.sizeId ?? null,
-				pizzaType: variant?.typeId ?? null,
+				size: variant?.sizeId ?? null,
+				type: variant?.typeId ?? null,
 				sizeName: null as string | null,
-				doughTypeName: null as string | null,
+				typeName: null as string | null,
 				ingredients: item.ingredients.map((ingredient) => ({
 					name: ingredient.name,
 					price: Number(ingredient.price),

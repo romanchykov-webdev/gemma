@@ -16,7 +16,12 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		// Проверка существования продукта
 		const existingProduct = await prisma.product.findUnique({
 			where: { id },
-			include: { items: true },
+			select: {
+				id: true,
+				variants: true,
+				baseIngredients: true,
+				addableIngredientIds: true,
+			},
 		});
 
 		if (!existingProduct) {
@@ -24,102 +29,33 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		}
 
 		// Обновление продукта в транзакции
-		const updatedProduct = await prisma.$transaction(async (tx) => {
-			// Обновление основных полей продукта
-			await tx.product.update({
-				where: { id },
-				data: {
-					...(data.name !== undefined && { name: data.name.trim() }),
-					...(data.imageUrl !== undefined && { imageUrl: data.imageUrl.trim() }),
-					...(data.categoryId !== undefined && { categoryId: Number(data.categoryId) }),
-					// Обновление связей с ингредиентами
-					...(data.ingredientIds
-						? {
-								ingredients: {
-									set: data.ingredientIds.map((id: number) => ({ id })),
-								},
-							}
-						: {}),
-				},
-			});
-
-			// Обновление вариантов (items)
-			if (data.items !== undefined && Array.isArray(data.items)) {
-				// Получаем существующие ID вариантов
-				const existingItemIds = existingProduct.items.map((item) => item.id);
-				const updatedItemIds = data.items
-					.filter((item: { id?: number }) => item.id)
-					.map((item: { id?: number }) => Number(item.id));
-
-				// Удаляем варианты, которых нет в обновленном списке
-				const itemsToDelete = existingItemIds.filter((id) => !updatedItemIds.includes(id));
-				if (itemsToDelete.length > 0) {
-					await tx.productItem.deleteMany({
-						where: {
-							id: { in: itemsToDelete },
-							productId: id,
-						},
-					});
-				}
-
-				// Обновляем существующие и создаем новые варианты
-				for (const item of data.items) {
-					if (item.id) {
-						// Обновление существующего варианта
-						await tx.productItem.update({
-							where: { id: Number(item.id) },
-							data: {
-								price: Number(item.price),
-								sizeId: item.sizeId ? Number(item.sizeId) : null,
-								doughTypeId: item.doughTypeId ? Number(item.doughTypeId) : null,
-							},
-						});
-					} else {
-						// Создание нового варианта
-						await tx.productItem.create({
-							data: {
-								productId: id,
-								price: Number(item.price),
-								sizeId: item.sizeId ? Number(item.sizeId) : null,
-								doughTypeId: item.doughTypeId ? Number(item.doughTypeId) : null,
-							},
-						});
-					}
-				}
-			}
-
-			// Возвращаем обновленный продукт
-			return await tx.product.findUnique({
-				where: { id },
-				select: {
-					id: true,
-					name: true,
-					imageUrl: true,
-					categoryId: true,
-					category: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-					items: {
-						select: {
-							id: true,
-							price: true,
-							sizeId: true,
-							doughTypeId: true,
-						},
-					},
-					ingredients: {
-						select: {
-							id: true,
-							name: true,
-							price: true,
-							imageUrl: true,
-						},
+		const updatedProduct = await prisma.product.update({
+			where: { id },
+			data: {
+				...(data.name !== undefined && { name: data.name.trim() }),
+				...(data.imageUrl !== undefined && { imageUrl: data.imageUrl.trim() }),
+				...(data.categoryId !== undefined && { categoryId: Number(data.categoryId) }),
+				...(data.variants !== undefined && { variants: data.variants }),
+				...(data.baseIngredients !== undefined && { baseIngredients: data.baseIngredients }),
+				...(data.addableIngredientIds !== undefined && { addableIngredientIds: data.addableIngredientIds }),
+			},
+			select: {
+				id: true,
+				name: true,
+				imageUrl: true,
+				categoryId: true,
+				category: {
+					select: {
+						id: true,
+						name: true,
 					},
 				},
-			});
+				variants: true,
+				baseIngredients: true,
+				addableIngredientIds: true,
+				createdAt: true,
+				updatedAt: true,
+			},
 		});
 
 		return NextResponse.json(updatedProduct);
@@ -145,7 +81,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			where: { id },
 			select: {
 				id: true,
-				items: {
+				cartItems: {
 					select: {
 						id: true,
 					},
@@ -157,11 +93,11 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			return NextResponse.json({ message: "Prodotto non trovato" }, { status: 404 });
 		}
 
-		// Проверка на наличие ProductItems
-		if (existingProduct.items.length > 0) {
+		// Проверка на использование в корзинах
+		if (existingProduct.cartItems.length > 0) {
 			return NextResponse.json(
 				{
-					message: `Impossibile eliminare. Il prodotto ha ${existingProduct.items.length} varianti`,
+					message: `Impossibile eliminare. Il prodotto è usato in ${existingProduct.cartItems.length} carrelli`,
 				},
 				{ status: 409 },
 			);
