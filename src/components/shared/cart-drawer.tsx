@@ -60,28 +60,27 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 					{/* <div className="flex flex-col overflow-auto scrollbar gap-2 max-h-[calc(100vh-200px)]"> */}
 					{items.length > 0 ? (
 						items.map((item) => (
-							console.log("CartDrawer item", item),
 							<CartDriwerItem
-								key={item.id}
-								loading={loading || redirecting}
-								id={item.id}
-								imageUrl={item.imageUrl}
-								details={(() => {
-									// console.log("🔍 [CartDrawer] item.removedIngredients:", item.removedIngredients);
-									return getCartItemDetails(
-										item.ingredients,
-										item.sizeName,
-										item.typeName,
-										item.removedIngredients,
-									);
-								})()}
-								name={item.name}
-								price={item.price}
-								quantity={item.quantity}
-								// onClickCountButton={(type) => onClickCountButton(item.id, item.quantity, type)}
-								onClickCountButton={(type) => changeItemCount(item.id, item.quantity, type)}
-								onClickRemove={() => removeCartItem(item.id)}
-							/>
+									key={item.id}
+									loading={loading || redirecting}
+									id={item.id}
+									imageUrl={item.imageUrl}
+									details={(() => {
+										// console.log("🔍 [CartDrawer] item.removedIngredients:", item.removedIngredients);
+										return getCartItemDetails(
+											item.ingredients,
+											item.sizeName,
+											item.typeName,
+											item.removedIngredients,
+										);
+									})()}
+									name={item.name}
+									price={item.price}
+									quantity={item.quantity}
+									// onClickCountButton={(type) => onClickCountButton(item.id, item.quantity, type)}
+									onClickCountButton={(type) => changeItemCount(item.id, item.quantity, type)}
+									onClickRemove={() => removeCartItem(item.id)}
+								/>
 						))
 					) : (
 						<div className="flex flex-1 flex-col p-4 items-center justify-center min-h-[300px]">

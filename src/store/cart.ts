@@ -153,6 +153,19 @@ export const useCartStore = create<CartState>()(
 
 				// ⚡ Optimistic update
 				if (values.optimistic) {
+					const { sizes, types } = useReferencesStore.getState();
+					const sizeName =
+						values.optimistic.size != null
+							? sizes.find((s) => s.value === values.optimistic?.size)?.name ?? null
+							: null;
+					const typeName =
+						values.optimistic.type != null
+							? types.find((t) => t.value === values.optimistic?.type)?.name ?? null
+							: null;
+					const removedIngredients = (values.baseIngredientsSnapshot ?? [])
+						.filter((ing) => ing.isDisabled && ing.removable)
+						.map((ing) => ({ name: ing.name }));
+
 					const tempId = `temp-${Date.now()}`;
 					const tempItem: CartStateItem = {
 						id: tempId,
@@ -162,9 +175,10 @@ export const useCartStore = create<CartState>()(
 						price: values.optimistic.price,
 						size: values.optimistic.size ?? null,
 						type: values.optimistic.type ?? null,
-						sizeName: null,
-						typeName: null,
+						sizeName,
+						typeName,
 						ingredients: values.optimistic.ingredientsData || [],
+						removedIngredients,
 					};
 
 					const newTotalAmountCents = Math.round(state.totalAmount * 100) + Math.round(tempItem.price * 100);
@@ -182,13 +196,35 @@ export const useCartStore = create<CartState>()(
 						productId: values.productId,
 						variantId: values.variantId,
 						ingredients: values.ingredients,
-						baseIngredientsSnapshot: values.baseIngredientsSnapshot, // ✅ ДОБАВЛЕНО!
-						// ⚠️ Для совместимости (можно удалить позже)
+						baseIngredientsSnapshot: values.baseIngredientsSnapshot,
 						removedIngredients: values.removedIngredients,
 					})
-					.then(() => {
-						// После успешного добавления - перезагружаем корзину
-						// get().refetchCart();
+					.then((res) => {
+						const itemId = res?.itemId;
+						if (!itemId) return;
+						const state = get();
+						const temp = state.items.find((i) => String(i.id).startsWith("temp-"));
+						if (!temp) return;
+
+						if (state.items.some((i) => i.id === itemId)) {
+							// Дубликат: убрать temp, инкрементировать существующий с id === itemId
+							const nextItems = state.items
+								.filter((i) => i.id !== temp.id)
+								.map((i) => {
+									if (i.id === itemId) {
+										const pricePerOne = i.price / i.quantity;
+										return { ...i, quantity: i.quantity + 1, price: pricePerOne * (i.quantity + 1) };
+									}
+									return i;
+								});
+							const newTotalAmountCents = nextItems.reduce((sum, item) => sum + Math.round(item.price * 100), 0);
+							set({ items: nextItems, totalAmount: +(newTotalAmountCents / 100).toFixed(2) });
+						} else {
+							// Новая позиция: заменить temp.id на itemId
+							set({
+								items: state.items.map((i) => (i.id === temp.id ? { ...i, id: itemId } : i)),
+							});
+						}
 					})
 					.catch((error) => {
 						console.error("[CART] Add failed:", error);
