@@ -19,6 +19,8 @@ interface Props {
 	className?: string;
 
 	itemId: number;
+	size?: number | null;
+	type?: number | null;
 	priority?: boolean;
 }
 
@@ -31,6 +33,8 @@ export const ProductCard: React.FC<Props> = ({
 	baseIngredients,
 	className,
 	itemId,
+	size,
+	type,
 	priority = false,
 }) => {
 	//
@@ -49,8 +53,8 @@ export const ProductCard: React.FC<Props> = ({
 				name,
 				imageUrl,
 				price,
-				size: null,
-				type: null,
+				size: size ?? null,
+				type: type ?? null,
 				ingredientsData: [],
 			},
 		});

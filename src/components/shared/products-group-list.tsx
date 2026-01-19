@@ -75,7 +75,8 @@ export const ProductsGroupList: React.FC<Props> = ({
 								ingredients={product.ingredients}
 								itemId={minPriceItem.id}
 								baseIngredients={product.baseIngredients}
-						
+								size={minPriceItem.size?.value ?? null}
+								type={minPriceItem.type?.value ?? null}
 								priority={hasPriority}
 							/>
 						);
