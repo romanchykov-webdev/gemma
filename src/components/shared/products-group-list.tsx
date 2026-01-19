@@ -29,6 +29,8 @@ export const ProductsGroupList: React.FC<Props> = ({
 	//
 	const HEADER_OFFSET = 100; // высота sticky-зоны (TopBar + отступы)
 
+	// console.log("ProductsGroupList items", items);
+
 	const setActiveCategoryId = useCategoryStore((state) => state.setActiveId);
 
 	const intersectionRef = useRef<HTMLDivElement>(null);
@@ -72,9 +74,9 @@ export const ProductsGroupList: React.FC<Props> = ({
 								price={minPriceItem.price}
 								ingredients={product.ingredients}
 								itemId={minPriceItem.id}
-								// ✅ Ленивая загрузка:
-								// - Только первые 3 изображения из ПЕРВОЙ категории загружаются сразу (LCP оптимизация)
-								// - Все остальные загружаются при приближении к viewport
+								baseIngredients={product.baseIngredients}
+								size={minPriceItem.size?.value ?? null}
+								type={minPriceItem.type?.value ?? null}
 								priority={hasPriority}
 							/>
 						);

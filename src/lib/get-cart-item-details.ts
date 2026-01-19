@@ -23,39 +23,89 @@
 // };
 import { CartStateItem } from "./get-cart-details";
 
-/**
- * ✅ Получает детали товара в корзине (размер, тип теста, ингредиенты)
- *
- * @param ingredients - массив ингредиентов
- * @param sizeName - название размера из БД (например "Маленькая", "500 мл")
- * @param doughTypeName - название типа теста из БД (например "Тонкое", "Традиционное")
- * @returns строка с деталями товара
- */
+// /**
+//  * ✅ Получает детали товара в корзине (размер, тип теста, ингредиенты)
+//  *
+//  * @param ingredients - массив ингредиентов
+//  * @param sizeName - название размера из БД (например "Маленькая", "500 мл")
+//  * @param doughTypeName - название типа теста из БД (например "Тонкое", "Традиционное")
+//  * @returns строка с деталями товара
+//  */
+// export const getCartItemDetails = (
+// 	ingredients: CartStateItem["ingredients"],
+// 	sizeName?: string | null,
+// 	doughTypeName?: string | null,
+// 	removedIngredients?: Array<{ name: string }>,
+// ): string => {
+// 	const details = [];
+// 	// console.log("getCartItemDetails sizeName", sizeName);
+// 	// console.log("getCartItemDetails doughTypeName", doughTypeName);
+// 	// sizeName=null && doughTypeName=null
+// 	if (sizeName === "Null" && doughTypeName === "Null") {
+// 		return "";
+// 	}
+// 	// 🍕 Если это пицца (есть и размер и тип теста)
+// 	if (sizeName && doughTypeName) {
+// 		details.push(`${doughTypeName} ${sizeName}`);
+// 	}
+// 	// 🥤 Если это напиток/другой продукт (только размер)
+// 	else if (sizeName) {
+// 		details.push(sizeName);
+// 	}
+
+// 	// Добавляем ингредиенты
+// 	// if (ingredients && ingredients.length > 0) {
+// 	// 	details.push(...ingredients.map((ingredient) => ingredient.name));
+// 	// }
+
+// 	// ✅ Добавленные ингредиенты
+// 	if (ingredients && ingredients.length > 0) {
+// 		const addedText = ingredients.map((ing) => `+${ing.name}`).join(", ");
+// 		details.push(addedText);
+// 	}
+
+// 	// ✅ НОВОЕ - Удаленные ингредиенты
+// 	if (removedIngredients && removedIngredients.length > 0) {
+// 		const removedText = removedIngredients.map((ing) => `-${ing.name}`).join(", ");
+// 		details.push(removedText);
+// 	}
+
+// 	return details.join(", ");
+// };
 export const getCartItemDetails = (
 	ingredients: CartStateItem["ingredients"],
 	sizeName?: string | null,
 	doughTypeName?: string | null,
-): string => {
-	const details = [];
-	// console.log("getCartItemDetails sizeName", sizeName);
-	// console.log("getCartItemDetails doughTypeName", doughTypeName);
+	removedIngredients?: Array<{ name: string }>,
+) => {
+	const baseDetails: string[] = [];
+
 	// sizeName=null && doughTypeName=null
 	if (sizeName === "Null" && doughTypeName === "Null") {
-		return "";
+		return { base: "", added: "", removed: "" };
 	}
+
 	// 🍕 Если это пицца (есть и размер и тип теста)
 	if (sizeName && doughTypeName) {
-		details.push(`${doughTypeName} ${sizeName}`);
+		baseDetails.push(`${doughTypeName} ${sizeName}`);
 	}
 	// 🥤 Если это напиток/другой продукт (только размер)
 	else if (sizeName) {
-		details.push(sizeName);
+		baseDetails.push(sizeName);
 	}
 
-	// Добавляем ингредиенты
-	if (ingredients && ingredients.length > 0) {
-		details.push(...ingredients.map((ingredient) => ingredient.name));
-	}
+	// ✅ Добавленные ингредиенты (отдельная строка)
+	const added = ingredients && ingredients.length > 0 ? ingredients.map((ing) => `+${ing.name}`).join(", ") : "";
 
-	return details.join(", ");
+	// ✅ Удаленные ингредиенты (отдельная строка)
+	const removed =
+		removedIngredients && removedIngredients.length > 0
+			? removedIngredients.map((ing) => `-${ing.name}`).join(", ")
+			: "";
+
+	return {
+		base: baseDetails.join(", "),
+		added,
+		removed,
+	};
 };

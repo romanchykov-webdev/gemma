@@ -9,56 +9,27 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		const token = req.cookies.get("cartToken")?.value;
 
 		if (!token) {
-			return NextResponse.json({ message: "Impossibile aggiornare il carrello" }, { status: 401 });
+			return NextResponse.json({ message: "Токен корзины не найден" }, { status: 401 });
 		}
 
-		// ⚡ Одна транзакция: UPDATE item + пересчёт totalAmount одним SQL
-		await prisma.$transaction(async (tx) => {
-			// Проверяем существование
-			const cartItem = await tx.cartItem.findFirst({
-				where: { id },
-				select: { id: true },
-			});
-			if (!cartItem) {
-				throw new Error("Cart item not found");
-			}
+		// ✅ Валидация quantity
+		if (data.quantity < 1) {
+			return NextResponse.json({ message: "Количество должно быть больше 0" }, { status: 400 });
+		}
 
-			// Обновляем количество
-			await tx.cartItem.update({
-				where: { id },
-				data: { quantity: data.quantity },
-			});
-
-			// ✅ Быстрый пересчёт totalAmount одним оптимизированным SQL
-			await tx.$executeRaw`
-				UPDATE "Cart" c
-				SET
-					"totalAmount" = COALESCE((
-						SELECT SUM(
-							(pi.price + COALESCE(ing.total_price, 0)) * ci.quantity
-						)::numeric  
-						FROM "CartItem" ci
-						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-						LEFT JOIN (
-							SELECT
-								m."A" as cart_item_id,
-								SUM(i.price)::numeric as total_price 
-							FROM "_CartItemToIngredient" m
-							JOIN "Ingredient" i ON i.id = m."B"
-							GROUP BY m."A"
-						) ing ON ing.cart_item_id = ci.id
-						WHERE ci."cartId" = c.id
-					), 0),
-					"updatedAt" = NOW()
-				WHERE c."tokenId" = ${token}
-			`;
+		// ⚡ ПРОСТОЙ UPDATE - без пересчета totalAmount
+		await prisma.cartItem.update({
+			where: { id },
+			data: { quantity: data.quantity },
 		});
 
-		// Клиент сам перезапросит корзину
+		// ✅ Возвращаем минимум
+		// ❌ НЕ пересчитываем totalAmount (клиент сделает)
+		// ❌ НЕ загружаем все товары корзины
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.log("[CART_PATCH] Server error", error);
-		return NextResponse.json({ message: "Impossibile aggiornare il carrello" }, { status: 500 });
+		console.error("[CART_PATCH] Server error", error);
+		return NextResponse.json({ message: "Не удалось обновить количество" }, { status: 500 });
 	}
 }
 
@@ -69,48 +40,20 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 		const token = req.cookies.get("cartToken")?.value;
 
 		if (!token) {
-			return NextResponse.json({ message: "Impossibile aggiornare il carrello" }, { status: 401 });
+			return NextResponse.json({ message: "Токен корзины не найден" }, { status: 401 });
 		}
 
-		// ⚡ Одна транзакция: удаляем item и пересчитываем totalAmount
-		await prisma.$transaction(async (tx) => {
-			// Проверяем существование и получаем cartId
-			const cartItem = await tx.cartItem.findFirst({
-				where: { id },
-				select: { id: true, cartId: true },
-			});
-
-			if (!cartItem) {
-				throw new Error("Cart item not found");
-			}
-
-			// Удаляем товар
-			await tx.cartItem.delete({ where: { id } });
-
-			await tx.$executeRaw`
-				UPDATE "Cart" c
-				SET 
-					"totalAmount" = COALESCE((
-						SELECT SUM(
-							(pi.price + COALESCE(
-								(SELECT SUM(ing.price)::numeric   
-								FROM "_CartItemToIngredient" m
-								JOIN "Ingredient" ing ON ing.id = m."B"
-								WHERE m."A" = ci.id), 
-							0)) * ci.quantity
-						)::numeric  
-						FROM "CartItem" ci
-						JOIN "ProductItem" pi ON pi.id = ci."productItemId"
-						WHERE ci."cartId" = c.id
-					), 0),
-					"updatedAt" = NOW()
-				WHERE c.id = ${cartItem.cartId}::uuid
-			`;
+		// ⚡ ПРОСТОЙ DELETE - без пересчета totalAmount
+		await prisma.cartItem.delete({
+			where: { id },
 		});
 
+		// ✅ Возвращаем минимум
+		// ❌ НЕ пересчитываем totalAmount (клиент сделает)
+		// ❌ НЕ загружаем все товары корзины
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.log("[CART_DELETE] Server error", error);
-		return NextResponse.json({ message: "Impossibile eliminare dal carrello" }, { status: 500 });
+		console.error("[CART_DELETE] Server error", error);
+		return NextResponse.json({ message: "Не удалось удалить товар из корзины" }, { status: 500 });
 	}
 }

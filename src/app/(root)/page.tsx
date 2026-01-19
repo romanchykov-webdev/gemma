@@ -1,4 +1,5 @@
 import {
+	CartButtonSticky,
 	Container,
 	FilterDrawer,
 	ProductsGroupList,
@@ -41,12 +42,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
 	const categories = await findPizzas(sp);
 
-	// console.log(JSON.stringify(categories, null, 2));
+	// console.log(JSON.stringify(categories[0], null, 2));
 	//
 	return (
 		<>
 			<StructuredData products={categories.flatMap((cat) => cat.products)} categories={categories} />
-			<Container className="mt-10 flex items-center justify-between ">
+			<Container className="mt-10 flex items-center justify-between relative">
 				<Title text="Tutte le pizze" size="lg" className="font-extrabold" />
 
 				<Suspense fallback={<Skeleton className="w-10 h-10 rounded-sm bg-gray-200" />}>
@@ -107,6 +108,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 						</div>
 					</div>
 				</div>
+
+				{/* кнопка корзины для мобильных устройств */}
+				<CartButtonSticky />
 			</Container>
 		</>
 	);

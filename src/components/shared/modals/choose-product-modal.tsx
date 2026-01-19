@@ -27,7 +27,7 @@ export const ChooseProductModal: React.FC<Props> = ({ product, sizes, doughTypes
 					<DialogTitle>Product Details</DialogTitle>
 					<DialogDescription>Choose product options and add to cart</DialogDescription>
 				</VisuallyHidden>
-				<ProductFormClient product={product} sizes={sizes} doughTypes={doughTypes} />
+				<ProductFormClient product={product} sizes={sizes} doughTypes={doughTypes} handleClose={handleClose} />
 			</DialogContent>
 		</Dialog>
 	);

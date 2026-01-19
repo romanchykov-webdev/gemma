@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ProductVariant } from "../../../../../../@types/prisma";
 import { prisma } from "../../../../../../prisma/prisma-client";
-
 // PATCH
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
 	try {
@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		}
 
 		// пример логики обновления (сделайте свою, как было у вас)
-		const existing = await prisma.productSize.findUnique({ where: { id } });
+		const existing = await prisma.size.findUnique({ where: { id } });
 		if (!existing) {
 			return NextResponse.json({ message: "Formato non trovato" }, { status: 404 });
 		}
@@ -24,10 +24,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 		if (data.value !== undefined) updateData.value = Number(data.value);
 		if (data.sortOrder !== undefined) updateData.sortOrder = Number(data.sortOrder);
 
-		const updated = await prisma.productSize.update({
+		const updated = await prisma.size.update({
 			where: { id },
 			data: updateData,
-			include: { _count: { select: { productItems: true } } },
+			// include: { _count: { select: { productItems: true } } },
 		});
 
 		return NextResponse.json(updated);
@@ -48,23 +48,44 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			return NextResponse.json({ message: "ID non valido" }, { status: 400 });
 		}
 
-		const existing = await prisma.productSize.findUnique({
+		const existing = await prisma.size.findUnique({
 			where: { id },
-			include: { _count: { select: { productItems: true } } },
+			// include: { _count: { select: { productItems: true } } },
 		});
 
 		if (!existing) {
 			return NextResponse.json({ message: "Formato non trovato" }, { status: 404 });
 		}
 
-		if (existing._count.productItems > 0) {
+		// Проверка использования в продуктах
+		const allProducts = await prisma.product.findMany({
+			select: {
+				id: true,
+				variants: true,
+			},
+		});
+
+		const productsUsingSize = allProducts.filter((product) => {
+			if (!Array.isArray(product.variants)) return false;
+			const variants = product.variants as unknown as ProductVariant[];
+			return variants.some((variant) => variant.sizeId === id);
+		});
+
+		if (productsUsingSize.length > 0) {
 			return NextResponse.json(
-				{ message: `Impossibile eliminare. Il formato è usato da ${existing._count.productItems} prodotti` },
+				{ message: `Impossibile eliminare. Il formato è usato da ${productsUsingSize.length} prodotti` },
 				{ status: 400 },
 			);
 		}
 
-		await prisma.productSize.delete({ where: { id } });
+		// if (existing._count.productItems > 0) {
+		// 	return NextResponse.json(
+		// 		{ message: `Impossibile eliminare. Il formato è usato da ${existing._count.productItems} prodotti` },
+		// 		{ status: 400 },
+		// 	);
+		// }
+
+		await prisma.size.delete({ where: { id } });
 
 		return NextResponse.json({ message: "Formato eliminato con successo" });
 	} catch (error) {

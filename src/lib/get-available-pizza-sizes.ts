@@ -10,7 +10,7 @@ import { OptimizedProductItem } from "../../@types/prisma";
 
 export const getAvailablePizzaSizes = (type: PizzaType, items: OptimizedProductItem[]): Variant[] => {
 	// ✅ Фильтруем по значению типа теста из вложенного объекта
-	const filteredPizzaByType = items?.filter((item) => item.doughType?.value === type);
+	const filteredPizzaByType = items?.filter((item) => item.type?.value === type);
 
 	return pizzaSize.map((item) => ({
 		name: item.name,

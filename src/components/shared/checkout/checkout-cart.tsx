@@ -25,7 +25,7 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
 		<WhiteBlock title="1. Carrello" contentClassName={cn("flex flex-col gap-5")} className={className}>
 			{items.length > 0
 				? items.map((item) => {
-						// Маппинг типов пиццы: 1 -> "Традиционное" / 2 -> "Тонкое" 
+						// Маппинг типов пиццы: 1 -> "Традиционное" / 2 -> "Тонкое"
 						const mapPizzaTypes: Record<number, string> = {
 							1: "Tradizionale",
 							2: "Sottile",
@@ -34,17 +34,15 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
 						// sizeName ожидается как string | null | undefined
 						// item.pizzaSize может быть number (например 30) или string (например "500 ml") или null/undefined
 						const sizeName =
-							item.pizzaSize === null || item.pizzaSize === undefined
+							item.size === null || item.size === undefined
 								? undefined
-								: typeof item.pizzaSize === "number"
-									? `${item.pizzaSize}` // если число — превращаем в строку
-									: item.pizzaSize;
+								: typeof item.size === "number"
+									? `${item.size}` // если число — превращаем в строку
+									: item.size;
 
 						// doughTypeName — строка из маппинга либо undefined
 						const doughTypeName =
-							item.pizzaType === null || item.pizzaType === undefined
-								? undefined
-								: mapPizzaTypes[item.pizzaType];
+							item.type === null || item.type === undefined ? undefined : mapPizzaTypes[item.type];
 
 						return (
 							<CheckoutItemOrder

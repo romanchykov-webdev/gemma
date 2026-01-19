@@ -1,6 +1,6 @@
 "use client";
 
-import { initDevTools, useCartStore } from "@/store";
+import { initDevTools, useCartStore, useIngredientsStore, useReferencesStore } from "@/store";
 import { Loader2 } from "lucide-react";
 import { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -29,7 +29,14 @@ interface ProvidersProps {
 export const Providers: React.FC<ProvidersProps> = ({ children, session }) => {
 	// ✅ Загружаем корзину ОДИН РАЗ при старте приложения
 	useEffect(() => {
+		// 1. Корзина
 		useCartStore.getState().fetchCartItems();
+
+		// 2. Ингредиенты (для фильтров и модальных окон)
+		useIngredientsStore.getState().fetchIngredients();
+
+		// 3. Справочники sizes и types (для работы с корзиной и продуктами)
+		useReferencesStore.getState().fetchReferences();
 
 		// 🔧 Инициализируем DevTools wrapper (только в development)
 		initDevTools();

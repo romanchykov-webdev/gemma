@@ -12,7 +12,7 @@ interface Props {
 
 export const IngredientsList: React.FC<Props> = ({ ingredients, selectedIds, onClickAdd, className }) => {
 	return (
-		<div className={cn("grid grid-cols-3 gap-3 scrollbar max-h-[350px] ", className)}>
+		<div className={cn("grid grid-cols-3 gap-3 pb-4 scrollbar max-h-[350px] ", className)}>
 			{ingredients.map((item) => (
 				<Ingredient
 					onClick={() => onClickAdd(item.id)}
@@ -21,6 +21,7 @@ export const IngredientsList: React.FC<Props> = ({ ingredients, selectedIds, onC
 					imageUrl={item.imageUrl}
 					price={Number(item.price)}
 					active={selectedIds.has(item.id)}
+					removable={item.removable ?? true}
 				/>
 			))}
 		</div>

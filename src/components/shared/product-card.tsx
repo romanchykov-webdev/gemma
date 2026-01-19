@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { toast } from "react-hot-toast";
+import { BaseIngredient } from "../../../@types/prisma";
 import { Button } from "../ui";
 import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
@@ -14,9 +15,12 @@ interface Props {
 	price: number;
 	imageUrl: string;
 	ingredients: Array<{ id: number; name: string; price: number }>;
+	baseIngredients: BaseIngredient[];
 	className?: string;
 
 	itemId: number;
+	size?: number | null;
+	type?: number | null;
 	priority?: boolean;
 }
 
@@ -26,8 +30,11 @@ export const ProductCard: React.FC<Props> = ({
 	price,
 	imageUrl,
 	ingredients,
+	baseIngredients,
 	className,
 	itemId,
+	size,
+	type,
 	priority = false,
 }) => {
 	//
@@ -36,20 +43,22 @@ export const ProductCard: React.FC<Props> = ({
 
 	// Быстрое добавление в корзину
 	const handleAddToCart = () => {
-		// ⚡ Мгновенно добавляем с optimistic update!
+		
 		addCartItem({
-			productItemId: itemId,
+			productId: id, 
+			variantId: itemId, 
+			ingredients: [],
+			baseIngredientsSnapshot: baseIngredients,
 			optimistic: {
 				name,
 				imageUrl,
 				price,
-				pizzaSize: null,
-				pizzaType: null,
+				size: size ?? null,
+				type: type ?? null,
 				ingredientsData: [],
 			},
 		});
 
-		// Мгновенный тост
 		toast.success(name + " aggiunto al carrello");
 	};
 	//

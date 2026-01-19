@@ -10,6 +10,7 @@ import * as stories_dashboard from "./dashboaed/stories";
 import * as users_dashboard from "./dashboaed/users";
 import * as ingredients from "./ingredirnts";
 import * as products from "./products";
+import * as references from "./references";
 import * as stories from "./stories";
 
 //
@@ -27,4 +28,5 @@ export const Api = {
 	orders_dashboard,
 	users_dashboard,
 	stories_dashboard,
+	references,
 };

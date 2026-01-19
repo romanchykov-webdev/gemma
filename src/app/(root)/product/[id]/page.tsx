@@ -2,9 +2,9 @@ import { Container, ProductFormClient } from "@/components/shared";
 import { ReplyIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BaseIngredient, ProductVariant, ProductWithRelations } from "../../../../../@types/prisma";
 import { prisma } from "../../../../../prisma/prisma-client";
 
-// ✅ Генерируем все страницы продуктов на BUILD TIME (Pure SSG)
 export async function generateStaticParams() {
 	const products = await prisma.product.findMany({
 		select: { id: true },
@@ -15,9 +15,8 @@ export async function generateStaticParams() {
 	}));
 }
 
-// ✅ Страницы полностью статичные (не меняются после билда)
 export const dynamic = "force-static";
-export const dynamicParams = false; // 404 для несуществующих продуктов
+export const dynamicParams = false;
 
 type ProductPageProps = {
 	params: Promise<{ id: string }>;
@@ -26,102 +25,97 @@ type ProductPageProps = {
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { id } = await params;
 
-	// ✅ Оптимизация: используем select вместо include для загрузки только нужных полей
-	const product = await prisma.product.findFirst({
-		where: {
-			id: Number(id),
-		},
-		select: {
-			id: true,
-			name: true,
-			imageUrl: true,
-			categoryId: true,
-			// Убираем createdAt, updatedAt для ускорения
-			ingredients: {
-				select: {
-					id: true,
-					name: true,
-					price: true,
-					imageUrl: true,
-				},
+	// 1. Загружаем данные. Учтите, что ingredients и items больше не являются реляциями
+	const [productData, sizesRaw, doughTypesRaw, allIngredients] = await Promise.all([
+		prisma.product.findFirst({
+			where: { id: Number(id) },
+			select: {
+				id: true,
+				name: true,
+				imageUrl: true,
+				categoryId: true,
+				baseIngredients: true, // JSON [{id, removable}]
+				variants: true, // JSON [{variantId, price, sizeId, typeId}]
 			},
-			items: {
-				select: {
-					id: true,
-					price: true,
-					sizeId: true,
-					doughTypeId: true,
-					productId: true,
-				},
-				orderBy: {
-					createdAt: "desc",
-				},
-			},
-		},
-	});
+		}),
+		prisma.size.findMany({
+			// Модель переименована в Size
+			select: { id: true, name: true, value: true, sortOrder: true },
+			orderBy: { sortOrder: "asc" },
+		}),
+		prisma.type.findMany({
+			// Модель переименована в Type
+			select: { id: true, name: true, value: true, sortOrder: true },
+			orderBy: { sortOrder: "asc" },
+		}),
+		prisma.ingredient.findMany(),
+	]);
 
-	if (!product) {
+	if (!productData) {
 		return notFound();
 	}
 
-	// ✅ Конвертируем Decimal в number для передачи в Client Component
-	const productWithNumbers = {
-		...product,
-		ingredients: product.ingredients.map((ing) => ({
+	// 2. Обработка ингредиентов (сопоставляем ID из JSON с объектами из БД)
+	const baseIngrsJson = (productData.baseIngredients as unknown as BaseIngredient[]) || [];
+	const ingredients = allIngredients
+		.filter((ing) => baseIngrsJson.some((bi) => bi.id === ing.id))
+		.map((ing) => ({
 			...ing,
 			price: Number(ing.price),
-		})),
-		items: product.items.map((item) => ({
-			...item,
-			price: Number(item.price),
-		})),
+		}));
+
+	// 3. Обработка вариаций (variants -> items)
+	const variantsJson = (productData.variants as unknown as ProductVariant[]) || [];
+	const items = variantsJson.map((v) => {
+		const sizeObj = sizesRaw.find((s) => s.id === v.sizeId);
+		const typeObj = doughTypesRaw.find((t) => t.id === v.typeId);
+
+		return {
+			id: v.variantId,
+			price: Number(v.price),
+			sizeId: v.sizeId,
+			doughTypeId: v.typeId,
+			productId: productData.id,
+			// Добавляем вложенные объекты для совместимости с ProductFormClient
+			size: sizeObj ? { value: sizeObj.value, name: sizeObj.name } : null,
+			doughType: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
+		};
+	});
+
+	const productWithNumbers = {
+		...productData,
+		ingredients,
+		items,
 	};
 
-	// --- загрузка размеров и типов теста и приведение value к number ---
-	const [sizesRaw, doughTypesRaw] = await Promise.all([
-		prisma.productSize.findMany({
-			select: { id: true, name: true, value: true },
-			orderBy: { sortOrder: "asc" },
-		}),
-		prisma.doughType.findMany({
-			select: { id: true, name: true, value: true },
-			orderBy: { sortOrder: "asc" },
-		}),
-	]);
+	// 4. Приведение справочников к числам (если value это Decimal)
+	// const sizes = sizesRaw.map((s) => ({
+	// 	...s,
+	// 	value: Number(s.value),
+	// }));
 
-	function toNumberValue(v: unknown): number {
-		if (typeof v === "number") return v;
-		// проверяем объект с методом toNumber (Prisma Decimal)
-		if (typeof v === "object" && v !== null && "toNumber" in v && typeof (v as { toNumber: unknown }).toNumber === "function") {
-		  return (v as { toNumber: () => number }).toNumber();
-		}
-		// fallback — пробуем преобразовать через Number
-		return Number(v);
-	  }
-	  
-	  const sizes = sizesRaw.map((s) => ({
-		id: s.id,
-		name: s.name,
-		value: toNumberValue(s.value),
-	  }));
-	  
-	  const doughTypes = doughTypesRaw.map((d) => ({
-		id: d.id,
-		name: d.name,
-		value: toNumberValue(d.value),
-	  }));
+	// const doughTypes = doughTypesRaw.map((d) => ({
+	// 	...d,
+	// 	value: Number(d.value),
+	// }));
 
 	return (
-		<Container className="flex flex-col my-30 ">
+		<Container className="flex flex-col my-10">
 			<Link
 				href="/"
 				className="mb-5 bg-gray-100 h-[50px] w-[50px] rounded-full 
-        flex items-center justify-center border border-gray-200 shadow-sm hover:scale-105 transition-all duration-300"
+        					flex items-center justify-center border border-gray-200 
+							shadow-sm hover:scale-105 transition-all duration-300"
 			>
 				<ReplyIcon size={20} />
 			</Link>
 
-			<ProductFormClient product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />
+			<ProductFormClient
+				product={productWithNumbers as unknown as ProductWithRelations}
+				// sizes={sizes}
+				// doughTypes={doughTypes}
+				// handleClose={() => {}}
+			/>
 		</Container>
 	);
 }
