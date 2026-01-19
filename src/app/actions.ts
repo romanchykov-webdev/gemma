@@ -12,6 +12,7 @@ import { prisma } from "../../prisma/prisma-client";
 import { calcCatItemTotalPrice } from "@/lib/calc-cart-item-total-price";
 import { getUserSession } from "@/lib/get-user-session";
 import { hashSync } from "bcrypt";
+import { asProductVariants } from "../../@types/json-parsers";
 import { CartItemDTO } from "../../services/dto/cart.dto";
 
 const APP_URL =
@@ -38,14 +39,23 @@ export async function createOrder(data: CheckoutFormValues) {
 			include: {
 				items: {
 					include: {
-						productItem: {
-							include: {
-								product: true,
-								size: true,
-								doughType: true,
+						product: {
+							select: {
+								id: true,
+								name: true,
+								imageUrl: true,
+								variants: true,
+								baseIngredients: true,
 							},
 						},
-						ingredients: true,
+						ingredients: {
+							select: {
+								id: true,
+								name: true,
+								price: true,
+								imageUrl: true,
+							},
+						},
 					},
 				},
 			},
@@ -125,19 +135,29 @@ export async function createCashOrder(data: CheckoutFormValues) {
 
 		if (!cartToken) throw new Error("Cart token not found");
 
+		// ✅ ПРАВИЛЬНО:
 		const cart = await prisma.cart.findFirst({
 			where: { tokenId: cartToken },
 			include: {
 				items: {
 					include: {
-						productItem: {
-							include: {
-								product: true,
-								size: true,
-								doughType: true,
+						product: {
+							select: {
+								id: true,
+								name: true,
+								imageUrl: true,
+								variants: true,
+								baseIngredients: true,
 							},
 						},
-						ingredients: true,
+						ingredients: {
+							select: {
+								id: true,
+								name: true,
+								price: true,
+								imageUrl: true,
+							},
+						},
 					},
 				},
 			},
@@ -170,22 +190,34 @@ export async function createCashOrder(data: CheckoutFormValues) {
 			},
 		});
 
-		// Детализация позиций
+		const allSizes = await prisma.size.findMany({
+			select: { id: true, value: true, name: true },
+		});
+		const allTypes = await prisma.type.findMany({
+			select: { id: true, value: true, name: true },
+		});
+
+		// Затем в цикле (строки 183-200):
 		const lines: string[] = [];
 		for (const it of cart.items) {
 			const qty = it.quantity ?? 1;
-			const name = it.productItem?.product?.name ?? "Prodotto";
-			const size = it.productItem?.size?.value ? ` (${it.productItem.size.value} cm)` : "";
+			const name = it.product?.name ?? "Prodotto";
 
-			// тип теста: берём из item.type, если нет — из productItem.doughTypeId
-			const doughType = it.productItem?.doughType;
-			// const doughName = doughType ? mapPizzaTypes[doughType as keyof typeof mapPizzaTypes] : undefined;
-			const doughLine = doughType ? `, impasto: ${doughType.name}` : "";
+			// Получаем вариант из product.variants
+			const variants = asProductVariants(it.product?.variants);
+			const variant = variants.find((v) => v.variantId === it.variantId);
+
+			// Получаем размер из справочника
+			const sizeObj = allSizes.find((s) => s.id === variant?.sizeId);
+			const size = sizeObj ? ` (${sizeObj.value} cm)` : "";
+
+			// Получаем тип теста из справочника
+			const typeObj = allTypes.find((t) => t.id === variant?.typeId);
+			const doughLine = typeObj ? `, impasto: ${typeObj.name}` : "";
 
 			const ing = (it.ingredients ?? []).map((x) => x.name).filter(Boolean);
 			const ingLine = ing.length ? `\n  + Ingredienti: ${ing.join(", ")}` : "";
 
-			// сумма позиции (база + ингредиенты) * количество
 			const itemSum = calcCatItemTotalPrice(it as CartItemDTO);
 
 			lines.push(`${qty} x ${name}${size}${doughLine}${ingLine} - ${itemSum} €`);

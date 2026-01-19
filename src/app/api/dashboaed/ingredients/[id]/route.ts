@@ -85,13 +85,14 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 		}
 
 		// Проверка существования ингредиента
+		// Проверка существования ингредиента
 		const existingIngredient = await prisma.ingredient.findUnique({
 			where: { id },
 			select: {
 				id: true,
-				_count: {
+				cartItems: {
 					select: {
-						products: true, // Количество продуктов использующих ингредиент
+						id: true,
 					},
 				},
 			},
@@ -101,11 +102,11 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
 			return NextResponse.json({ message: "Ingrediente non trovato" }, { status: 404 });
 		}
 
-		// Проверка на использование в продуктах
-		if (existingIngredient._count.products > 0) {
+		// Проверка на использование в корзинах
+		if (existingIngredient.cartItems.length > 0) {
 			return NextResponse.json(
 				{
-					message: `Impossibile eliminare. L'ingrediente è usato in ${existingIngredient._count.products} prodotti`,
+					message: `Impossibile eliminare. L'ingrediente è usato in ${existingIngredient.cartItems.length} carrelli`,
 				},
 				{ status: 409 },
 			);

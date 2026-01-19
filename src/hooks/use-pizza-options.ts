@@ -26,7 +26,7 @@ export const usePizzaOptions = (items: OptimizedProductItem[]): ReturnProps => {
 
 	const availableSizes = getAvailablePizzaSizes(type, items);
 
-	const currentItemId = items.find((item) => item.doughType?.value === type && item.size?.value === size)?.id;
+	const currentItemId = items.find((item) => item.type?.value === type && item.size?.value === size)?.id;
 
 	useEffect(() => {
 		const isAvailableSize = availableSizes?.find((item) => Number(item.value) === size && !item.disabled);

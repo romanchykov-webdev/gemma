@@ -6,13 +6,13 @@ export const revalidate = 3600;
 // GET - Получить все типы теста
 export async function GET() {
 	try {
-		const types = await prisma.doughType.findMany({
+		const types = await prisma.type.findMany({
 			orderBy: { sortOrder: "asc" },
-			include: {
-				_count: {
-					select: { productItems: true },
-				},
-			},
+			// include: {
+			// 	_count: {
+			// 		select: { productItems: true },
+			// 	},
+			// },
 		});
 		return NextResponse.json(types);
 	} catch (error) {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Проверка на дубликат по имени
-		const existingByName = await prisma.doughType.findUnique({
+		const existingByName = await prisma.type.findUnique({
 			where: { name: data.name.trim() },
 		});
 
@@ -40,24 +40,24 @@ export async function POST(req: NextRequest) {
 		}
 
 		// 🔥 Автоматическое генерирование value (максимальное + 1)
-		const maxValueType = await prisma.doughType.findFirst({
+		const maxValueType = await prisma.type.findFirst({
 			orderBy: { value: "desc" },
 			select: { value: true },
 		});
 
 		const nextValue = maxValueType ? maxValueType.value + 1 : 1;
 
-		const newType = await prisma.doughType.create({
+		const newType = await prisma.type.create({
 			data: {
 				name: data.name.trim(),
 				value: nextValue, // 🔥 Генерируется автоматически
 				sortOrder: data.sortOrder || 0,
 			},
-			include: {
-				_count: {
-					select: { productItems: true },
-				},
-			},
+			// include: {
+			// 	_count: {
+			// 		select: { productItems: true },
+			// 	},
+			// },
 		});
 
 		return NextResponse.json(newType, { status: 201 });

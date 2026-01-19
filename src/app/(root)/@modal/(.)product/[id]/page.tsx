@@ -63,7 +63,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 	}
 
 	// ✅ НОВОЕ - Обогащаем baseIngredients полными данными
-	const baseIngrsFromDB = (product.baseIngredients as any[]) || [];
+	const baseIngrsFromDB = (product.baseIngredients as unknown as BaseIngredient[]) || [];
 
 	// Обогащаем базовые ингредиенты данными из таблицы Ingredient
 	const enrichedBaseIngredients: BaseIngredient[] = baseIngrsFromDB.map((baseIng) => {
@@ -92,7 +92,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		}));
 
 	// ✅ Преобразуем JSON variants в массив items для UI
-	const variants = (product.variants as any[]) || [];
+	const variants = (product.variants as unknown as ProductVariant[]) || [];
 	const items: OptimizedProductItem[] = variants.map((v) => {
 		const sizeObj = sizes.find((s) => s.id === v.sizeId);
 		const typeObj = doughTypes.find((t) => t.id === v.typeId);
@@ -100,10 +100,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 			id: v.variantId,
 			price: Number(v.price),
 			sizeId: v.sizeId,
-			doughTypeId: v.typeId,
+			typeId: v.typeId,
 			productId: product.id,
 			size: sizeObj ? { value: sizeObj.value, name: sizeObj.name } : null,
-			doughType: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
+			type: typeObj ? { value: typeObj.value, name: typeObj.name } : null,
 		};
 	});
 
@@ -113,7 +113,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 		ingredients: productIngredients,
 		items: items,
 		variants: variants as ProductVariant[],
-		baseIngredients: enrichedBaseIngredients, // ✅ Используем обогащенные данные
+		baseIngredients: enrichedBaseIngredients,
 	};
 
 	return <ChooseProductModal product={productWithNumbers} sizes={sizes} doughTypes={doughTypes} />;

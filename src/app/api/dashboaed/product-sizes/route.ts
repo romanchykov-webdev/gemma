@@ -7,7 +7,7 @@ export const revalidate = 3600;
 // 📋 GET - Получение всех размеров
 export async function GET() {
 	try {
-		const sizes = await prisma.productSize.findMany({
+		const sizes = await prisma.size.findMany({
 			orderBy: {
 				sortOrder: "asc",
 			},
@@ -16,11 +16,11 @@ export async function GET() {
 				name: true,
 				value: true,
 				sortOrder: true,
-				_count: {
-					select: {
-						productItems: true,
-					},
-				},
+				// _count: {
+				// 	select: {
+				// 		productItems: true,
+				// 	},
+				// },
 			},
 		});
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Проверка на дубликат по имени
-		const existingByName = await prisma.productSize.findUnique({
+		const existingByName = await prisma.size.findUnique({
 			where: { name: data.name.trim() },
 		});
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Проверка на дубликат по значению
-		const existingByValue = await prisma.productSize.findUnique({
+		const existingByValue = await prisma.size.findUnique({
 			where: { value: Number(data.value) },
 		});
 
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Создание размера
-		const newSize = await prisma.productSize.create({
+		const newSize = await prisma.size.create({
 			data: {
 				name: data.name.trim(),
 				value: Number(data.value),
@@ -75,11 +75,11 @@ export async function POST(req: NextRequest) {
 				name: true,
 				value: true,
 				sortOrder: true,
-				_count: {
-					select: {
-						productItems: true,
-					},
-				},
+				// _count: {
+				// 	select: {
+				// 		productItems: true,
+				// 	},
+				// },
 			},
 		});
 

@@ -1,3 +1,4 @@
+import { asProductVariants } from "../../@types/json-parsers";
 import { CartItemDTO } from "../../services/dto/cart.dto";
 
 export const calcCatItemTotalPrice = (item: CartItemDTO): number => {
@@ -8,13 +9,20 @@ export const calcCatItemTotalPrice = (item: CartItemDTO): number => {
 	// Если нет, пытаемся извлечь цену из варианта в product.variants
 	let basePrice = 0;
 
-	if (item.productItem?.price) {
-		// Старая структура (если есть productItem)
-		basePrice = Number(item.productItem.price);
-	} else if (item.product?.variants) {
+	// if (item.productItem?.price) {
+	// 	// Старая структура (если есть productItem)
+	// 	basePrice = Number(item.productItem.price);
+	// } else if (item.product?.variants) {
+	// 	// Новая структура: ищем вариант по variantId
+	// 	const variants = asProductVariants(product.variants);
+	// 	const variant = variants.find(v => v.variantId === item.variantId);
+	// 	basePrice = variant?.price ? Number(variant.price) : 0;
+	// }
+
+	if (item.product?.variants && Array.isArray(item.product.variants)) {
 		// Новая структура: ищем вариант по variantId
-		const variants = item.product.variants as any[];
-		const variant = variants.find((v: any) => v.variantId === (item as any).variantId);
+		const variants = asProductVariants(item.product.variants);
+		const variant = variants.find((v) => v.variantId === item.variantId);
 		basePrice = variant?.price ? Number(variant.price) : 0;
 	}
 

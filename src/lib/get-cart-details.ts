@@ -1,3 +1,4 @@
+import { asProductVariants } from "../../@types/json-parsers";
 import { CartDTO } from "../../services/dto/cart.dto";
 import { calcCatItemTotalPrice } from "./calc-cart-item-total-price";
 
@@ -7,12 +8,15 @@ export type CartStateItem = {
 	name: string;
 	imageUrl: string;
 	price: number;
-	pizzaSize?: number | null;
-	pizzaType?: number | null;
-	sizeName?: string | null;
-	doughTypeName?: string | null;
-	ingredients: Array<{ name: string; price: number }>;
+	size: number | null;
+	type: number | null;
+	sizeName: string | null;
+	typeName: string | null;
+	ingredients: Array<{ id: number; name: string; price: number }>; // ✅ id обязателен
 	removedIngredients?: Array<{ name: string }>;
+	// ✅ НОВОЕ - для точного сравнения дубликатов (обязательны)
+	productId: number;
+	variantId: number;
 };
 
 interface ReturnProps {
@@ -30,33 +34,38 @@ export const getCartDetails = (data: CartDTO): ReturnProps => {
 
 	const items = data.items
 		.map((item) => {
-			// ✅ Новая структура: item.productItem может быть undefined
-			// Проверяем наличие productItem или используем product напрямую
-			const productItem = item.productItem;
-			const product = productItem?.product || item.product;
+			const product = item.product;
 
 			if (!product) {
 				console.error("Product is missing in cart item:", item);
 				return null;
 			}
 
-			return {
-				id: item.id,
-				quantity: item.quantity,
-				name: product.name,
-				imageUrl: product.imageUrl,
-				price: calcCatItemTotalPrice(item),
-				pizzaSize: productItem?.size?.value ?? null,
-				pizzaType: productItem?.doughType?.value ?? null,
-				sizeName: productItem?.size?.name ?? null,
-				doughTypeName: productItem?.doughType?.name ?? null,
-				ingredients: item.ingredients.map((ingredient) => ({
-					name: ingredient.name,
-					price: Number(ingredient.price),
-				})),
-			};
+		// Получаем информацию о варианте из product.variants
+		const variants = asProductVariants(product.variants);
+		const variant = variants.find((v) => v.variantId === item.variantId);
+
+		return {
+			id: item.id,
+			quantity: item.quantity,
+			name: product.name,
+			imageUrl: product.imageUrl,
+			price: calcCatItemTotalPrice(item),
+			size: variant?.sizeId ?? null,
+			type: variant?.typeId ?? null,
+			sizeName: null as string | null,
+			typeName: null as string | null,
+			ingredients: item.ingredients.map((ingredient) => ({
+				id: ingredient.id,
+				name: ingredient.name,
+				price: Number(ingredient.price),
+			})),
+			// ✅ НОВОЕ - добавляем для точного сравнения
+			productId: product.id,
+			variantId: item.variantId,
+		};
 		})
-		.filter((item): item is CartStateItem => item !== null); // Убираем null значения
+		.filter((item): item is CartStateItem => item !== null);
 
 	return {
 		items,

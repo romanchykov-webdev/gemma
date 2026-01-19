@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { toast } from "react-hot-toast";
+import { BaseIngredient } from "../../../@types/prisma";
 import { Button } from "../ui";
 import { LazyImage } from "./lazy-image";
 import { Title } from "./title";
@@ -14,9 +15,12 @@ interface Props {
 	price: number;
 	imageUrl: string;
 	ingredients: Array<{ id: number; name: string; price: number }>;
+	baseIngredients: BaseIngredient[];
 	className?: string;
 
 	itemId: number;
+	size?: number | null;
+	type?: number | null;
 	priority?: boolean;
 }
 
@@ -26,8 +30,11 @@ export const ProductCard: React.FC<Props> = ({
 	price,
 	imageUrl,
 	ingredients,
+	baseIngredients,
 	className,
 	itemId,
+	size,
+	type,
 	priority = false,
 }) => {
 	//
@@ -36,18 +43,18 @@ export const ProductCard: React.FC<Props> = ({
 
 	// Быстрое добавление в корзину
 	const handleAddToCart = () => {
-		// ⚠️ ПРОБЛЕМА: В ProductCard нет информации о variantId
-		// Нужно либо передавать variantId в пропсы, либо использовать первый вариант
-		// ВРЕМЕННОЕ РЕШЕНИЕ: используем itemId как variantId и id как productId
+		
 		addCartItem({
-			productId: id, // ✅ ID продукта
-			variantId: itemId, // ✅ variantId (предполагаем что itemId = variantId)
+			productId: id, 
+			variantId: itemId, 
+			ingredients: [],
+			baseIngredientsSnapshot: baseIngredients,
 			optimistic: {
 				name,
 				imageUrl,
 				price,
-				pizzaSize: null,
-				pizzaType: null,
+				size: size ?? null,
+				type: type ?? null,
 				ingredientsData: [],
 			},
 		});

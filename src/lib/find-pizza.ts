@@ -1,3 +1,4 @@
+import { BaseIngredient, ProductVariant } from "../../@types/prisma";
 import { prisma } from "../../prisma/prisma-client";
 
 export interface GetSearchParams {
@@ -51,8 +52,8 @@ export const findPizzas = async (params: GetSearchParams) => {
 				// Фильтруем продукты внутри категории
 				const filteredProducts = category.products.filter((product) => {
 					// Типизируем JSON поля
-					const variants = product.variants as any[];
-					const baseIngredients = product.baseIngredients as any[]; // [{ id: 1, removable: true }, ...]
+					const variants = product.variants as unknown as ProductVariant[];
+					const baseIngredients = product.baseIngredients as unknown as BaseIngredient[];
 
 					// --- ФИЛЬТР ПО ЦЕНЕ, РАЗМЕРУ, ТИПУ ---
 					// Проверяем, есть ли ХОТЯ БЫ ОДИН вариант, подходящий под условия
@@ -87,18 +88,25 @@ export const findPizzas = async (params: GetSearchParams) => {
 				return {
 					...category,
 					products: filteredProducts.map((product) => {
-						const variants = product.variants as any[];
-						const baseIngredients = product.baseIngredients as any[];
+						// Типизируем JSON поля для текущего продукта
+						const variants = product.variants as unknown as ProductVariant[];
+						const baseIngredients = product.baseIngredients as unknown as BaseIngredient[];
 
 						return {
 							...product,
+							// ✅ Явно указываем типизированные variants и baseIngredients
+							variants: variants,
+							baseIngredients: baseIngredients,
+
 							// Восстанавливаем массив ингредиентов (находим полные объекты по ID из JSON)
 							ingredients: baseIngredients
 								.map((bi) => ingredientsDB.find((i) => i.id === bi.id))
-								.filter(Boolean) // Убираем undefined, если вдруг ID не найден
+								.filter((i): i is NonNullable<typeof i> => i !== undefined && i.name !== undefined)
 								.map((i) => ({
-									...i,
-									price: Number(i!.price), // Конвертация Decimal
+									id: i.id,
+									name: i.name,
+									price: Number(i.price),
+									imageUrl: i.imageUrl,
 								})),
 
 							// Преобразуем variants обратно в items (как было раньше)
@@ -107,17 +115,18 @@ export const findPizzas = async (params: GetSearchParams) => {
 								const typeObj = typesDB.find((t) => t.id === v.typeId);
 
 								return {
-									id: v.variantId, // или генерируем уникальный ключ
+									id: v.variantId,
 									price: v.price,
 									sizeId: v.sizeId,
-									doughTypeId: v.typeId,
+									typeId: v.typeId,
 									productId: product.id,
-									// Добавляем вложенные объекты, как ждет фронтенд
 									size: {
 										value: sizeObj?.value || 0,
+										name: sizeObj?.name || "",
 									},
-									doughType: {
-										value: typeObj?.name || "", // В новой схеме у типа может не быть value, или это name
+									type: {
+										value: typeObj?.value || 0,
+										name: typeObj?.name || "",
 									},
 								};
 							}),

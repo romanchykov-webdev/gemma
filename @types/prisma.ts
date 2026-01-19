@@ -22,13 +22,13 @@ export type OptimizedProductItem = {
 	id: number; // variantId
 	price: number;
 	sizeId: number;
-	doughTypeId: number;
+	typeId: number;
 	productId: number;
 	size?: {
 		value: number;
 		name: string;
 	} | null;
-	doughType?: {
+	type?: {
 		value: number;
 		name: string;
 	} | null;
@@ -36,7 +36,10 @@ export type OptimizedProductItem = {
 
 // ✅ Оптимизированный ингредиент
 export type OptimizedIngredient = Omit<Ingredient, "createdAt" | "updatedAt" | "price"> & {
+	id: number;
+	name: string;
 	price: number;
+	removable?: boolean;
 	createdAt?: Date;
 	updatedAt?: Date;
 };
@@ -51,7 +54,7 @@ export type ProductWithRelations = Omit<Product, "createdAt" | "updatedAt" | "va
 	updatedAt?: Date;
 };
 
-// ✅ Базовый тип продукта (совместимость)
+// ✅ Базовый тип продукта
 export type IProduct = Product & {
 	items: OptimizedProductItem[];
 	ingredients: Ingredient[];

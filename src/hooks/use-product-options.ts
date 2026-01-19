@@ -29,7 +29,7 @@ export const useProductOptions = (
 	// Получаем первый доступный вариант для инициализации
 	const firstItem = items[0];
 	const initialSize = firstItem?.size?.value ?? null;
-	const initialType = firstItem?.doughType?.value ?? null;
+	const initialType = firstItem?.type?.value ?? null;
 
 	const [selectedSize, setSelectedSize] = useState<number | null>(initialSize);
 	const [selectedType, setSelectedType] = useState<number | null>(initialType);
@@ -65,7 +65,7 @@ export const useProductOptions = (
 		// Если выбран тип, фильтруем размеры по этому типу
 		if (selectedType !== null) {
 			const availableForType = items
-				.filter((item) => item.doughType?.value === selectedType)
+				.filter((item) => item.type?.value === selectedType)
 				.map((item) => item.size?.value);
 
 			return uniqueSizes.map((size) => ({
@@ -83,12 +83,12 @@ export const useProductOptions = (
 		const uniqueTypes = Array.from(
 			new Map(
 				items
-					.filter((item) => item.doughType)
+					.filter((item) => item.type)
 					.map((item) => [
-						item.doughType!.value,
+						item.type!.value,
 						{
-							name: item.doughType!.name || `Type ${item.doughType!.value}`,
-							value: String(item.doughType!.value),
+							name: item.type!.name || `Type ${item.type!.value}`,
+							value: String(item.type!.value),
 						},
 					]),
 			).values(),
@@ -98,7 +98,7 @@ export const useProductOptions = (
 		if (selectedSize !== null) {
 			const availableForSize = items
 				.filter((item) => item.size?.value === selectedSize)
-				.map((item) => item.doughType?.value);
+				.map((item) => item.type?.value);
 
 			return uniqueTypes.map((type) => ({
 				...type,
@@ -111,7 +111,7 @@ export const useProductOptions = (
 
 	// ✅ Находим ID текущего выбранного варианта
 	const currentItemId = items.find(
-		(item) => item.doughType?.value === selectedType && item.size?.value === selectedSize,
+		(item) => item.type?.value === selectedType && item.size?.value === selectedSize,
 	)?.id;
 
 	// ✅ Автоматически выбираем доступный размер если текущий недоступен

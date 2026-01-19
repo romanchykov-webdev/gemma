@@ -22,11 +22,10 @@ export const CartButtonSticky: React.FC<Props> = ({ className }): JSX.Element =>
 	useEffect(() => {
 		const observer = new IntersectionObserver(
 			([entry]) => {
-				// Если хедер НЕ пересекается с экраном, значит он ушел вверх
 				setIsHeaderOffScreen(!entry.isIntersecting);
 			},
 			{
-				threshold: 0, // Срабатывает сразу при исчезновении
+				threshold: 0,
 				rootMargin: "0px",
 			},
 		);

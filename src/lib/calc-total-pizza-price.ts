@@ -20,7 +20,7 @@ export const calcTotalPizzaPrice = (
 	ingredients: OptimizedIngredient[],
 	selectedIngredientsIds: Set<number>,
 ) => {
-	const pizzaPrice = items?.find((item) => item.doughType?.value === type && item.size?.value === size)?.price || 0;
+	const pizzaPrice = items?.find((item) => item.type?.value === type && item.size?.value === size)?.price || 0;
 
 	// ✅ price уже number, не нужен Number()
 	const totalIngredientsPrice = ingredients

@@ -27,22 +27,11 @@ export async function GET(req: NextRequest) {
 						name: true,
 					},
 				},
-				items: {
-					select: {
-						id: true,
-						price: true,
-						sizeId: true,
-						doughTypeId: true,
-					},
-				},
-				ingredients: {
-					select: {
-						id: true,
-						name: true,
-						price: true,
-						imageUrl: true,
-					},
-				},
+				variants: true,
+				baseIngredients: true,
+				addableIngredientIds: true,
+				createdAt: true,
+				updatedAt: true,
 			},
 			orderBy: {
 				id: "desc",
@@ -89,28 +78,9 @@ export async function POST(req: NextRequest) {
 				name: data.name.trim(),
 				imageUrl: data.imageUrl.trim(),
 				categoryId: Number(data.categoryId),
-				// Опционально: создание items при создании продукта
-				...(data.items && data.items.length > 0
-					? {
-							items: {
-								create: data.items.map(
-									(item: { price: number; sizeId?: number; doughTypeId?: number }) => ({
-										price: Number(item.price),
-										sizeId: item.sizeId ? Number(item.sizeId) : null,
-										doughTypeId: item.doughTypeId ? Number(item.doughTypeId) : null,
-									}),
-								),
-							},
-						}
-					: {}),
-				// Опционально: связывание ingredients
-				...(data.ingredientIds && data.ingredientIds.length > 0
-					? {
-							ingredients: {
-								connect: data.ingredientIds.map((id: number) => ({ id })),
-							},
-						}
-					: {}),
+				variants: data.variants || [],
+				baseIngredients: data.baseIngredients || {},
+				addableIngredientIds: data.addableIngredientIds || [],
 			},
 			select: {
 				id: true,
@@ -123,22 +93,11 @@ export async function POST(req: NextRequest) {
 						name: true,
 					},
 				},
-				items: {
-					select: {
-						id: true,
-						price: true,
-						sizeId: true,
-						doughTypeId: true,
-					},
-				},
-				ingredients: {
-					select: {
-						id: true,
-						name: true,
-						price: true,
-						imageUrl: true,
-					},
-				},
+				variants: true,
+				baseIngredients: true,
+				addableIngredientIds: true,
+				createdAt: true,
+				updatedAt: true,
 			},
 		});
 

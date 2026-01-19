@@ -1,4 +1,5 @@
 import { hashSync } from "bcrypt";
+import { ProductVariant } from "../@types/prisma";
 import { _ingredients, categories } from "./constants";
 import { prisma } from "./prisma-client";
 
@@ -686,7 +687,7 @@ async function up() {
 			},
 		});
 
-		const variants = pepperoniPizza.variants as any[];
+		const variants = pepperoniPizza.variants as unknown as ProductVariant[];
 		const firstVariant = variants[0];
 
 		await prisma.cartItem.create({
