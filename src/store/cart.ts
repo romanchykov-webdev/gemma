@@ -2,6 +2,7 @@ import { calculateItemPrice, RawCartItem } from "@/lib/calculate-cart-price";
 import { CartStateItem } from "@/lib/get-cart-details";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { BaseIngredient } from "../../@types/prisma";
 import { Api } from "../../services/api-client";
 import { CreateCartItemValuesOptimistic } from "../../services/dto/cart.dto";
 import { useReferencesStore } from "./references";
@@ -13,11 +14,58 @@ export interface CartState {
 	items: CartStateItem[];
 	isFetched: boolean;
 	syncing: boolean;
+	adding: boolean; // ✅ НОВОЕ - флаг процесса добавления
 	fetchCartItems: () => Promise<void>;
 	refetchCart: () => Promise<void>;
 	updateItemQuantity: (id: string, quantity: number) => Promise<void>;
 	addCartItem: (values: CreateCartItemValuesOptimistic) => void;
 	removeCartItem: (id: string) => Promise<void>;
+}
+
+/**
+ * 🔍 Ищет товар с идентичной конфигурацией в корзине
+ * Сравнивает: productId, variantId, добавленные ингредиенты и snapshot базовых ингредиентов
+ */
+function findDuplicateItem(
+	items: CartStateItem[],
+	productId: number,
+	variantId: number,
+	addedIngredients: number[],
+	baseIngredientsSnapshot: BaseIngredient[] | undefined,
+): CartStateItem | undefined {
+	// Сортируем массив добавленных ингредиентов для точного сравнения
+	const sortedAddedIngredients = [...addedIngredients].sort((a, b) => a - b);
+	
+	// Готовим данные для сравнения removedIngredients
+	const newRemoved = (baseIngredientsSnapshot || [])
+		.filter((ing) => ing.isDisabled && ing.removable)
+		.map((ing) => ({ name: ing.name }));
+	const newRemovedJson = JSON.stringify(newRemoved);
+
+	return items.find((item) => {
+		// 1. Проверяем productId
+		if (item.productId !== productId) return false;
+		
+		// 2. Проверяем variantId
+		if (item.variantId !== variantId) return false;
+		
+		// 3. Сравниваем добавленные ингредиенты
+		const itemIngredientIds = item.ingredients
+			.map((ing) => ing.id || 0)
+			.filter((id) => id > 0)
+			.sort((a, b) => a - b);
+		
+		const ingredientsMatch = 
+			itemIngredientIds.length === sortedAddedIngredients.length &&
+			itemIngredientIds.every((id, idx) => id === sortedAddedIngredients[idx]);
+		
+		if (!ingredientsMatch) return false;
+
+		// 4. Сравниваем удаленные базовые ингредиенты
+		const itemRemovedJson = JSON.stringify(item.removedIngredients || []);
+		
+		return itemRemovedJson === newRemovedJson;
+	});
 }
 
 /**
@@ -43,10 +91,14 @@ function transformCartItems(rawItems: RawCartItem[]): {
 			sizeName: calculated.sizeName,
 			typeName: calculated.doughTypeName,
 			ingredients: rawItem.ingredients.map((ing) => ({
+				id: ing.id,
 				name: ing.name,
 				price: Number(ing.price),
 			})),
 			removedIngredients: calculated.removedIngredients,
+			// ✅ НОВОЕ - добавляем для точного сравнения
+			productId: rawItem.productId,
+			variantId: rawItem.variantId,
 		};
 	});
 
@@ -66,6 +118,7 @@ export const useCartStore = create<CartState>()(
 			totalAmount: 0,
 			isFetched: false,
 			syncing: false,
+			adding: false,
 
 			fetchCartItems: async () => {
 				const state = get();
@@ -146,96 +199,134 @@ export const useCartStore = create<CartState>()(
 				});
 			},
 
-			addCartItem: (values: CreateCartItemValuesOptimistic) => {
-				const state = get();
-				const prevItems = [...state.items];
-				const prevTotalAmount = state.totalAmount;
+		addCartItem: (values: CreateCartItemValuesOptimistic) => {
+			const state = get();
+			
+			// 🛡️ Защита от race conditions - блокируем повторные вызовы
+			if (state.adding) {
+				console.log("⏳ [CART] Already adding item, skipping...");
+				return;
+			}
 
-				// ⚡ Optimistic update
-				if (values.optimistic) {
-					const { sizes, types } = useReferencesStore.getState();
-					const sizeName =
-						values.optimistic.size != null
-							? sizes.find((s) => s.value === values.optimistic?.size)?.name ?? null
-							: null;
-					const typeName =
-						values.optimistic.type != null
-							? types.find((t) => t.value === values.optimistic?.type)?.name ?? null
-							: null;
-					const removedIngredients = (values.baseIngredientsSnapshot ?? [])
-						.filter((ing) => ing.isDisabled && ing.removable)
-						.map((ing) => ({ name: ing.name }));
+			const prevItems = [...state.items];
+			const prevTotalAmount = state.totalAmount;
 
-					const tempId = `temp-${Date.now()}`;
-					const tempItem: CartStateItem = {
-						id: tempId,
-						quantity: 1,
-						name: values.optimistic.name,
-						imageUrl: values.optimistic.imageUrl,
-						price: values.optimistic.price,
-						size: values.optimistic.size ?? null,
-						type: values.optimistic.type ?? null,
-						sizeName,
-						typeName,
-						ingredients: values.optimistic.ingredientsData || [],
-						removedIngredients,
-					};
+			// 🔍 Проверяем наличие дубликата в корзине
+			const duplicate = findDuplicateItem(
+				state.items,
+				values.productId,
+				values.variantId,
+				values.ingredients || [],
+				values.baseIngredientsSnapshot,
+			);
 
-					const newTotalAmountCents = Math.round(state.totalAmount * 100) + Math.round(tempItem.price * 100);
+			if (duplicate) {
+				// ✅ Дубликат найден - увеличиваем quantity
+				console.log("✅ [CART] Duplicate found, updating quantity:", duplicate.id);
+				get().updateItemQuantity(duplicate.id, duplicate.quantity + 1);
+				return;
+			}
 
-					set({
-						items: [...state.items, tempItem],
-						totalAmount: +(newTotalAmountCents / 100).toFixed(2),
-						error: false,
-					});
-				}
+			// ✨ Дубликата нет - создаем новый товар
+			console.log("✨ [CART] New item, creating...", {
+				productId: values.productId,
+				variantId: values.variantId,
+				ingredients: values.ingredients?.length || 0,
+			});
 
-				// Сохраняем на сервере
-				Api.cart
-					.addCartItem({
-						productId: values.productId,
-						variantId: values.variantId,
-						ingredients: values.ingredients,
-						baseIngredientsSnapshot: values.baseIngredientsSnapshot,
-						removedIngredients: values.removedIngredients,
-					})
-					.then((res) => {
-						const itemId = res?.itemId;
-						if (!itemId) return;
-						const state = get();
-						const temp = state.items.find((i) => String(i.id).startsWith("temp-"));
-						if (!temp) return;
+			// Устанавливаем флаг добавления
+			set({ adding: true });
 
-						if (state.items.some((i) => i.id === itemId)) {
-							// Дубликат: убрать temp, инкрементировать существующий с id === itemId
-							const nextItems = state.items
-								.filter((i) => i.id !== temp.id)
-								.map((i) => {
-									if (i.id === itemId) {
-										const pricePerOne = i.price / i.quantity;
-										return { ...i, quantity: i.quantity + 1, price: pricePerOne * (i.quantity + 1) };
-									}
-									return i;
-								});
-							const newTotalAmountCents = nextItems.reduce((sum, item) => sum + Math.round(item.price * 100), 0);
-							set({ items: nextItems, totalAmount: +(newTotalAmountCents / 100).toFixed(2) });
-						} else {
-							// Новая позиция: заменить temp.id на itemId
-							set({
-								items: state.items.map((i) => (i.id === temp.id ? { ...i, id: itemId } : i)),
-							});
-						}
-					})
-					.catch((error) => {
-						console.error("[CART] Add failed:", error);
-						// Откат при ошибке
+			// ⚡ Optimistic update - добавляем временный элемент в UI
+			if (values.optimistic) {
+				const { sizes, types } = useReferencesStore.getState();
+				const sizeName =
+					values.optimistic.size != null
+						? sizes.find((s) => s.value === values.optimistic?.size)?.name ?? null
+						: null;
+				const typeName =
+					values.optimistic.type != null
+						? types.find((t) => t.value === values.optimistic?.type)?.name ?? null
+						: null;
+				const removedIngredients = (values.baseIngredientsSnapshot ?? [])
+					.filter((ing) => ing.isDisabled && ing.removable)
+					.map((ing) => ({ name: ing.name }));
+
+				const tempId = `temp-${Date.now()}`;
+				// Убеждаемся что у всех ингредиентов есть id
+				const ingredientsWithIds = (values.optimistic.ingredientsData || []).map((ing) => ({
+					id: ing.id || 0,
+					name: ing.name,
+					price: ing.price,
+				}));
+
+				const tempItem: CartStateItem = {
+					id: tempId,
+					quantity: 1,
+					name: values.optimistic.name,
+					imageUrl: values.optimistic.imageUrl,
+					price: values.optimistic.price,
+					size: values.optimistic.size ?? null,
+					type: values.optimistic.type ?? null,
+					sizeName,
+					typeName,
+					ingredients: ingredientsWithIds,
+					removedIngredients,
+					productId: values.productId,
+					variantId: values.variantId,
+				};
+
+				const newTotalAmountCents = Math.round(state.totalAmount * 100) + Math.round(tempItem.price * 100);
+
+				set({
+					items: [...state.items, tempItem],
+					totalAmount: +(newTotalAmountCents / 100).toFixed(2),
+					error: false,
+				});
+			}
+
+			// 💾 Сохраняем на сервере
+			Api.cart
+				.addCartItem({
+					productId: values.productId,
+					variantId: values.variantId,
+					ingredients: values.ingredients,
+					baseIngredientsSnapshot: values.baseIngredientsSnapshot,
+					removedIngredients: values.removedIngredients,
+				})
+				.then((res) => {
+					const itemId = res?.itemId;
+					if (!itemId) {
+						console.error("[CART] No itemId returned from server");
+						set({ adding: false });
+						return;
+					}
+
+					// Заменяем временный ID на реальный
+					const state = get();
+					const temp = state.items.find((i) => String(i.id).startsWith("temp-"));
+					
+					if (temp) {
+						console.log("🔄 [CART] Replacing temp ID with real ID:", itemId);
 						set({
-							items: prevItems,
-							totalAmount: prevTotalAmount,
-							error: true,
+							items: state.items.map((i) => (i.id === temp.id ? { ...i, id: itemId } : i)),
+							adding: false,
 						});
+					} else {
+						set({ adding: false });
+					}
+				})
+				.catch((error) => {
+					console.error("[CART] Add failed:", error);
+					// Откат при ошибке
+					set({
+						items: prevItems,
+						totalAmount: prevTotalAmount,
+						error: true,
+						adding: false,
 					});
-			},
+				});
+		},
 
 			removeCartItem: async (id: string) => {
 				const state = get();

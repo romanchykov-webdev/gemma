@@ -12,8 +12,11 @@ export type CartStateItem = {
 	type: number | null;
 	sizeName: string | null;
 	typeName: string | null;
-	ingredients: Array<{ name: string; price: number }>;
+	ingredients: Array<{ id: number; name: string; price: number }>; // ✅ id обязателен
 	removedIngredients?: Array<{ name: string }>;
+	// ✅ НОВОЕ - для точного сравнения дубликатов (обязательны)
+	productId: number;
+	variantId: number;
 };
 
 interface ReturnProps {
@@ -38,25 +41,29 @@ export const getCartDetails = (data: CartDTO): ReturnProps => {
 				return null;
 			}
 
-			// Получаем информацию о варианте из product.variants
-			const variants = asProductVariants(product.variants);
-			const variant = variants.find((v) => v.variantId === item.variantId);
+		// Получаем информацию о варианте из product.variants
+		const variants = asProductVariants(product.variants);
+		const variant = variants.find((v) => v.variantId === item.variantId);
 
-			return {
-				id: item.id,
-				quantity: item.quantity,
-				name: product.name,
-				imageUrl: product.imageUrl,
-				price: calcCatItemTotalPrice(item),
-				size: variant?.sizeId ?? null,
-				type: variant?.typeId ?? null,
-				sizeName: null as string | null,
-				typeName: null as string | null,
-				ingredients: item.ingredients.map((ingredient) => ({
-					name: ingredient.name,
-					price: Number(ingredient.price),
-				})),
-			};
+		return {
+			id: item.id,
+			quantity: item.quantity,
+			name: product.name,
+			imageUrl: product.imageUrl,
+			price: calcCatItemTotalPrice(item),
+			size: variant?.sizeId ?? null,
+			type: variant?.typeId ?? null,
+			sizeName: null as string | null,
+			typeName: null as string | null,
+			ingredients: item.ingredients.map((ingredient) => ({
+				id: ingredient.id,
+				name: ingredient.name,
+				price: Number(ingredient.price),
+			})),
+			// ✅ НОВОЕ - добавляем для точного сравнения
+			productId: product.id,
+			variantId: item.variantId,
+		};
 		})
 		.filter((item): item is CartStateItem => item !== null);
 

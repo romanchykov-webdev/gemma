@@ -69,7 +69,8 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/cart
- * Добавляет товар в корзину с поддержкой baseIngredientsSnapshot
+ * Добавляет товар в корзину БЕЗ проверки на дубликаты
+ * ✅ Вся логика сравнения перенесена на клиент
  */
 export async function POST(req: NextRequest) {
 	try {
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
 			baseIngredientsSnapshot: data.baseIngredientsSnapshot?.length || 0,
 		});
 
-		// ⚡ УПРОЩЕННАЯ ТРАНЗАКЦИЯ
+		// ⚡ УПРОЩЕННАЯ ТРАНЗАКЦИЯ - только создание, без проверок
 		const itemId = await prisma.$transaction(async (tx) => {
 			// 1. Находим или создаем корзину
 			let cart = await tx.cart.findFirst({
@@ -110,49 +111,17 @@ export async function POST(req: NextRequest) {
 			}
 
 			// 2. Подготавливаем данные
-			// 2. Подготавливаем данные
 			const sortedIngredients = (data.ingredients || []).sort((a, b) => a - b);
 			const baseSnapshot = data.baseIngredientsSnapshot || [];
 
-			// ✅ ДОБАВИТЬ: Извлекаем ID удаленных ингредиентов из snapshot
+			// Извлекаем ID удаленных ингредиентов из snapshot
 			const removedBaseIds = baseSnapshot
 				.filter((ing) => ing.isDisabled && ing.removable)
 				.map((ing) => ing.id)
 				.sort((a, b) => a - b);
 
-			// 3. ✅ ИСПРАВИТЬ: Проверяем дубликат с учетом removedBaseIngredientIds
-			const existingItem = await tx.cartItem.findFirst({
-				where: {
-					cartId: cart.id,
-					productId: data.productId,
-					variantId: data.variantId,
-					addedIngredientIds: { equals: sortedIngredients },
-					removedBaseIngredientIds: { equals: removedBaseIds }, // ✅ ДОБАВИТЬ!
-				},
-				select: {
-					id: true,
-					baseIngredientsSnapshot: true,
-				},
-			});
-
-			// 4. Если нашли - увеличиваем количество
-			if (existingItem) {
-				// Сравниваем JSON строки для точности
-				const existingSnapshot = JSON.stringify(existingItem.baseIngredientsSnapshot || []);
-				const newSnapshot = JSON.stringify(baseSnapshot);
-
-				if (existingSnapshot === newSnapshot) {
-					await tx.cartItem.update({
-						where: { id: existingItem.id },
-						data: { quantity: { increment: 1 } },
-					});
-					console.log("📦 [CART_POST] Item already exists, incremented quantity");
-					return existingItem.id;
-				}
-				// Если snapshot разный - создаем новый товар
-			}
-
-			// 5. ✅ ИСПРАВИТЬ: Создаем новый товар с removedBaseIngredientIds
+			// 3. ✅ ПРОСТО СОЗДАЕМ новый товар без проверки на дубликаты
+			// Клиент уже проверил это на своей стороне
 			const newItem = await tx.cartItem.create({
 				data: {
 					cartId: cart.id,
