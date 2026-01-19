@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 						name: true,
 						imageUrl: true,
 						variants: true,
-						baseIngredients: true, // на случай если snapshot пустой
+						baseIngredients: true,
 					},
 				},
 				// Минимум данных об ингредиентах для UI

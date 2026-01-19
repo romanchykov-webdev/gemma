@@ -75,9 +75,7 @@ export const ProductsGroupList: React.FC<Props> = ({
 								ingredients={product.ingredients}
 								itemId={minPriceItem.id}
 								baseIngredients={product.baseIngredients}
-								// ✅ Ленивая загрузка:
-								// - Только первые 3 изображения из ПЕРВОЙ категории загружаются сразу (LCP оптимизация)
-								// - Все остальные загружаются при приближении к viewport
+						
 								priority={hasPriority}
 							/>
 						);

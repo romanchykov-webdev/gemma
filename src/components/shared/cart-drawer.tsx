@@ -60,7 +60,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }): JSX
 					{/* <div className="flex flex-col overflow-auto scrollbar gap-2 max-h-[calc(100vh-200px)]"> */}
 					{items.length > 0 ? (
 						items.map((item) => (
-							// console.log("CartDrawer item", item),
+							console.log("CartDrawer item", item),
 							<CartDriwerItem
 								key={item.id}
 								loading={loading || redirecting}

@@ -188,7 +188,7 @@ export const useCartStore = create<CartState>()(
 					})
 					.then(() => {
 						// После успешного добавления - перезагружаем корзину
-						get().refetchCart();
+						// get().refetchCart();
 					})
 					.catch((error) => {
 						console.error("[CART] Add failed:", error);

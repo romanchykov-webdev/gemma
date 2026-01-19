@@ -54,7 +54,7 @@ export type ProductWithRelations = Omit<Product, "createdAt" | "updatedAt" | "va
 	updatedAt?: Date;
 };
 
-// ✅ Базовый тип продукта (совместимость)
+// ✅ Базовый тип продукта
 export type IProduct = Product & {
 	items: OptimizedProductItem[];
 	ingredients: Ingredient[];

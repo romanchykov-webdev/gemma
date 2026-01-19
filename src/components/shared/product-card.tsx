@@ -39,12 +39,10 @@ export const ProductCard: React.FC<Props> = ({
 
 	// Быстрое добавление в корзину
 	const handleAddToCart = () => {
-		// ⚠️ ПРОБЛЕМА: В ProductCard нет информации о variantId
-		// Нужно либо передавать variantId в пропсы, либо использовать первый вариант
-		// ВРЕМЕННОЕ РЕШЕНИЕ: используем itemId как variantId и id как productId
+		
 		addCartItem({
-			productId: id, // ✅ ID продукта
-			variantId: itemId, // ✅ variantId (предполагаем что itemId = variantId)
+			productId: id, 
+			variantId: itemId, 
 			ingredients: [],
 			baseIngredientsSnapshot: baseIngredients,
 			optimistic: {
