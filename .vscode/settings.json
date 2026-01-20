@@ -1,12 +1,15 @@
 {
-  // Prettier
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.requireConfig": false,
-  "prettier.configPath": ".prettierrc",
-  "prettier.resolveGlobalModules": false,
-  "prettier.ignorePath": ".prettierignore",
-  "prettier.useEditorConfig": false,
+  "prettier.enable": true,
+  "prettier.enableDebugLogs": true,
+ 
+ // Остальные настройки уже есть
+ "editor.formatOnSave": true,
+ "editor.defaultFormatter": "esbenp.prettier-vscode",
+ "prettier.requireConfig": false,
+ "prettier.configPath": ".prettierrc",
+ "prettier.resolveGlobalModules": false,
+ "prettier.ignorePath": ".prettierignore",
+ "prettier.useEditorConfig": false,
 
   // Настройки для разных типов файлов
   "[typescript]": {

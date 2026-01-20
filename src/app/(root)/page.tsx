@@ -12,6 +12,7 @@ import { Suspense } from 'react';
 
 import { LazyFilters } from '@/components/shared/lazy-filters';
 import { StructuredData } from '@/components/shared/structured-data';
+import { TopBar } from '@/components/shared/top-bar';
 import { Skeleton } from '@/components/ui';
 import { findPizzas } from '@/lib';
 import { GetSearchParams } from '@/lib/find-pizza';
@@ -60,8 +61,7 @@ export default async function Home({
       </Container>
 
       <Suspense fallback={<SkeletonFollbackTopBar count={6} />}>
-        <SkeletonFollbackTopBar count={6} />
-        {/* <TopBar categories={categories.filter((c) => c.products.length > 0)} /> */}
+        <TopBar categories={categories.filter((c) => c.products.length > 0)} />
       </Suspense>
 
       <Stories />
