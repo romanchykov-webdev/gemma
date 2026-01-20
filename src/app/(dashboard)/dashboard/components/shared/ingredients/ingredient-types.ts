@@ -1,15 +1,15 @@
 export type Ingredient = {
-	id: number;
-	name: string;
-	price: number;
-	imageUrl: string;
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
 };
 
 // Тип для создания ингредиента (без id)
 export type CreateIngredientData = {
-	name: string;
-	price: number;
-	imageUrl: string;
+  name: string;
+  price: number;
+  imageUrl: string;
 };
 
 // Тип для обновления ингредиента

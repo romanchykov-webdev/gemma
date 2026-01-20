@@ -1,49 +1,55 @@
 {
-	// Prettier
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"prettier.requireConfig": true,
-	"prettier.useEditorConfig": false,
+  "prettier.enable": true,
+  "prettier.enableDebugLogs": true,
+ 
+ // Остальные настройки уже есть
+ "editor.formatOnSave": true,
+ "editor.defaultFormatter": "esbenp.prettier-vscode",
+ "prettier.requireConfig": false,
+ "prettier.configPath": ".prettierrc",
+ "prettier.resolveGlobalModules": false,
+ "prettier.ignorePath": ".prettierignore",
+ "prettier.useEditorConfig": false,
 
-	// Настройки для разных типов файлов
-	"[typescript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
-	"[typescriptreact]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
-	"[javascript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
-	"[javascriptreact]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
-	"[json]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
-	"[jsonc]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": true
-	},
+  // Настройки для разных типов файлов
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
 
-	// ESLint
-	"eslint.enable": true,
-	"eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  // ESLint
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
 
-	// Отключаем конфликтующие форматтеры
-	"javascript.format.enable": false,
-	"typescript.format.enable": false,
+  // Отключаем конфликтующие форматтеры
+  "javascript.format.enable": false,
+  "typescript.format.enable": false,
 
-	// Git commit messages
-	"git.inputValidationLength": 72,
-	"git.inputValidationSubjectLength": 50,
+  // Git commit messages
+  "git.inputValidationLength": 72,
+  "git.inputValidationSubjectLength": 50,
 
-	// Cursor AI
-	"cursor.general.locale": "ru",
-	"cursor.chat.locale": "ru"
+  // Cursor AI
+  "cursor.general.locale": "ru",
+  "cursor.chat.locale": "ru"
 }

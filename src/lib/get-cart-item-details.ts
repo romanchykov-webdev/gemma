@@ -21,7 +21,7 @@
 // 	}
 // 	return details.join(", ");
 // };
-import { CartStateItem } from "./get-cart-details";
+import { CartStateItem } from './get-cart-details';
 
 // /**
 //  * ✅ Получает детали товара в корзине (размер, тип теста, ингредиенты)
@@ -73,39 +73,40 @@ import { CartStateItem } from "./get-cart-details";
 // 	return details.join(", ");
 // };
 export const getCartItemDetails = (
-	ingredients: CartStateItem["ingredients"],
-	sizeName?: string | null,
-	doughTypeName?: string | null,
-	removedIngredients?: Array<{ name: string }>,
+  ingredients: CartStateItem['ingredients'],
+  sizeName?: string | null,
+  doughTypeName?: string | null,
+  removedIngredients?: Array<{ name: string }>,
 ) => {
-	const baseDetails: string[] = [];
+  const baseDetails: string[] = [];
 
-	// sizeName=null && doughTypeName=null
-	if (sizeName === "Null" && doughTypeName === "Null") {
-		return { base: "", added: "", removed: "" };
-	}
+  // sizeName=null && doughTypeName=null
+  if (sizeName === 'Null' && doughTypeName === 'Null') {
+    return { base: '', added: '', removed: '' };
+  }
 
-	// 🍕 Если это пицца (есть и размер и тип теста)
-	if (sizeName && doughTypeName) {
-		baseDetails.push(`${doughTypeName} ${sizeName}`);
-	}
-	// 🥤 Если это напиток/другой продукт (только размер)
-	else if (sizeName) {
-		baseDetails.push(sizeName);
-	}
+  // 🍕 Если это пицца (есть и размер и тип теста)
+  if (sizeName && doughTypeName) {
+    baseDetails.push(`${doughTypeName} ${sizeName}`);
+  }
+  // 🥤 Если это напиток/другой продукт (только размер)
+  else if (sizeName) {
+    baseDetails.push(sizeName);
+  }
 
-	// ✅ Добавленные ингредиенты (отдельная строка)
-	const added = ingredients && ingredients.length > 0 ? ingredients.map((ing) => `+${ing.name}`).join(", ") : "";
+  // ✅ Добавленные ингредиенты (отдельная строка)
+  const added =
+    ingredients && ingredients.length > 0 ? ingredients.map(ing => `+${ing.name}`).join(', ') : '';
 
-	// ✅ Удаленные ингредиенты (отдельная строка)
-	const removed =
-		removedIngredients && removedIngredients.length > 0
-			? removedIngredients.map((ing) => `-${ing.name}`).join(", ")
-			: "";
+  // ✅ Удаленные ингредиенты (отдельная строка)
+  const removed =
+    removedIngredients && removedIngredients.length > 0
+      ? removedIngredients.map(ing => `-${ing.name}`).join(', ')
+      : '';
 
-	return {
-		base: baseDetails.join(", "),
-		added,
-		removed,
-	};
+  return {
+    base: baseDetails.join(', '),
+    added,
+    removed,
+  };
 };
