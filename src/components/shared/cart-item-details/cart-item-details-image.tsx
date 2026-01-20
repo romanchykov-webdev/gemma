@@ -1,10 +1,10 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface Props {
-	src: string;
-	className?: string;
+  src: string;
+  className?: string;
 }
 
 export const CartItemDetailsImage: React.FC<Props> = ({ src, className }) => {
-	return <img className={cn("w-[60px] h-[60px]", className)} src={src} alt={src} loading="lazy" />;
+  return <img className={cn('w-[60px] h-[60px]', className)} src={src} alt={src} loading="lazy" />;
 };

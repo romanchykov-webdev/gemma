@@ -1,49 +1,56 @@
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
-import { UserRole } from "@prisma/client";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import React, { JSX } from "react";
-import { MenuList } from "./menu-list";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+import { UserRole } from '@prisma/client';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import React, { JSX } from 'react';
+import { MenuList } from './menu-list';
 
 interface Props {
-	className?: string;
-	children?: React.ReactNode;
-	isOpen: boolean;
-	setIsOpen: (isOpen: boolean) => void;
-	toggleMenu: (item: string) => void;
-	activeSection: string;
-	userRole: UserRole;
+  className?: string;
+  children?: React.ReactNode;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  toggleMenu: (item: string) => void;
+  activeSection: string;
+  userRole: UserRole;
 }
 
 export const Menu: React.FC<Props> = ({
-	className,
-	children,
-	isOpen,
-	setIsOpen,
-	toggleMenu,
-	activeSection,
-	userRole,
+  className,
+  children,
+  isOpen,
+  setIsOpen,
+  toggleMenu,
+  activeSection,
+  userRole,
 }): JSX.Element => {
-	return (
-		<div className={cn("", className)}>
-			<Sheet open={isOpen} onOpenChange={setIsOpen}>
-				<SheetTrigger asChild>{children}</SheetTrigger>
-				<SheetContent
-					side="left"
-					className="flex flex-col justify-between pb-0 bg-white sm:max-w-md w-full pl-6 overflow-y-auto"
-				>
-					<SheetHeader>
-						<SheetTitle></SheetTitle>
-						<VisuallyHidden>
-							<SheetDescription>Filter products by ingredients, sizes, and price</SheetDescription>
-						</VisuallyHidden>
-					</SheetHeader>
+  return (
+    <div className={cn('', className)}>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>{children}</SheetTrigger>
+        <SheetContent
+          side="left"
+          className="flex flex-col justify-between pb-0 bg-white sm:max-w-md w-full pl-6 overflow-y-auto"
+        >
+          <SheetHeader>
+            <SheetTitle></SheetTitle>
+            <VisuallyHidden>
+              <SheetDescription>Filter products by ingredients, sizes, and price</SheetDescription>
+            </VisuallyHidden>
+          </SheetHeader>
 
-					<div className="flex-1  pr-12 pb-6">
-						<MenuList toggleMenu={toggleMenu} activeSection={activeSection} userRole={userRole} />
-					</div>
-				</SheetContent>
-			</Sheet>
-		</div>
-	);
+          <div className="flex-1  pr-12 pb-6">
+            <MenuList toggleMenu={toggleMenu} activeSection={activeSection} userRole={userRole} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
 };

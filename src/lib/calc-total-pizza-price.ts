@@ -1,6 +1,6 @@
-import { PizzaSize, PizzaType } from "@/constants/pizza";
+import { PizzaSize, PizzaType } from '@/constants/pizza';
 // ✅ Импортируем из @types/prisma вместо локального определения
-import { OptimizedIngredient, OptimizedProductItem } from "../../@types/prisma";
+import { OptimizedIngredient, OptimizedProductItem } from '../../@types/prisma';
 
 /**
  * Функция для подсчета общей стоимости пиццы
@@ -14,20 +14,21 @@ import { OptimizedIngredient, OptimizedProductItem } from "../../@types/prisma";
  */
 
 export const calcTotalPizzaPrice = (
-	type: PizzaType,
-	size: PizzaSize,
-	items: OptimizedProductItem[] = [],
-	ingredients: OptimizedIngredient[],
-	selectedIngredientsIds: Set<number>,
+  type: PizzaType,
+  size: PizzaSize,
+  items: OptimizedProductItem[] = [],
+  ingredients: OptimizedIngredient[],
+  selectedIngredientsIds: Set<number>,
 ) => {
-	const pizzaPrice = items?.find((item) => item.type?.value === type && item.size?.value === size)?.price || 0;
+  const pizzaPrice =
+    items?.find(item => item.type?.value === type && item.size?.value === size)?.price || 0;
 
-	// ✅ price уже number, не нужен Number()
-	const totalIngredientsPrice = ingredients
-		.filter((ingredient) => selectedIngredientsIds.has(ingredient.id))
-		.reduce((acc, val) => {
-			return acc + val.price;
-		}, 0);
+  // ✅ price уже number, не нужен Number()
+  const totalIngredientsPrice = ingredients
+    .filter(ingredient => selectedIngredientsIds.has(ingredient.id))
+    .reduce((acc, val) => {
+      return acc + val.price;
+    }, 0);
 
-	return pizzaPrice + totalIngredientsPrice;
+  return pizzaPrice + totalIngredientsPrice;
 };

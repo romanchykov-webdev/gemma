@@ -1,64 +1,64 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Loader2, Upload } from "lucide-react";
-import React, { useRef, useState } from "react";
-import { uploadImage } from "../../lib/supabase";
+import { Button } from '@/components/ui/button';
+import { Loader2, Upload } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { uploadImage } from '../../lib/supabase';
 interface Props {
-	imageUrl: string;
-	onImageChange: (url: string) => void;
-	folder: string;
-	label?: string;
-	required?: boolean;
-	disabled?: boolean;
-	isUploading: boolean;
-	setIsUploading: (isUploading: boolean) => void;
+  imageUrl: string;
+  onImageChange: (url: string) => void;
+  folder: string;
+  label?: string;
+  required?: boolean;
+  disabled?: boolean;
+  isUploading: boolean;
+  setIsUploading: (isUploading: boolean) => void;
 }
 
 export const ImageUpload: React.FC<Props> = ({
-	imageUrl,
-	onImageChange,
-	folder,
-	label = "Изображение",
-	required = false,
-	disabled = false,
-	isUploading,
-	setIsUploading,
+  imageUrl,
+  onImageChange,
+  folder,
+  label = 'Изображение',
+  required = false,
+  disabled = false,
+  isUploading,
+  setIsUploading,
 }) => {
-	const [previewUrl, setPreviewUrl] = useState(imageUrl);
-	const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState(imageUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-		try {
-			setIsUploading(true);
+    try {
+      setIsUploading(true);
 
-			const url = await uploadImage(file, folder);
+      const url = await uploadImage(file, folder);
 
-			if (url) {
-				setPreviewUrl(url);
-				onImageChange(url);
-			} else {
-				alert("Ошибка загрузки изображения");
-			}
-		} catch (error) {
-			console.error("[IMAGE_UPLOAD] Ошибка:", error);
-			alert("Ошибка загрузки изображения");
-		} finally {
-			setIsUploading(false);
-		}
-	};
+      if (url) {
+        setPreviewUrl(url);
+        onImageChange(url);
+      } else {
+        alert('Ошибка загрузки изображения');
+      }
+    } catch (error) {
+      console.error('[IMAGE_UPLOAD] Ошибка:', error);
+      alert('Ошибка загрузки изображения');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
-	return (
-		<div className="space-y-2">
-			<label className="block text-sm font-medium text-gray-700">
-				{label} {required && <span className="text-red-500">*</span>}
-			</label>
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
 
-			{/* Preview */}
-			{/* {previewUrl 
+      {/* Preview */}
+      {/* {previewUrl 
 			? (
 				<div className="relative w-full h-40 border rounded overflow-hidden bg-gray-100">
 					<img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -81,38 +81,38 @@ export const ImageUpload: React.FC<Props> = ({
 				</div>
 			)} */}
 
-			{/* File Input */}
-			<input
-				ref={fileInputRef}
-				type="file"
-				accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-				onChange={handleFileSelect}
-				className="hidden"
-				disabled={disabled || isUploading}
-			/>
+      {/* File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={disabled || isUploading}
+      />
 
-			{/* Upload Button */}
-			<Button
-				type="button"
-				onClick={() => fileInputRef.current?.click()}
-				variant="outline"
-				className="w-full"
-				disabled={disabled || isUploading}
-			>
-				{isUploading ? (
-					<>
-						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-						Loading...
-					</>
-				) : (
-					<>
-						<Upload className="h-4 w-4 mr-2" />
-						{previewUrl ? "Change image" : "Upload image"}
-					</>
-				)}
-			</Button>
+      {/* Upload Button */}
+      <Button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        variant="outline"
+        className="w-full"
+        disabled={disabled || isUploading}
+      >
+        {isUploading ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Loading...
+          </>
+        ) : (
+          <>
+            <Upload className="h-4 w-4 mr-2" />
+            {previewUrl ? 'Change image' : 'Upload image'}
+          </>
+        )}
+      </Button>
 
-			<p className="text-xs text-gray-500">Format: JPG, PNG, WebP, GIF.</p>
-		</div>
-	);
+      <p className="text-xs text-gray-500">Format: JPG, PNG, WebP, GIF.</p>
+    </div>
+  );
 };
