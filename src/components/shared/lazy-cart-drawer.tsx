@@ -1,13 +1,15 @@
-"use client";
+'use client';
 
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from 'react';
 
-const CartDrawer = lazy(() => import("./cart-drawer").then((module) => ({ default: module.CartDrawer })));
+const CartDrawer = lazy(() =>
+  import('./cart-drawer').then(module => ({ default: module.CartDrawer })),
+);
 
 export const LazyCartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
-	return (
-		<Suspense fallback={children}>
-			<CartDrawer>{children}</CartDrawer>
-		</Suspense>
-	);
+  return (
+    <Suspense fallback={children}>
+      <CartDrawer>{children}</CartDrawer>
+    </Suspense>
+  );
 };
