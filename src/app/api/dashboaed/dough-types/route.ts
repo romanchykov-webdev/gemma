@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -62,6 +63,10 @@ export async function POST(req: NextRequest) {
       // 	},
       // },
     });
+
+    // ✅ Инвалидируем кеш типов теста и главную страницу
+    revalidatePath('/api/references/types');
+    revalidatePath('/');
 
     return NextResponse.json(newType, { status: 201 });
   } catch (error) {

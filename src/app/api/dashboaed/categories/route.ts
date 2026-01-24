@@ -1,8 +1,9 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
-// ✅ Кеширование категорий (обновляется каждый час)
-export const revalidate = 3600;
+// ✅ Кеширование
+export const revalidate = 60;
 
 // 📋 GET - Получение всех категорий с количеством продуктов
 export async function GET() {
@@ -74,6 +75,9 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    // ✅ Инвалидируем главную страницу
+    revalidatePath('/');
 
     return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {

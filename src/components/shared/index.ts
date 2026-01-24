@@ -43,3 +43,4 @@ export { WhiteBlock } from './white-block';
 export { LazyCartDrawer } from './lazy-cart-drawer';
 export { ProfileForm } from './profile-form';
 export { Stories } from './stories';
+export { ClientProductsWrapper } from './client-products-wrapper';

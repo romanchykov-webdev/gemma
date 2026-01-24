@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -58,6 +59,10 @@ export async function POST(req: NextRequest) {
         imageUrl: true,
       },
     });
+
+    // ✅ Инвалидируем кеш ингредиентов и главную страницу
+    revalidatePath('/api/ingredients');
+    revalidatePath('/');
 
     return NextResponse.json(newIngredient, { status: 201 });
   } catch (error: unknown) {

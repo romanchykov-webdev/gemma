@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
 // ⚡ Кешируем на 1 час
-export const revalidate = 3600;
+export const revalidate = false;
 
 export async function GET() {
   try {

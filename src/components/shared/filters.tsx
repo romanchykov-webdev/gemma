@@ -7,7 +7,8 @@ import { Input } from '@/components/ui';
 import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@/constants/pizza';
 import { useFilters, useIngredients, useQueryFilters } from '@/hooks';
 import { cn } from '@/lib/utils';
-import React, { JSX } from 'react';
+import { useProductsStore } from '@/store';
+import React, { JSX, useEffect } from 'react';
 
 interface IFiltersProps {
   className?: string;
@@ -15,12 +16,18 @@ interface IFiltersProps {
 }
 
 export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }): JSX.Element => {
-  // console.log("Filters enabled", enabled);
-
   const { ingredients, loading } = useIngredients(enabled);
-
   const filters = useFilters();
 
+  // ✅ Триггерим клиентскую фильтрацию
+  const filterProducts = useProductsStore(state => state.filterProducts);
+
+  // ⚡ Применяем фильтры МГНОВЕННО на клиенте
+  useEffect(() => {
+    filterProducts(filters);
+  }, [filters, filterProducts]);
+
+  // ✅ Обновляем URL для sharable links (без перезагрузки страницы!)
   useQueryFilters(filters);
 
   const items = ingredients.map(item => ({ value: String(item.id), text: item.name }));
@@ -29,16 +36,11 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
     filters.setPrices('priceFrom', prices[0]);
     filters.setPrices('priceTo', prices[1]);
   };
+
   return (
     <div className={cn('', className)}>
       <div className="flex items-center justify-between  mb-5">
         <Title text="Filtrazione" size="sm" className=" font-bold" />
-
-        {/* {filters.hasFilters && (
-					<div className="cursor-pointer" onClick={filters.resetFilters}>
-						<Trash2 className="text-red-500 w-5 h-5" />
-					</div>
-				)} */}
       </div>
       <div className="flex flex-col gap-4">
         {/*selected impasto*/}
@@ -94,7 +96,6 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
           min={0}
           max={DEFAULT_MAX_PRICE}
           step={1}
-          // value={[0, 5000]}
           value={[filters.prices.priceFrom || 0, filters.prices.priceTo || 20]}
           onValueChange={updatePrices}
         />

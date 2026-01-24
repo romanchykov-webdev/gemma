@@ -1,7 +1,8 @@
 export { calcCatItemTotalPrice } from './calc-cart-item-total-price';
 export { calcTotalPizzaPrice } from './calc-total-pizza-price';
 // export { findOrCreateCart } from "./find-or-create-cart";
-export { findPizzas } from './find-pizza';
+export { findPizzas, findAllPizzas, filterCategories } from './find-pizza';
+export type { CategoryWithProducts, FilterParams } from './find-pizza';
 export { getAvailablePizzaSizes } from './get-available-pizza-sizes';
 export { getCartDetails } from './get-cart-details';
 export { getCartItemDetails } from './get-cart-item-details';

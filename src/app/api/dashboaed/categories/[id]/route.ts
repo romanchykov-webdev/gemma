@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -67,6 +68,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       },
     });
 
+    // ✅ Инвалидируем главную страницу
+    revalidatePath('/');
+
     return NextResponse.json(updatedCategory);
   } catch (error) {
     console.error('[CATEGORIES_PATCH] Server error:', error);
@@ -116,6 +120,9 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     await prisma.category.delete({
       where: { id },
     });
+
+    // ✅ Инвалидируем главную страницу
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Categoria eliminata con successo' }, { status: 200 });
   } catch (error) {

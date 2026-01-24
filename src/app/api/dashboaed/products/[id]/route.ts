@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -60,6 +61,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       },
     });
 
+    // ✅ Инвалидируем страницу продукта и главную
+    revalidatePath(`/product/${id}`);
+    revalidatePath('/');
+
     return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error('[PRODUCTS_PATCH] Server error:', error);
@@ -109,6 +114,10 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     await prisma.product.delete({
       where: { id },
     });
+
+    // ✅ Инвалидируем страницу продукта и главную
+    revalidatePath(`/product/${id}`);
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Prodotto eliminato con successo' }, { status: 200 });
   } catch (error) {

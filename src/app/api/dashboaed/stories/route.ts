@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -98,6 +99,10 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    // ✅ Инвалидируем кеш историй
+    revalidatePath('/api/stories');
+    revalidatePath('/');
 
     return NextResponse.json(story, { status: 201 });
   } catch (error) {

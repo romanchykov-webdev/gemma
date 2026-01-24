@@ -1,80 +1,31 @@
 import { Filters } from '@/hooks/use-filters';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { useFilterUtils } from './use-filter-utils';
 
 export function useQueryFilters(filters: Filters) {
-  const router = useRouter();
   const pathname = usePathname();
 
-  // вытаскиваем утилиты «одним хуком»
-  const { useDebouncedValue, useSkipFirstRender, serializeFiltersToQuery, pickHistoryMode } =
-    useFilterUtils();
+  // Вытаскиваем утилиты
+  const { useDebouncedValue, serializeFiltersToQuery } = useFilterUtils();
 
-  const skipFirst = useSkipFirstRender();
-  const prevFiltersRef = useRef<Filters | null>(null);
-  const lastAppliedRef = useRef<string>('');
-
-  // канонические параметры
-  // const params = React.useMemo(
-  // 	() => ({
-  // 		priceFrom: filters.prices.priceFrom,
-  // 		priceTo: filters.prices.priceTo,
-  // 		pizzaTypes: Array.from(filters.pizzaTypes),
-  // 		sizes: Array.from(filters.sizes),
-  // 		ingredients: Array.from(filters.selectedIngredients),
-  // 	}),
-  // 	[filters],
-  // );
-  const params = useMemo(
-    () => ({
-      // Добавляем параметры цены только если они не равны 0
-      ...(filters.prices.priceFrom ? { priceFrom: filters.prices.priceFrom } : {}),
-      ...(filters.prices.priceTo ? { priceTo: filters.prices.priceTo } : {}),
-      pizzaTypes: Array.from(filters.pizzaTypes),
-      sizes: Array.from(filters.sizes),
-      ingredients: Array.from(filters.selectedIngredients),
-    }),
-    [filters],
-  );
-
-  // дебаунсим весь фильтр
-  const debouncedParams = useDebouncedValue(params, 500);
-
-  // генерим query
-  const query = useMemo(
-    () =>
-      serializeFiltersToQuery({
-        priceFrom: debouncedParams.priceFrom ?? 0,
-        priceTo: debouncedParams.priceTo ?? 0,
-        pizzaTypes: debouncedParams.pizzaTypes.map(Number),
-        sizes: debouncedParams.sizes.map(Number),
-        ingredients: debouncedParams.ingredients.map(Number),
-      }),
-    [debouncedParams, serializeFiltersToQuery],
-  );
+  // ✅ Дебаунс ТОЛЬКО для URL (не влияет на UI фильтрацию!)
+  const debouncedFilters = useDebouncedValue(filters, 300);
 
   useEffect(() => {
-    if (skipFirst()) {
-      prevFiltersRef.current = filters;
-      if (typeof window !== 'undefined') {
-        lastAppliedRef.current = window.location.search;
-      }
-      return;
+    // Генерируем query string
+    const query = serializeFiltersToQuery({
+      priceFrom: debouncedFilters.prices.priceFrom ?? 0,
+      priceTo: debouncedFilters.prices.priceTo ?? 0,
+      pizzaTypes: Array.from(debouncedFilters.pizzaTypes).map(Number),
+      sizes: Array.from(debouncedFilters.sizes).map(Number),
+      ingredients: Array.from(debouncedFilters.selectedIngredients).map(Number),
+    });
+
+    // ⚡ ТОЛЬКО обновление URL (без навигации и SSR!)
+    if (typeof window !== 'undefined') {
+      const newUrl = query ? `${pathname}${query}` : pathname;
+      window.history.replaceState(null, '', newUrl);
     }
-
-    const prev = prevFiltersRef.current ?? filters;
-    const mode = pickHistoryMode(filters, prev);
-
-    if (typeof window === 'undefined') return;
-    const current = window.location.search;
-
-    if (current !== query && lastAppliedRef.current !== query) {
-      router[mode](`${pathname}${query}`, { scroll: false });
-      lastAppliedRef.current = query;
-    }
-    // console.log({ filters });
-
-    prevFiltersRef.current = filters;
-  }, [query, pathname, router, filters, skipFirst, pickHistoryMode]);
+  }, [debouncedFilters, pathname, serializeFiltersToQuery]);
 }

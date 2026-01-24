@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { ProductVariant } from '../../../../../../@types/prisma';
 import { prisma } from '../../../../../../prisma/prisma-client';
@@ -61,6 +62,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       // 	},
       // },
     });
+
+    // ✅ Инвалидируем кеш типов теста и главную страницу
+    revalidatePath('/api/references/types');
+    revalidatePath('/');
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -132,6 +137,10 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     await prisma.type.delete({
       where: { id },
     });
+
+    // ✅ Инвалидируем кеш типов теста и главную страницу
+    revalidatePath('/api/references/types');
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Tipo di impasto eliminato con successo' });
   } catch (error) {
