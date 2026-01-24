@@ -32,7 +32,8 @@ export const ClientProductsWrapper: React.FC<ClientProductsWrapperProps> = ({
 
   // Если нужно отрисовать TopBar
   if (showTopBar) {
-    return <TopBar categories={categories.filter(c => c.products.length > 0)} />;
+    // return <TopBar categories={categories.filter(c => c.products.length > 0)} />;
+    return <TopBar categories={categories} />;
   }
 
   // Отрисовка списка продуктов

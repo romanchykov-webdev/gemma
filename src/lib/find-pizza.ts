@@ -108,48 +108,48 @@ export const filterCategories = (
   const minPrice = filters.priceFrom || DEFAULT_MIN_PRICE;
   const maxPrice = filters.priceTo || DEFAULT_MAX_PRICE;
 
-  return allCategories
-    .map(category => {
-      // Фильтруем продукты внутри категории
-      const filteredProducts = category.products.filter(product => {
-        const variants = product.variants;
-        const baseIngredients = product.baseIngredients;
+  return allCategories.map(category => {
+    // Фильтруем продукты внутри категории
+    const filteredProducts = category.products.filter(product => {
+      const variants = product.variants;
+      const baseIngredients = product.baseIngredients;
 
-        // Фильтр по цене
-        const isPriceMatch = variants.some(v => v.price >= minPrice && v.price <= maxPrice);
+      // Фильтр по цене
+      const isPriceMatch = variants.some(v => v.price >= minPrice && v.price <= maxPrice);
 
-        // Фильтр по размеру
-        const isSizeMatch =
-          filters.sizes && filters.sizes.length > 0
-            ? variants.some(v => filters.sizes!.includes(v.sizeId))
-            : true;
+      // Фильтр по размеру
+      const isSizeMatch =
+        filters.sizes && filters.sizes.length > 0
+          ? variants.some(v => filters.sizes!.includes(v.sizeId))
+          : true;
 
-        // Фильтр по типу теста
-        const isTypeMatch =
-          filters.pizzaTypes && filters.pizzaTypes.length > 0
-            ? variants.some(v => filters.pizzaTypes!.includes(v.typeId))
-            : true;
+      // Фильтр по типу теста
+      const isTypeMatch =
+        filters.pizzaTypes && filters.pizzaTypes.length > 0
+          ? variants.some(v => filters.pizzaTypes!.includes(v.typeId))
+          : true;
 
-        if (!isPriceMatch || !isSizeMatch || !isTypeMatch) return false;
+      if (!isPriceMatch || !isSizeMatch || !isTypeMatch) return false;
 
-        // Фильтр по ингредиентам
-        if (filters.ingredients && filters.ingredients.length > 0) {
-          const productIngredientIds = baseIngredients.map(i => i.id);
-          const isIngredientsMatch = filters.ingredients.some(id =>
-            productIngredientIds.includes(id),
-          );
-          if (!isIngredientsMatch) return false;
-        }
+      // Фильтр по ингредиентам
+      if (filters.ingredients && filters.ingredients.length > 0) {
+        const productIngredientIds = baseIngredients.map(i => i.id);
+        const isIngredientsMatch = filters.ingredients.some(id =>
+          productIngredientIds.includes(id),
+        );
+        if (!isIngredientsMatch) return false;
+      }
 
-        return true;
-      });
+      return true;
+    });
 
-      return {
-        ...category,
-        products: filteredProducts,
-      };
-    })
-    .filter(category => category.products.length > 0);
+    return {
+      ...category,
+      products: filteredProducts,
+    };
+  });
+  // Эта строка удаляет категории без товаров из результата показывать все категории (пустые будут disabled)
+  // .filter(category => category.products.length > 0);
 };
 
 export const findPizzas = async (params: GetSearchParams): Promise<CategoryWithProducts[]> => {
