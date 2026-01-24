@@ -18,15 +18,15 @@ interface IFiltersProps {
 export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }): JSX.Element => {
   const { ingredients, loading } = useIngredients(enabled);
   const filters = useFilters();
-  
+
   // ✅ Триггерим клиентскую фильтрацию
   const filterProducts = useProductsStore(state => state.filterProducts);
-  
+
   // ⚡ Применяем фильтры МГНОВЕННО на клиенте
   useEffect(() => {
     filterProducts(filters);
   }, [filters, filterProducts]);
-  
+
   // ✅ Обновляем URL для sharable links (без перезагрузки страницы!)
   useQueryFilters(filters);
 
@@ -36,7 +36,7 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
     filters.setPrices('priceFrom', prices[0]);
     filters.setPrices('priceTo', prices[1]);
   };
-  
+
   return (
     <div className={cn('', className)}>
       <div className="flex items-center justify-between  mb-5">

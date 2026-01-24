@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -69,6 +70,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       },
     });
 
+    // ✅ Инвалидируем кеш ингредиентов и главную страницу
+    revalidatePath('/api/ingredients');
+    revalidatePath('/');
+
     return NextResponse.json(updatedIngredient);
   } catch (error) {
     console.error('[INGREDIENTS_PATCH] Server error:', error);
@@ -119,6 +124,10 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     await prisma.ingredient.delete({
       where: { id },
     });
+
+    // ✅ Инвалидируем кеш ингредиентов и главную страницу
+    revalidatePath('/api/ingredients');
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Ingrediente eliminato con successo' }, { status: 200 });
   } catch (error) {

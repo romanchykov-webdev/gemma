@@ -18,8 +18,8 @@ import { findAllPizzas } from '@/lib';
 // ✅ SEO: импорт metadata из отдельного файла
 export { generateMetadata } from './metadata';
 
-// ✅ Кеширование главной страницы на 60 секунд
-export const revalidate = 3600;
+// ✅ Кеширование главной страницы
+export const revalidate = false;
 
 export default async function Home() {
   // ✅ Загружаем ВСЕ данные без фильтров

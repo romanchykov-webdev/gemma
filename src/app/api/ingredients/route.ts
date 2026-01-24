@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../prisma/prisma-client';
 
 // ✅ Кеширование на 1 час (3600 секунд)
-export const revalidate = 3600;
+export const revalidate = false;
 
 // ✅ Тип для кешированных ингредиентов
 type CachedIngredient = {
