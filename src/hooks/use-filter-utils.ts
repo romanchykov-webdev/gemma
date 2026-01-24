@@ -1,13 +1,13 @@
 import { Filters } from '@/hooks/use-filters';
 import qs from 'qs';
-import * as React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type HistoryMode = 'push' | 'replace';
 
 // 1) Дебаунс любого значения
 function useDebouncedValue<T>(value: T, delay = 500): T {
-  const [v, setV] = React.useState(value);
-  React.useEffect(() => {
+  const [v, setV] = useState(value);
+  useEffect(() => {
     const id = setTimeout(() => setV(value), delay);
     return () => clearTimeout(id);
   }, [value, delay]);
@@ -16,7 +16,7 @@ function useDebouncedValue<T>(value: T, delay = 500): T {
 
 // 2) Скип первого рендера
 function useSkipFirstRender() {
-  const first = React.useRef(true);
+  const first = useRef(true);
   return () => {
     if (first.current) {
       first.current = false;

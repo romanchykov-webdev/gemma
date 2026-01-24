@@ -55,6 +55,7 @@ export default async function Home({
       <Container className="mt-10 flex items-center justify-between relative">
         <Title text="Tutte le pizze" size="lg" className="font-extrabold" />
 
+      {/* Фильтрация на мобильных устройствах */}
         <Suspense fallback={<Skeleton className="w-10 h-10 rounded-sm bg-gray-200" />}>
           <FilterDrawer />
         </Suspense>
