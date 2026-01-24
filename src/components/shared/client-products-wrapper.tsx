@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import { CategoryWithProducts } from '@/lib';
 import { useProductsStore } from '@/store';
+import React, { useEffect } from 'react';
 import { ProductsGroupList } from './products-group-list';
 import { TopBar } from './top-bar';
 
