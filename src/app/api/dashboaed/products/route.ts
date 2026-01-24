@@ -1,8 +1,9 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
-// ✅ Кеширование продуктов (обновляется каждые 30 минут)
-export const revalidate = 1800;
+// ✅ Кеширование
+export const revalidate = 60;
 
 // 📋 GET - Получение всех продуктов (с фильтром по категории)
 export async function GET(req: NextRequest) {
@@ -100,6 +101,9 @@ export async function POST(req: NextRequest) {
         updatedAt: true,
       },
     });
+
+    // ✅ Инвалидируем кеш главной страницы
+    revalidatePath('/');
 
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {

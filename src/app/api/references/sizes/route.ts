@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
 // ⚡ Кешируем навсегда (эти данные почти никогда не меняются)
-export const revalidate = 3600;
+export const revalidate = false;
 
 export async function GET() {
   try {

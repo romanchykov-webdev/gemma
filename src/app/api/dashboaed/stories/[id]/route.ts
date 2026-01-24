@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -79,6 +80,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       });
     });
 
+    // ✅ Инвалидируем кеш историй
+    revalidatePath('/api/stories');
+    revalidatePath('/');
+
     return NextResponse.json(updatedStory);
   } catch (error) {
     console.error('[STORY_PATCH] Error:', error);
@@ -116,6 +121,10 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
         where: { id },
       });
     });
+
+    // ✅ Инвалидируем кеш историй
+    revalidatePath('/api/stories');
+    revalidatePath('/');
 
     return NextResponse.json({ success: true });
   } catch (error) {
