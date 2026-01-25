@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { RefObject, useEffect, useRef } from 'react';
 import { useIntersection } from 'react-use';
 
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ interface Props {
   items: ProductWithRelations[];
   categoryId: number;
   className?: string;
-  isFirstCategory?: boolean; // ✅ Для оптимизации LCP - грузим первые 3 изображения сразу
+  isFirstCategory?: boolean; // ✅ Для оптимизации грузим первые 3 изображения сразу
 }
 
 export const ProductsGroupList: React.FC<Props> = ({
@@ -33,31 +33,42 @@ export const ProductsGroupList: React.FC<Props> = ({
 
   const setActiveCategoryId = useCategoryStore(state => state.setActiveId);
 
+  // ✅ Достаем методы для работы с refs
+  const registerRef = useCategoryStore(state => state.registerRef);
+  const unregisterRef = useCategoryStore(state => state.unregisterRef);
+
   const intersectionRef = useRef<HTMLDivElement>(null);
 
-  // const intersection = useIntersection(intersectionRef as React.RefObject<HTMLElement>, {
-  // 	threshold: 0.4,
-  // });
-
-  const intersection = useIntersection(intersectionRef as React.RefObject<HTMLElement>, {
+  const intersection = useIntersection(intersectionRef as RefObject<HTMLElement>, {
     root: null,
-    // сдвигаем окно наблюдения вниз на высоту шапки, и “сужаем” снизу, чтобы
-    // предыдущая секция не считалась активной, когда новая почти у верха
     rootMargin: `-${HEADER_OFFSET}px 0px -60% 0px`,
     threshold: [0, 0.1, 0.25, 0.5],
   });
 
+  // ✅ Регистрируем ref в сторе при монтировании
+  useEffect(() => {
+    if (intersectionRef.current) {
+      registerRef(categoryId, intersectionRef as RefObject<HTMLElement>);
+    }
+
+    // Очищаем при размонтировании
+    return () => {
+      unregisterRef(categoryId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
+
+  // Отслеживание видимости для активной категории
   useEffect(() => {
     if (intersection?.isIntersecting) {
       setActiveCategoryId(categoryId);
-      // console.log("categoryId", categoryId);
     }
-  }, [categoryId, intersection?.isIntersecting, title, setActiveCategoryId]);
+  }, [categoryId, intersection?.isIntersecting, setActiveCategoryId]);
 
   return (
     <div
       className={className}
-      id={title}
+      // id={title}
       ref={intersectionRef}
       style={{ scrollMarginTop: '120px' }}
     >

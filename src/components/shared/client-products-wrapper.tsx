@@ -30,13 +30,10 @@ export const ClientProductsWrapper: React.FC<ClientProductsWrapperProps> = ({
   // Вычисляем индекс первой категории с продуктами
   const firstCategoryWithProductsIndex = categories.findIndex(cat => cat.products.length > 0);
 
-  // Если нужно отрисовать TopBar
   if (showTopBar) {
-    // return <TopBar categories={categories.filter(c => c.products.length > 0)} />;
     return <TopBar categories={categories} />;
   }
 
-  // Отрисовка списка продуктов
   return (
     <div className="flex flex-col gap-16">
       {categories.map((category, categoryIndex) => {
@@ -44,7 +41,7 @@ export const ClientProductsWrapper: React.FC<ClientProductsWrapperProps> = ({
 
         return (
           category.products.length > 0 && (
-            <article id={`category-${category.id}`} key={category.id}>
+            <article key={category.id}>
               <ProductsGroupList
                 categoryId={category.id}
                 title={category.name}
