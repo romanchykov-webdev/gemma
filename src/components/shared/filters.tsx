@@ -8,6 +8,7 @@ import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@/constants/pizza';
 import { useFilters, useIngredients, useQueryFilters } from '@/hooks';
 import { cn } from '@/lib/utils';
 import { useProductsStore } from '@/store';
+import { Trash2Icon } from 'lucide-react';
 import React, { JSX, useEffect } from 'react';
 
 interface IFiltersProps {
@@ -41,6 +42,16 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
     <div className={cn('', className)}>
       <div className="flex items-center justify-between  mb-5">
         <Title text="Filtrazione" size="sm" className=" font-bold" />
+
+        {filters.hasFilters && (
+          <button
+            className="text-neutral-500 hover:text-red-500 transition-colors cursor-pointer"
+            onClick={filters.resetFilters}
+            title="Сбросить все фильтры"
+          >
+            <Trash2Icon className="h-5 w-5 text-red-500" />
+          </button>
+        )}
       </div>
       <div className="flex flex-col gap-4">
         {/*selected impasto*/}
@@ -69,7 +80,6 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
           selected={filters.sizes}
         />
       </div>
-
       {/* Фильтр цен */}
       <div className="mt-5 border-y border-y-neutral-100 py-6 pb-7">
         <p className="font-bold mb-3">Prezzo da e per:</p>
