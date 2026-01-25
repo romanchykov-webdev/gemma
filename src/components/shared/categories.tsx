@@ -6,32 +6,23 @@ import { useCategoryStore } from '@/store/category';
 import React, { JSX } from 'react';
 
 interface ICategoriesProps {
-  // items: Category[];
   items: CategoryWithProducts[];
   className?: string;
-  showCount?: boolean;
 }
 
-export const Categories: React.FC<ICategoriesProps> = ({
-  items,
-  className,
-  showCount = false,
-}): JSX.Element => {
+export const Categories: React.FC<ICategoriesProps> = ({ items, className }): JSX.Element => {
   const activeId = useCategoryStore(state => state.activeId);
 
-  console.log('showCount', showCount);
+  // ✅ Достаем метод для скролла
+  const scrollToCategory = useCategoryStore(state => state.scrollToCategory);
 
-  // ✅ Плавная прокрутка с использованием встроенного scroll-behavior: smooth
+  // console.log('showCount', showCount);
+
+  // ✅ Используем scrollToCategory из стора
   const handleCategoryClick = (category: CategoryWithProducts) => {
     if (category.products.length === 0) return;
 
-    const element = document.getElementById(category.name);
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
+    scrollToCategory(category.id);
   };
 
   return (
@@ -50,7 +41,7 @@ export const Categories: React.FC<ICategoriesProps> = ({
               isEmpty // 🔥 стили для пустых категорий
                 ? 'opacity-40 cursor-not-allowed text-gray-400'
                 : 'hover:text-brand-primary md:text-sm',
-              activeId === category.id &&
+              activeId === category.id && // 🔥 стили для активной категории
                 !isEmpty &&
                 'bg-white shadow-md shadow-gray-200 text-brand-primary',
             )}
