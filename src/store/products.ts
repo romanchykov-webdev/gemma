@@ -1,7 +1,7 @@
+import { Filters } from '@/hooks/use-filters';
+import { CategoryWithProducts, filterCategories, FilterParams } from '@/lib';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { CategoryWithProducts, filterCategories, FilterParams } from '@/lib';
-import { Filters } from '@/hooks/use-filters';
 
 interface ProductsState {
   // Данные

@@ -1,3 +1,4 @@
+import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@/constants/pizza';
 import { useSearchParams } from 'next/navigation';
 import React, { useCallback, useMemo } from 'react';
 import { useSet } from 'react-use';
@@ -34,7 +35,9 @@ export const useFilters = (): ReturnProps => {
 
   /*Фильтр ингредиентов*/
   const [selectedIngredients, { toggle: toggleIngredients, reset: resetIngredients }] = useSet(
-    new Set<string>(searchParams.get('ingredients')?.split(',')),
+    new Set<string>(
+      searchParams.has('ingredients') ? searchParams.get('ingredients')?.split(',') : [],
+    ),
   );
 
   /*Фильтр размeров*/
@@ -69,12 +72,19 @@ export const useFilters = (): ReturnProps => {
     setPrices({});
   }, [resetIngredients, resetSizes, resetPizzaTypes]);
 
+  // const hasFilters =
+  //   sizes.size > 0 ||
+  //   pizzaTypes.size > 0 ||
+  //   selectedIngredients.size > 0 ||
+  //   prices.priceFrom !== undefined ||
+  //   prices.priceTo !== undefined;
+
   const hasFilters =
     sizes.size > 0 ||
     pizzaTypes.size > 0 ||
     selectedIngredients.size > 0 ||
-    prices.priceFrom !== undefined ||
-    prices.priceTo !== undefined;
+    (prices.priceFrom !== undefined && prices.priceFrom !== DEFAULT_MIN_PRICE) ||
+    (prices.priceTo !== undefined && prices.priceTo !== DEFAULT_MAX_PRICE);
 
   return useMemo(
     () => ({

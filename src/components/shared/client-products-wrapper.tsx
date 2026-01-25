@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import { CategoryWithProducts } from '@/lib';
 import { useProductsStore } from '@/store';
+import React, { useEffect } from 'react';
 import { ProductsGroupList } from './products-group-list';
 import { TopBar } from './top-bar';
 
@@ -32,7 +32,8 @@ export const ClientProductsWrapper: React.FC<ClientProductsWrapperProps> = ({
 
   // Если нужно отрисовать TopBar
   if (showTopBar) {
-    return <TopBar categories={categories.filter(c => c.products.length > 0)} />;
+    // return <TopBar categories={categories.filter(c => c.products.length > 0)} />;
+    return <TopBar categories={categories} />;
   }
 
   // Отрисовка списка продуктов
