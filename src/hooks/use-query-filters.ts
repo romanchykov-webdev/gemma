@@ -5,27 +5,25 @@ import { useFilterUtils } from './use-filter-utils';
 
 export function useQueryFilters(filters: Filters) {
   const pathname = usePathname();
-
-  // Вытаскиваем утилиты
-  const { useDebouncedValue, serializeFiltersToQuery } = useFilterUtils();
-
-  // ✅ Дебаунс ТОЛЬКО для URL (не влияет на UI фильтрацию!)
-  const debouncedFilters = useDebouncedValue(filters, 300);
+  const { serializeFiltersToQuery } = useFilterUtils();
 
   useEffect(() => {
-    // Генерируем query string
     const query = serializeFiltersToQuery({
-      priceFrom: debouncedFilters.prices.priceFrom ?? 0,
-      priceTo: debouncedFilters.prices.priceTo ?? 0,
-      pizzaTypes: Array.from(debouncedFilters.pizzaTypes).map(Number),
-      sizes: Array.from(debouncedFilters.sizes).map(Number),
-      ingredients: Array.from(debouncedFilters.selectedIngredients).map(Number),
+      priceFrom: filters.prices.priceFrom ?? 0,
+      priceTo: filters.prices.priceTo ?? 0,
+      pizzaTypes: Array.from(filters.pizzaTypes).map(Number),
+      sizes: Array.from(filters.sizes).map(Number),
+      ingredients: Array.from(filters.selectedIngredients).map(Number),
     });
 
-    // ⚡ ТОЛЬКО обновление URL (без навигации и SSR!)
     if (typeof window !== 'undefined') {
       const newUrl = query ? `${pathname}${query}` : pathname;
-      window.history.replaceState(null, '', newUrl);
+      const currentUrl = window.location.pathname + window.location.search;
+
+      // Обновляем URL только если он действительно изменился
+      if (currentUrl !== newUrl) {
+        window.history.replaceState(null, '', newUrl);
+      }
     }
-  }, [debouncedFilters, pathname, serializeFiltersToQuery]);
+  }, [filters, pathname, serializeFiltersToQuery]);
 }

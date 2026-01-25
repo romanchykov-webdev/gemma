@@ -1,7 +1,6 @@
 import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@/constants/pizza';
 import { useSearchParams } from 'next/navigation';
-import React, { useCallback, useMemo } from 'react';
-import { useSet } from 'react-use';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface PriceProps {
   priceFrom?: number;
@@ -34,50 +33,89 @@ export const useFilters = (): ReturnProps => {
   const searchParams = useSearchParams() as unknown as Map<keyof IQueryFilters, string>;
 
   /*Фильтр ингредиентов*/
-  const [selectedIngredients, { toggle: toggleIngredients, reset: resetIngredients }] = useSet(
-    new Set<string>(
-      searchParams.has('ingredients') ? searchParams.get('ingredients')?.split(',') : [],
-    ),
-  );
+  const [selectedIngredients, setSelectedIngredients] = useState<Set<string>>(new Set());
 
-  /*Фильтр размeров*/
-  const [sizes, { toggle: toggleSizes, reset: resetSizes }] = useSet(
-    new Set<string>(searchParams.has('sizes') ? searchParams.get('sizes')?.split(',') : []),
-  );
+  /*Фильтр размеров*/
+  const [sizes, setSizes] = useState<Set<string>>(new Set());
 
   /*Фильтр типа пиццы*/
-  const [pizzaTypes, { toggle: togglePizzaTypes, reset: resetPizzaTypes }] = useSet(
-    new Set<string>(
-      searchParams.has('pizzaTypes') ? searchParams.get('pizzaTypes')?.split(',') : [],
-    ),
-  );
+  const [pizzaTypes, setPizzaTypes] = useState<Set<string>>(new Set());
 
   /*Фильтр цены*/
-  const [prices, setPrices] = React.useState<PriceProps>({
-    priceFrom: Number(searchParams.get('priceFrom')) || undefined,
-    priceTo: Number(searchParams.get('priceTo')) || undefined,
-  });
+  const [prices, setPricesState] = useState<PriceProps>({});
+
+  // 🔥 Синхронизируем фильтры с URL параметрами
+  useEffect(() => {
+    const ingredientsFromUrl = searchParams.has('ingredients')
+      ? searchParams.get('ingredients')?.split(',').filter(Boolean) || []
+      : [];
+    const sizesFromUrl = searchParams.has('sizes')
+      ? searchParams.get('sizes')?.split(',').filter(Boolean) || []
+      : [];
+    const pizzaTypesFromUrl = searchParams.has('pizzaTypes')
+      ? searchParams.get('pizzaTypes')?.split(',').filter(Boolean) || []
+      : [];
+
+    setSelectedIngredients(new Set(ingredientsFromUrl));
+    setSizes(new Set(sizesFromUrl));
+    setPizzaTypes(new Set(pizzaTypesFromUrl));
+
+    setPricesState({
+      priceFrom: Number(searchParams.get('priceFrom')) || undefined,
+      priceTo: Number(searchParams.get('priceTo')) || undefined,
+    });
+  }, [searchParams]);
+
+  // Toggle функции для чекбоксов
+  const toggleIngredients = useCallback((value: string) => {
+    setSelectedIngredients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const toggleSizes = useCallback((value: string) => {
+    setSizes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const togglePizzaTypes = useCallback((value: string) => {
+    setPizzaTypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return newSet;
+    });
+  }, []);
 
   const updatePrice = useCallback((name: keyof PriceProps, value: number) => {
-    setPrices(prev => ({
+    setPricesState(prev => ({
       ...prev,
       [name]: value,
     }));
   }, []);
 
   const resetFilters = useCallback(() => {
-    resetIngredients();
-    resetSizes();
-    resetPizzaTypes();
-    setPrices({});
-  }, [resetIngredients, resetSizes, resetPizzaTypes]);
-
-  // const hasFilters =
-  //   sizes.size > 0 ||
-  //   pizzaTypes.size > 0 ||
-  //   selectedIngredients.size > 0 ||
-  //   prices.priceFrom !== undefined ||
-  //   prices.priceTo !== undefined;
+    setSelectedIngredients(new Set());
+    setSizes(new Set());
+    setPizzaTypes(new Set());
+    setPricesState({});
+  }, []);
 
   const hasFilters =
     sizes.size > 0 ||
