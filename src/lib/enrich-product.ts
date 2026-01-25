@@ -20,6 +20,7 @@ export function enrichProductData(
     categoryId: number;
     baseIngredients: unknown;
     variants: unknown;
+    addableIngredientIds?: number[];
   },
   allIngredients: Ingredient[],
   sizes: Size[],
@@ -73,6 +74,7 @@ export function enrichProductData(
     items,
     variants: variantsFromDB,
     baseIngredients: enrichedBaseIngredients,
+    addableIngredientIds: productData.addableIngredientIds ?? [],
   };
 }
 
@@ -84,9 +86,7 @@ export const getReferences = cache(async () => {
   const [sizes, types, ingredients] = await Promise.all([
     prisma.size.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.type.findMany({ orderBy: { sortOrder: 'asc' } }),
-    prisma.ingredient.findMany({
-      select: { id: true, name: true, imageUrl: true, price: true },
-    }),
+    prisma.ingredient.findMany(), // ✅ ИСПРАВЛЕНО: убрали select
   ]);
 
   return { sizes, types, ingredients };

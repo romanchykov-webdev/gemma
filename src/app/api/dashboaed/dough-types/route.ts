@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidateProductVariants } from '@/lib/revalidate-product';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -65,8 +65,7 @@ export async function POST(req: NextRequest) {
     });
 
     // ✅ Инвалидируем кеш типов теста и главную страницу
-    revalidatePath('/api/references/types');
-    revalidatePath('/');
+    await revalidateProductVariants();
 
     return NextResponse.json(newType, { status: 201 });
   } catch (error) {

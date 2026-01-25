@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidateCategory } from '@/lib/revalidate-product';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     });
 
     // ✅ Инвалидируем главную страницу
-    revalidatePath('/');
+    await revalidateCategory(id);
 
     return NextResponse.json(updatedCategory);
   } catch (error) {
@@ -122,7 +122,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     });
 
     // ✅ Инвалидируем главную страницу
-    revalidatePath('/');
+    await revalidateCategory(id);
 
     return NextResponse.json({ message: 'Categoria eliminata con successo' }, { status: 200 });
   } catch (error) {

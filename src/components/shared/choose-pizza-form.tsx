@@ -40,7 +40,6 @@ export const ChoosePizzaForm: React.FC<Props> = ({
   className,
   loading,
 }) => {
-  // ✅ Используем обновленный хук с новыми полями
   const {
     selectedSize,
     selectedType,

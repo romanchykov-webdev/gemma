@@ -61,7 +61,6 @@ export async function POST(req: NextRequest) {
     });
 
     // ✅ Инвалидируем кеш ингредиентов и главную страницу
-    revalidatePath('/api/ingredients');
     revalidatePath('/');
 
     return NextResponse.json(newIngredient, { status: 201 });
