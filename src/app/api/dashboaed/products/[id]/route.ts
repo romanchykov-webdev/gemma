@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidateProduct } from '@/lib/revalidate-product';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -61,9 +61,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       },
     });
 
-    // ✅ Инвалидируем страницу продукта и главную
-    revalidatePath(`/product/${id}`);
-    revalidatePath('/');
+    // ✅ Инвалидируем продукт (страница + модалка + главная)
+    revalidateProduct(id);
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -115,9 +114,8 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
       where: { id },
     });
 
-    // ✅ Инвалидируем страницу продукта и главную
-    revalidatePath(`/product/${id}`);
-    revalidatePath('/');
+    // ✅ Инвалидируем продукт (страница + модалка + главная)
+    revalidateProduct(id);
 
     return NextResponse.json({ message: 'Prodotto eliminato con successo' }, { status: 200 });
   } catch (error) {

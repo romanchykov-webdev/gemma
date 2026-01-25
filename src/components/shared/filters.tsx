@@ -110,6 +110,7 @@ export const Filters: React.FC<IFiltersProps> = ({ className, enabled = true }):
           onValueChange={updatePrices}
         />
       </div>
+
       <CheckboxFiltersGroup
         title="Ingredienti:"
         className="mt-5"

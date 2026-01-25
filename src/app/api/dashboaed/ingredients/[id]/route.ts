@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidateIngredient } from '@/lib/revalidate-product';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../../prisma/prisma-client';
 
@@ -70,9 +70,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       },
     });
 
-    // ✅ Инвалидируем кеш ингредиентов и главную страницу
-    revalidatePath('/api/ingredients');
-    revalidatePath('/');
+    // ✅ Инвалидируем все продукты с этим ингредиентом
+    await revalidateIngredient(id);
 
     return NextResponse.json(updatedIngredient);
   } catch (error) {
@@ -125,9 +124,8 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
       where: { id },
     });
 
-    // ✅ Инвалидируем кеш ингредиентов и главную страницу
-    revalidatePath('/api/ingredients');
-    revalidatePath('/');
+    /// ✅ Инвалидируем все продукты с этим ингредиентом
+    await revalidateIngredient(id);
 
     return NextResponse.json({ message: 'Ingrediente eliminato con successo' }, { status: 200 });
   } catch (error) {
