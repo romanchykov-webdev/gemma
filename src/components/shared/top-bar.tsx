@@ -1,7 +1,6 @@
 'use client';
 import { Categories } from '@/components/shared/categories';
 import { Container } from '@/components/shared/container';
-import { useFilters } from '@/hooks';
 import { CategoryWithProducts } from '@/lib';
 import { cn } from '@/lib/utils';
 import React, { JSX } from 'react';
@@ -12,10 +11,6 @@ interface ITopBarProps {
 }
 
 export const TopBar: React.FC<ITopBarProps> = ({ categories, className }): JSX.Element => {
-  const { hasFilters } = useFilters();
-
-  console.log('hasFilters', hasFilters);
-
   return (
     <div
       className={cn(
@@ -24,7 +19,7 @@ export const TopBar: React.FC<ITopBarProps> = ({ categories, className }): JSX.E
       )}
     >
       <Container className="flex items-center justify-between ">
-        <Categories items={categories} showCount={hasFilters} />
+        <Categories items={categories} />
         <div className="flex items-center">
           {/* <SortPopup value="none" onChange={() => {}} /> */}
         </div>
