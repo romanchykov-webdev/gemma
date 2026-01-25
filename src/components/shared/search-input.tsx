@@ -1,12 +1,13 @@
 'use client';
 
+import { searchProductsLocally } from '@/lib/search-utils';
 import { cn } from '@/lib/utils';
-import { Product } from '@prisma/client';
+import { useProductsStore } from '@/store';
 import { Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import React, { JSX, useRef, useState } from 'react';
 import { useClickAway, useDebounce } from 'react-use';
-import { Api } from '../../../services/api-client';
+import { ProductWithRelations } from '../../../@types/prisma';
 
 interface ISearchInputProps {
   className?: string;
@@ -15,9 +16,12 @@ interface ISearchInputProps {
 export const SearchInput: React.FC<ISearchInputProps> = (): JSX.Element => {
   const [focused, setFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const ref = useRef(null);
+
+  // ✅ Получаем все продукты из стора
+  const { allCategories } = useProductsStore();
 
   useClickAway(ref, () => {
     setFocused(false);
@@ -29,21 +33,20 @@ export const SearchInput: React.FC<ISearchInputProps> = (): JSX.Element => {
     setFocused(false);
   };
 
+  // ✅ Локальный поиск с debounce
   useDebounce(
-    async () => {
-      try {
-        setIsLoading(true);
-        const response = await Api.products.search(searchQuery);
-        setProducts(response);
-        // console.log("SearchInput");
-      } catch (err) {
-        console.log('SearchInput', err);
-      } finally {
+    () => {
+      setIsLoading(true);
+
+      // Небольшая задержка для плавности UI
+      setTimeout(() => {
+        const results = searchProductsLocally(allCategories, searchQuery, 10);
+        setProducts(results);
         setIsLoading(false);
-      }
+      }, 50);
     },
-    500,
-    [searchQuery],
+    300,
+    [searchQuery, allCategories],
   );
 
   return (
@@ -55,7 +58,6 @@ export const SearchInput: React.FC<ISearchInputProps> = (): JSX.Element => {
         ref={ref}
         className={cn('flex rounded-2xl flex-1 justify-between relative h-11', focused && 'z-30')}
       >
-        {/* <Search className="absolute top-1/2 translate-y-[-50%] left-3 h-5 text-gray-400" /> */}
         {isLoading ? (
           <Loader2 className="absolute top-1/2 translate-y-[-50%] left-3 h-5 text-gray-400 animate-spin" />
         ) : (
