@@ -45,19 +45,19 @@ export const ChoosePizzaForm: React.FC<Props> = ({
     selectedSize,
     selectedType,
     selectedIngredients,
-    baseIngredientsState, // ✅ ИЗМЕНЕНО - управляемый массив вместо Set
+    baseIngredientsState,
     availableSizes,
     availableTypes,
     currentItemId,
     setSize,
     setType,
     addIngredient,
-    toggleBaseIngredientDisabled, // ✅ ИЗМЕНЕНО - новое имя функции
+    toggleBaseIngredientDisabled,
   } = useProductOptions(items, baseIngredients);
 
   const [ingredientView, setIngredientView] = useState<'addable' | 'default'>('addable');
 
-  // ✅ НОВОЕ - подготавливаем данные базовых ингредиентов для UI
+  // ✅ подготавливаем данные базовых ингредиентов для UI
   const baseIngredientsForUI = useMemo(() => {
     if (!baseIngredientsState || baseIngredientsState.length === 0) {
       return [];
@@ -69,11 +69,10 @@ export const ChoosePizzaForm: React.FC<Props> = ({
 
       return {
         id: baseIng.id,
-        name: baseIng.name, // ✅ из baseIngredientsState
+        name: baseIng.name,
         imageUrl: baseIng.imageUrl || fullIngredient?.imageUrl || '',
         price: fullIngredient ? Number(fullIngredient.price) : 0,
         removable: baseIng.removable,
-        // ✅ ВАЖНО: не передаем isDisabled, он внутри компонента
       };
     });
   }, [baseIngredientsState, ingredients]);
@@ -107,7 +106,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
     };
   }, [availableSizes, availableTypes, ingredients]);
 
-  // ✅ ИЗМЕНЕНО - обработчик добавления в корзину
+  // ✅ добавления в корзину
   const handleClickAdd = async () => {
     if (currentItemId) {
       const selectedIngredientsData = ingredients
@@ -118,11 +117,11 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           price: Number(ing.price),
         }));
 
-      // ✅ ИЗМЕНЕНО - передаем полный массив baseIngredientsState
+      // ✅ передаем полный массив baseIngredientsState
       onSubmit(
         currentItemId,
         Array.from(selectedIngredients),
-        baseIngredientsState, // ✅ полный snapshot с флагами isDisabled
+        baseIngredientsState,
         totalPrice,
         selectedSize,
         selectedType,
@@ -143,11 +142,11 @@ export const ChoosePizzaForm: React.FC<Props> = ({
       )}
     >
       {/* Левая часть - изображение */}
-      <div className="w-full lg:w-[60%] h-auto min-h-[250px] sm:min-h-[300px] md:min-h-[400px] p-4 sm:p-6 flex justify-center items-center">
+      <div className="w-full lg:w-[60%] h-auto min-h-[250px] sm:min-h-[300px] md:min-h-[400px] p-5 sm:p-6 flex justify-center items-center">
         <ProductImage
           imageUrl={imageUrl}
           size={selectedSize ?? 20}
-          className="w-full h-auto max-h-[250px] sm:max-h-[300px] md:max-h-[400px] object-contain"
+          className="w-full h-auto max-h-[250px] sm:max-h-[300px] md:max-h-[400px] object-contain mt-5"
         />
       </div>
 
@@ -158,9 +157,8 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           loading && 'opacity-40 pointer-events-none',
         )}
       >
-        <div className="flex-1">
+        <div className="flex-1 pt-1">
           <Title text={name} size="md" className="font-extrabold mb-3" />
-
           {/* Выбор размера */}
           {uiConfig.showSizeSelector && (
             <div className="mb-5">
@@ -171,7 +169,6 @@ export const ChoosePizzaForm: React.FC<Props> = ({
               />
             </div>
           )}
-
           {/* Выбор типа или теста */}
           {uiConfig.showTypeSelector && (
             <div className="mb-5">
@@ -182,7 +179,6 @@ export const ChoosePizzaForm: React.FC<Props> = ({
               />
             </div>
           )}
-
           {/* ✅ Переключатель режима просмотра ингредиентов */}
           {/* Показываем только если есть ОБА типа ингредиентов */}
           {ingredients.length > 0 && baseIngredientsForUI.length > 0 && (
@@ -197,7 +193,6 @@ export const ChoosePizzaForm: React.FC<Props> = ({
               />
             </div>
           )}
-
           {/* ✅ Ингредиенты */}
           {ingredientView === 'addable' ? (
             // Дополнительные ингредиенты (можно добавить)
@@ -207,11 +202,11 @@ export const ChoosePizzaForm: React.FC<Props> = ({
               selectedIds={selectedIngredients}
             />
           ) : (
-            // ✅ ИЗМЕНЕНО - Базовые ингредиенты (можно удалить)
+            // ✅ Базовые ингредиенты
             <IngredientsList
               ingredients={baseIngredientsForUI}
               onClickAdd={toggleBaseIngredientDisabled}
-              // ✅ ИЗМЕНЕНО - показываем как active те, у которых isDisabled = false
+              // ✅ показываем активные базовые ингредиенты
               selectedIds={
                 new Set(baseIngredientsState.filter(ing => !ing.isDisabled).map(ing => ing.id))
               }
@@ -224,7 +219,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           loading={loading}
           onClick={handleClickAdd}
           disabled={!currentItemId}
-          className="h-[55px] px-10 text-base rounded-[18px] w-full mt-5"
+          className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10 mb-10"
         >
           Aggiungi al carrello per {totalPrice.toFixed(2)} €
         </Button>
