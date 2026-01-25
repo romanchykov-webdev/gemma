@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidateProductVariants } from '@/lib/revalidate-product';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -91,8 +91,7 @@ export async function POST(req: NextRequest) {
     });
 
     // ✅ Инвалидируем кеш размеров и главную страницу
-    revalidatePath('/api/references/sizes');
-    revalidatePath('/');
+    await revalidateProductVariants();
 
     return NextResponse.json(newSize, { status: 201 });
   } catch (error: unknown) {
