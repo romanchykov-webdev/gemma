@@ -55,7 +55,12 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
                 loading={loading}
                 price={item.price}
                 imageUrl={item.imageUrl}
-                details={getCartItemDetails(item.ingredients, sizeName, doughTypeName)}
+                details={getCartItemDetails(
+                  item.ingredients,
+                  sizeName,
+                  doughTypeName,
+                  item.removedIngredients,
+                )}
                 quantity={item.quantity}
                 id={item.id}
                 onClickCountButton={type => changeItemCount(item.id, item.quantity, type)}

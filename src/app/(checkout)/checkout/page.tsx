@@ -123,6 +123,8 @@ export default function CheckoutPage() {
     }
   };
 
+  console.log('🔄 items:', items);
+
   return (
     <div className={cn('mt-10 pb-40')}>
       <Title text="Ordine" size="xl" className="mb-8" />

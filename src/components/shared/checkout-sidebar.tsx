@@ -20,8 +20,8 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
   syncing = false,
   onSubmitCash,
 }): JSX.Element => {
-  const TASSO = 5;
-  const DELIVERY_PRICE = 12;
+  const TASSO = 0;
+  const DELIVERY_PRICE = 0;
   const allTotalPrice = (totalAmount + (totalAmount * TASSO) / 100 + DELIVERY_PRICE).toFixed(2);
 
   return (
