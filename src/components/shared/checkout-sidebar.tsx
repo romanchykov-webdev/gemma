@@ -20,9 +20,9 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
   syncing = false,
   onSubmitCash,
 }): JSX.Element => {
-  const VAT = 5;
+  const TASSO = 5;
   const DELIVERY_PRICE = 12;
-  const allTotalPrice = (totalAmount + (totalAmount * VAT) / 100 + DELIVERY_PRICE).toFixed(2);
+  const allTotalPrice = (totalAmount + (totalAmount * TASSO) / 100 + DELIVERY_PRICE).toFixed(2);
 
   return (
     <WhiteBlock className={cn('p-4 sticky top-4 ', className)}>
@@ -45,7 +45,7 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
       <CheckoutItemDetails
         loading={loading}
         title="Imposte"
-        value={((totalAmount * VAT) / 100).toFixed(2)}
+        value={((totalAmount * TASSO) / 100).toFixed(2)}
         icon={PercentIcon}
       />
       <CheckoutItemDetails

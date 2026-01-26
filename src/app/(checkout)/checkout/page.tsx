@@ -19,6 +19,10 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Api } from '../../../../services/api-client';
 
+// TODO: добавить блок с промокодами
+// TODO: добавить блок с забрать самому из ресторана  тоесть тогда ненадо вводить адрес
+// TODO: избавиться от водда адресса с помощью гугл
+
 export default function CheckoutPage() {
   //
   const [submitting, setSubmitting] = useState(false);
@@ -139,7 +143,7 @@ export default function CheckoutPage() {
                 className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
               />
 
-              {/* TODO: Add block recommendation */}
+              {/* TODO: Add block recommendation ------------------------------------------------------------*/}
 
               {/*  */}
               <CheckoutPersanalInfo
