@@ -123,7 +123,9 @@ export default function CheckoutPage() {
     }
   };
 
-  console.log('🔄 items:', JSON.stringify(items, null, 2));
+  const disabledClassName = cn((loading || submitting) && 'opacity-40 pointer-events-none');
+  // console.log('🔄 items:', JSON.stringify(items, null, 2));
+  console.log('rerender checkout page');
 
   return (
     <div className={cn('mt-10 pb-40')}>
@@ -136,26 +138,22 @@ export default function CheckoutPage() {
           <div className=" grid grid-cols-1 lg:grid-cols-3 gap-10  ">
             {/* left block - top block */}
             <div className="flex flex-col gap-10 flex-1 lg:col-span-2 sm:col-span-2 ">
-              {/*  */}
+              {/* вывод корзины */}
               <CheckoutCart
                 items={items}
                 loading={loading}
                 removeCartItem={removeCartItem}
                 changeItemCount={changeItemCount}
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
+                className={disabledClassName}
               />
 
               {/* TODO: Add block recommendation ------------------------------------------------------------*/}
 
               {/*  */}
-              <CheckoutPersanalInfo
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
-              />
+              <CheckoutPersanalInfo className={disabledClassName} />
 
               {/* */}
-              <CheckoutAdressForm
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
-              />
+              <CheckoutAdressForm className={disabledClassName} />
             </div>
 
             {/* right block - subblock */}
@@ -166,7 +164,7 @@ export default function CheckoutPage() {
                 totalAmount={totalAmount}
                 loading={loading || submitting}
                 syncing={syncing}
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
+                className={disabledClassName}
               />
               {/*  */}
             </div>

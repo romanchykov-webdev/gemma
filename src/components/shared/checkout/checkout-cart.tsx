@@ -21,6 +21,7 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
   changeItemCount,
   className,
 }): JSX.Element => {
+  // console.log('CheckoutCart 🔄 items:', JSON.stringify(items, null, 2));
   return (
     <WhiteBlock
       title="1. Carrello"
@@ -29,24 +30,9 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
     >
       {items.length > 0
         ? items.map(item => {
-            // Маппинг типов пиццы: 1 -> "Традиционное" / 2 -> "Тонкое"
-            const mapPizzaTypes: Record<number, string> = {
-              1: 'Tradizionale',
-              2: 'Sottile',
-            };
-
-            // sizeName ожидается как string | null | undefined
-            // item.pizzaSize может быть number (например 30) или string (например "500 ml") или null/undefined
-            const sizeName =
-              item.size === null || item.size === undefined
-                ? undefined
-                : typeof item.size === 'number'
-                  ? `${item.size}` // если число — превращаем в строку
-                  : item.size;
-
-            // doughTypeName — строка из маппинга либо undefined
-            const doughTypeName =
-              item.type === null || item.type === undefined ? undefined : mapPizzaTypes[item.type];
+            // ✅ Используем готовые текстовые названия из CartStateItem
+            const sizeName = item.sizeName ?? undefined;
+            const typeName = item.typeName ?? undefined;
 
             return (
               <CheckoutItemOrder
@@ -58,7 +44,7 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
                 details={getCartItemDetails(
                   item.ingredients,
                   sizeName,
-                  doughTypeName,
+                  typeName,
                   item.removedIngredients,
                 )}
                 quantity={item.quantity}

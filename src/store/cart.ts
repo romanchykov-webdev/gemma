@@ -86,10 +86,10 @@ function transformCartItems(rawItems: RawCartItem[]): {
       name: rawItem.product.name,
       imageUrl: rawItem.product.imageUrl,
       price: calculated.price,
-      size: calculated.pizzaSize,
-      type: calculated.pizzaType,
+      size: calculated.size,
+      type: calculated.type,
       sizeName: calculated.sizeName,
-      typeName: calculated.doughTypeName,
+      typeName: calculated.typeName,
       ingredients: rawItem.ingredients.map(ing => ({
         id: ing.id,
         name: ing.name,
