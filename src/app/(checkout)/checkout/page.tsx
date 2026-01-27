@@ -126,7 +126,6 @@ export default function CheckoutPage() {
   const disabledClassName = cn((loading || submitting) && 'opacity-40 pointer-events-none');
   // console.log('🔄 items:', JSON.stringify(items, null, 2));
   console.log('rerender checkout page');
-
   return (
     <div className={cn('mt-10 pb-40')}>
       <Title text="Ordine" size="xl" className="mb-8" />
