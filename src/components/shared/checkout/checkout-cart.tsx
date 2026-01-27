@@ -21,7 +21,6 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
   changeItemCount,
   className,
 }): JSX.Element => {
-  // console.log('CheckoutCart 🔄 items:', JSON.stringify(items, null, 2));
   return (
     <WhiteBlock
       title="1. Carrello"
@@ -30,9 +29,7 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
     >
       {items.length > 0
         ? items.map(item => {
-            // ✅ Используем готовые текстовые названия из CartStateItem
-            const sizeName = item.sizeName ?? undefined;
-            const typeName = item.typeName ?? undefined;
+            // ✅ Используем готовые данные из CartStateItem
 
             return (
               <CheckoutItemOrder
@@ -43,8 +40,8 @@ export const CheckoutCart: React.FC<ICheckoutCartProps> = ({
                 imageUrl={item.imageUrl}
                 details={getCartItemDetails(
                   item.ingredients,
-                  sizeName,
-                  typeName,
+                  item.sizeName,
+                  item.typeName,
                   item.removedIngredients,
                 )}
                 quantity={item.quantity}

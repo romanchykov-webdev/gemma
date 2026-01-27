@@ -1,7 +1,7 @@
 import { CartStateItem } from '@/lib/get-cart-details';
 import { useCartStore } from '@/store/cart';
 // import { useEffect } from "react";
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { CreateCartItemValuesOptimistic } from '../../services/dto/cart.dto';
 type CountType = 'plus' | 'minus';
 
@@ -75,32 +75,57 @@ export const useCart = (): UseCartReturn => {
 
   // 	updateItemQuantity(id, next);
   // };
-  const changeItemCount = (id: string, currentQty: number, type: CountType) => {
-    // базой берём "ожидаемое" значение, если уже есть серия кликов; иначе текущее из стора
-    const base = pendingQtyRef.current.get(id) ?? currentQty;
-    const next = type === 'plus' ? base + 1 : base - 1;
+  // const changeItemCount = (id: string, currentQty: number, type: CountType) => {
+  //   // базой берём "ожидаемое" значение, если уже есть серия кликов; иначе текущее из стора
+  //   const base = pendingQtyRef.current.get(id) ?? currentQty;
+  //   const next = type === 'plus' ? base + 1 : base - 1;
 
-    // не даём уйти ниже 1
-    const clamped = Math.max(1, next);
+  //   // не даём уйти ниже 1
+  //   const clamped = Math.max(1, next);
 
-    // сохранить ожидаемое значение
-    pendingQtyRef.current.set(id, clamped);
+  //   // сохранить ожидаемое значение
+  //   pendingQtyRef.current.set(id, clamped);
 
-    // перезапустить таймер для этого товара
-    const prev = timersRef.current.get(id);
-    if (prev) clearTimeout(prev);
+  //   // перезапустить таймер для этого товара
+  //   const prev = timersRef.current.get(id);
+  //   if (prev) clearTimeout(prev);
 
-    const timer = setTimeout(() => {
-      const finalQty = pendingQtyRef.current.get(id) ?? 1;
-      updateItemQuantity(id, finalQty);
+  //   const timer = setTimeout(() => {
+  //     const finalQty = pendingQtyRef.current.get(id) ?? 1;
+  //     updateItemQuantity(id, finalQty);
 
-      // очистка
-      pendingQtyRef.current.delete(id);
-      timersRef.current.delete(id);
-    }, DEBOUNCE_MS);
+  //     // очистка
+  //     pendingQtyRef.current.delete(id);
+  //     timersRef.current.delete(id);
+  //   }, DEBOUNCE_MS);
 
-    timersRef.current.set(id, timer);
-  };
+  //   timersRef.current.set(id, timer);
+  // };
+
+  // ✅ Оборачиваем в useCallback для стабильной ссылки
+  const changeItemCount = useCallback(
+    (id: string, currentQty: number, type: CountType) => {
+      const base = pendingQtyRef.current.get(id) ?? currentQty;
+      const next = type === 'plus' ? base + 1 : base - 1;
+      const clamped = Math.max(1, next);
+
+      pendingQtyRef.current.set(id, clamped);
+
+      const prev = timersRef.current.get(id);
+      if (prev) clearTimeout(prev);
+
+      const timer = setTimeout(() => {
+        const finalQty = pendingQtyRef.current.get(id) ?? 1;
+        updateItemQuantity(id, finalQty);
+
+        pendingQtyRef.current.delete(id);
+        timersRef.current.delete(id);
+      }, DEBOUNCE_MS);
+
+      timersRef.current.set(id, timer);
+    },
+    [updateItemQuantity],
+  );
 
   return {
     totalAmount,
