@@ -37,6 +37,7 @@ export const CheckoutPersanalInfo: React.FC<ICheckoutPersanalInfoProps> = ({
         {/* phone */}
         <FormInput
           name="phone"
+          type="number"
           className="text-base "
           placeholder="Numero di telefono"
           label="Numero di telefono"

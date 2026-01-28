@@ -9,20 +9,24 @@ interface ICheckoutSidebarProps {
   totalAmount: number;
   loading: boolean;
   syncing?: boolean; // ✅ Флаг синхронизации с сервером
+  deliveryType?: 'delivery' | 'pickup';
   className?: string;
   onSubmitCash: () => void;
 }
 
 export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
-  className,
   totalAmount,
   loading,
   syncing = false,
+  deliveryType = 'delivery',
+  className,
   onSubmitCash,
 }): JSX.Element => {
   const TASSO = 0;
   const DELIVERY_PRICE = 0;
   const allTotalPrice = (totalAmount + (totalAmount * TASSO) / 100 + DELIVERY_PRICE).toFixed(2);
+
+  console.log('🔄 deliveryType:', deliveryType);
 
   return (
     <WhiteBlock className={cn('p-4 sticky top-4 ', className)}>
@@ -77,10 +81,15 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
           onClick={onSubmitCash}
           className="w-full h-14 rounded-2xl mt-6 text-base font-bold"
         >
-          Pagamento alla consegna
+          {
+            deliveryType === 'pickup'
+              ? 'Pagamento al ritiro' // ← Текст для самовывоза
+              : 'Pagamento alla consegna' // ← Текст для доставки
+          }
           <ArrowRightIcon className="w-5 ml-2" />
         </Button>
       </div>
     </WhiteBlock>
   );
 };
+// Pagamento al ritiro
