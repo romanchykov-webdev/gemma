@@ -3,6 +3,7 @@ import { Title } from '@/components/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 
+import { createCashOrder, createOrder } from '@/app/actions';
 import { CheckoutSidebar } from '@/components/shared/checkout-sidebar';
 import { CheckoutCart } from '@/components/shared/checkout/checkout-cart';
 import { CheckoutDeliveryForm } from '@/components/shared/checkout/checkout-delivery-form';
@@ -82,31 +83,31 @@ export default function CheckoutPage() {
       const finalData = prepareOrderData(data);
 
       // 🧪 ТЕСТИРОВАНИЕ: Вывод в консоль
-      console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОНЛАЙН ОПЛАТА) ===');
-      console.log('📦 Исходные данные:', data);
-      console.log('✅ Подготовленные данные:', finalData);
-      console.log('📍 Адрес:', finalData.address);
-      console.log('🚚 Тип доставки:', finalData.deliveryType);
-      console.log('================================================');
+      // console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОНЛАЙН ОПЛАТА) ===');
+      // console.log('📦 Исходные данные:', data);
+      // console.log('✅ Подготовленные данные:', finalData);
+      // console.log('📍 Адрес:', finalData.address);
+      // console.log('🚚 Тип доставки:', finalData.deliveryType);
+      // console.log('================================================');
 
-      // const url = await createOrder(finalData);
+      const url = await createOrder(finalData);
 
       toast.success('Ordine effettuato con successo! Vai al link per il pagamento: ', {
         icon: '✅',
       });
 
-      // if (!url) {
-      // toast.error('Impossibile creare la sessione di pagamento. Riprova.');
-      //   setSubmitting(false);
-      //   return;
-      // }
+      if (!url) {
+        toast.error('Impossibile creare la sessione di pagamento. Riprova.');
+        setSubmitting(false);
+        return;
+      }
 
       toast.success('Reindirizziamo alla pagina di pagamento…');
-      // window.location.href = url;
+      window.location.href = url;
 
       // ✅ ДОБАВИТЬ для тестирования
-      setSubmitting(false);
-      toast.success('Тестирование: данные выведены в консоль! ✅');
+      // setSubmitting(false);
+      // toast.success('Тестирование: данные выведены в консоль! ✅');
       //
     } catch (error) {
       toast.error("Si è verificato un errore durante l'ordine", {
@@ -128,30 +129,30 @@ export default function CheckoutPage() {
       const finalData = prepareOrderData(data);
 
       // 🧪 ТЕСТИРОВАНИЕ: Вывод в консоль
-      console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОПЛАТА НАЛИЧНЫМИ) ===');
-      console.log('📦 Исходные данные:', data);
-      console.log('✅ Подготовленные данные:', finalData);
-      console.log('📍 Адрес:', finalData.address);
-      console.log('🚚 Тип доставки:', finalData.deliveryType);
-      console.log('💰 Способ оплаты: Наличными');
-      console.log('======================================================');
+      // console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОПЛАТА НАЛИЧНЫМИ) ===');
+      // console.log('📦 Исходные данные:', data);
+      // console.log('✅ Подготовленные данные:', finalData);
+      // console.log('📍 Адрес:', finalData.address);
+      // console.log('🚚 Тип доставки:', finalData.deliveryType);
+      // console.log('💰 Способ оплаты: Наличными');
+      // console.log('======================================================');
 
-      // const res = await createCashOrder(finalData);
+      const res = await createCashOrder(finalData);
 
-      // if (!res?.success) {
-      // toast.error("Impossibile creare l'ordine senza pagamento. Riprova.", { icon: '❌' });
-      //   setSubmitting(false);
-      //   return;
-      // }
+      if (!res?.success) {
+        toast.error("Impossibile creare l'ordine senza pagamento. Riprova.", { icon: '❌' });
+        setSubmitting(false);
+        return;
+      }
 
       toast.success('Ordine effettuato con successo! Stiamo già preparando il tuo ordine!', {
         icon: '✅',
       });
 
-      // window.location.href = '/success';
+      window.location.href = '/success';
       // ✅ ДОБАВИТЬ для тестирования
-      setSubmitting(false);
-      toast.success('Тестирование: данные выведены в консоль! ✅');
+      // setSubmitting(false);
+      // toast.success('Тестирование: данные выведены в консоль! ✅');
       //
     } catch (error) {
       console.log(error);

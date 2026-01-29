@@ -5,7 +5,7 @@ import React, { JSX } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { ExternalLink, MapPin } from 'lucide-react';
-import { FormAddressAutocomplete } from '../form/form-address-autocomplete';
+import { FormInput } from '../form/form-input';
 import { FormTextarea } from '../form/form-textarea';
 import { WhiteBlock } from '../white-block';
 import { DeliveryTypeSelector } from './delivery-type-selector';
@@ -32,9 +32,17 @@ export const CheckoutDeliveryForm: React.FC<ICheckoutDeliveryFormProps> = ({
         {/* Поле адреса - показываем только при доставке на дом */}
         {deliveryType === 'delivery' && (
           <div className="animate-in fade-in duration-300">
-            <FormAddressAutocomplete
+            {/* <FormAddressAutocomplete
               name="address"
               className="text-base"
+              placeholder="Indirizzo"
+              label="Indirizzo"
+              required
+            /> */}
+            {/*  */}
+            <FormInput
+              name="address"
+              className="text-base "
               placeholder="Indirizzo"
               label="Indirizzo"
               required
