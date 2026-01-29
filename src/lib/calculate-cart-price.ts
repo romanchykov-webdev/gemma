@@ -43,10 +43,10 @@ export function calculateItemPrice(
   types: Type[],
 ): {
   price: number;
-  pizzaSize: number | null;
-  pizzaType: number | null;
+  size: number | null;
+  type: number | null;
   sizeName: string | null;
-  doughTypeName: string | null;
+  typeName: string | null;
   removedIngredients: Array<{ name: string }>;
 } {
   // Находим вариант продукта
@@ -64,10 +64,10 @@ export function calculateItemPrice(
 
     return {
       price: 0,
-      pizzaSize: null,
-      pizzaType: null,
+      size: null,
+      type: null,
       sizeName: null,
-      doughTypeName: null,
+      typeName: null,
       removedIngredients: [],
     };
   }
@@ -111,10 +111,10 @@ export function calculateItemPrice(
 
   return {
     price: totalPrice,
-    pizzaSize: size?.value || null,
-    pizzaType: type?.value || null,
+    size: size?.value || null,
+    type: type?.value || null,
     sizeName: size?.name || null,
-    doughTypeName: type?.name || null,
+    typeName: type?.name || null,
     removedIngredients,
   };
 }
