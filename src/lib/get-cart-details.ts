@@ -24,6 +24,13 @@ interface ReturnProps {
   totalAmount: number;
 }
 
+/**
+ * @deprecated Функция не используется и содержит ошибку:
+ * size/type устанавливаются как ID вместо VALUE.
+ * Используйте transformCartItems из store/cart.ts вместо этого.
+ * 
+ * ⚠️ КРИТИЧНО: НЕ ИСПОЛЬЗОВАТЬ! Возвращает некорректные данные!
+ */
 export const getCartDetails = (data: CartDTO): ReturnProps => {
   if (!data || !data.items) {
     return {

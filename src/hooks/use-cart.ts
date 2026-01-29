@@ -102,6 +102,31 @@ export const useCart = (): UseCartReturn => {
     timersRef.current.set(id, timer);
   };
 
+  // ✅ Оборачиваем в useCallback для стабильной ссылки
+  // const changeItemCount = useCallback(
+  //   (id: string, currentQty: number, type: CountType) => {
+  //     const base = pendingQtyRef.current.get(id) ?? currentQty;
+  //     const next = type === 'plus' ? base + 1 : base - 1;
+  //     const clamped = Math.max(1, next);
+
+  //     pendingQtyRef.current.set(id, clamped);
+
+  //     const prev = timersRef.current.get(id);
+  //     if (prev) clearTimeout(prev);
+
+  //     const timer = setTimeout(() => {
+  //       const finalQty = pendingQtyRef.current.get(id) ?? 1;
+  //       updateItemQuantity(id, finalQty);
+
+  //       pendingQtyRef.current.delete(id);
+  //       timersRef.current.delete(id);
+  //     }, DEBOUNCE_MS);
+
+  //     timersRef.current.set(id, timer);
+  //   },
+  //   [updateItemQuantity],
+  // );
+
   return {
     totalAmount,
     items,

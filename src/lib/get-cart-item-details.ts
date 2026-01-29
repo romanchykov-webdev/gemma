@@ -75,19 +75,19 @@ import { CartStateItem } from './get-cart-details';
 export const getCartItemDetails = (
   ingredients: CartStateItem['ingredients'],
   sizeName?: string | null,
-  doughTypeName?: string | null,
+  typeName?: string | null,
   removedIngredients?: Array<{ name: string }>,
 ) => {
   const baseDetails: string[] = [];
 
-  // sizeName=null && doughTypeName=null
-  if (sizeName === 'Null' && doughTypeName === 'Null') {
+  // sizeName=null && typeName=null
+  if (sizeName === 'Null' && typeName === 'Null') {
     return { base: '', added: '', removed: '' };
   }
 
   // 🍕 Если это пицца (есть и размер и тип теста)
-  if (sizeName && doughTypeName) {
-    baseDetails.push(`${doughTypeName} ${sizeName}`);
+  if (sizeName && typeName) {
+    baseDetails.push(`${typeName} ${sizeName}`);
   }
   // 🥤 Если это напиток/другой продукт (только размер)
   else if (sizeName) {

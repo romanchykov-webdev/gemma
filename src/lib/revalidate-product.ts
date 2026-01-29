@@ -32,7 +32,7 @@ export async function revalidateIngredient(ingredientId: number) {
           // В базовых ингредиентах (JSON поле)
           {
             baseIngredients: {
-              path: '$[*].id',
+              path: ['$[*].id'],
               array_contains: ingredientId,
             },
           },

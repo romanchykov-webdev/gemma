@@ -5,8 +5,8 @@ import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 
 import { createCashOrder, createOrder } from '@/app/actions';
 import { CheckoutSidebar } from '@/components/shared/checkout-sidebar';
-import { CheckoutAdressForm } from '@/components/shared/checkout/checkout-adress-form';
 import { CheckoutCart } from '@/components/shared/checkout/checkout-cart';
+import { CheckoutDeliveryForm } from '@/components/shared/checkout/checkout-delivery-form';
 import {
   checkoutFormSchema,
   CheckoutFormValues,
@@ -18,6 +18,8 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Api } from '../../../../services/api-client';
+
+// TODO: добавить блок с промокодами
 
 export default function CheckoutPage() {
   //
@@ -35,6 +37,7 @@ export default function CheckoutPage() {
       firstname: '',
       lastname: '',
       phone: '',
+      deliveryType: 'delivery',
       address: '',
       comment: '',
     },
@@ -64,10 +67,30 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
+  // Вспомогательная функция подготовки данных для опредиления способа доставки
+  const prepareOrderData = (data: CheckoutFormValues): CheckoutFormValues => {
+    return {
+      ...data,
+      address: data.deliveryType === 'pickup' ? 'Asporto' : data.address!.trim(),
+    };
+  };
+
   const onSubmit: SubmitHandler<CheckoutFormValues> = async (data: CheckoutFormValues) => {
     try {
       setSubmitting(true);
-      const url = await createOrder(data);
+
+      // ✅ Проверка перед отправкой
+      const finalData = prepareOrderData(data);
+
+      // 🧪 ТЕСТИРОВАНИЕ: Вывод в консоль
+      // console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОНЛАЙН ОПЛАТА) ===');
+      // console.log('📦 Исходные данные:', data);
+      // console.log('✅ Подготовленные данные:', finalData);
+      // console.log('📍 Адрес:', finalData.address);
+      // console.log('🚚 Тип доставки:', finalData.deliveryType);
+      // console.log('================================================');
+
+      const url = await createOrder(finalData);
 
       toast.success('Ordine effettuato con successo! Vai al link per il pagamento: ', {
         icon: '✅',
@@ -81,6 +104,11 @@ export default function CheckoutPage() {
 
       toast.success('Reindirizziamo alla pagina di pagamento…');
       window.location.href = url;
+
+      // ✅ ДОБАВИТЬ для тестирования
+      // setSubmitting(false);
+      // toast.success('Тестирование: данные выведены в консоль! ✅');
+      //
     } catch (error) {
       toast.error("Si è verificato un errore durante l'ordine", {
         icon: '❌',
@@ -97,7 +125,19 @@ export default function CheckoutPage() {
     try {
       setSubmitting(true);
 
-      const res = await createCashOrder(data);
+      // ✅ Проверка перед отправкой
+      const finalData = prepareOrderData(data);
+
+      // 🧪 ТЕСТИРОВАНИЕ: Вывод в консоль
+      // console.log('=== ТЕСТИРОВАНИЕ ОТПРАВКИ ФОРМЫ (ОПЛАТА НАЛИЧНЫМИ) ===');
+      // console.log('📦 Исходные данные:', data);
+      // console.log('✅ Подготовленные данные:', finalData);
+      // console.log('📍 Адрес:', finalData.address);
+      // console.log('🚚 Тип доставки:', finalData.deliveryType);
+      // console.log('💰 Способ оплаты: Наличными');
+      // console.log('======================================================');
+
+      const res = await createCashOrder(finalData);
 
       if (!res?.success) {
         toast.error("Impossibile creare l'ordine senza pagamento. Riprova.", { icon: '❌' });
@@ -110,6 +150,10 @@ export default function CheckoutPage() {
       });
 
       window.location.href = '/success';
+      // ✅ ДОБАВИТЬ для тестирования
+      // setSubmitting(false);
+      // toast.success('Тестирование: данные выведены в консоль! ✅');
+      //
     } catch (error) {
       console.log(error);
       toast.error("Si è verificato un errore durante l'ordine", {
@@ -119,6 +163,9 @@ export default function CheckoutPage() {
     }
   };
 
+  const disabledClassName = cn((loading || submitting) && 'opacity-40 pointer-events-none');
+  // console.log('🔄 items:', JSON.stringify(items, null, 2));
+  // console.log('rerender checkout page');
   return (
     <div className={cn('mt-10 pb-40')}>
       <Title text="Ordine" size="xl" className="mb-8" />
@@ -130,26 +177,22 @@ export default function CheckoutPage() {
           <div className=" grid grid-cols-1 lg:grid-cols-3 gap-10  ">
             {/* left block - top block */}
             <div className="flex flex-col gap-10 flex-1 lg:col-span-2 sm:col-span-2 ">
-              {/*  */}
+              {/* вывод корзины */}
               <CheckoutCart
                 items={items}
                 loading={loading}
                 removeCartItem={removeCartItem}
                 changeItemCount={changeItemCount}
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
+                className={disabledClassName}
               />
 
-              {/* TODO: Add block recommendation */}
+              {/* TODO: Add block recommendation ------------------------------------------------------------*/}
 
               {/*  */}
-              <CheckoutPersanalInfo
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
-              />
+              <CheckoutPersanalInfo className={disabledClassName} />
 
               {/* */}
-              <CheckoutAdressForm
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
-              />
+              <CheckoutDeliveryForm className={disabledClassName} />
             </div>
 
             {/* right block - subblock */}
@@ -160,7 +203,8 @@ export default function CheckoutPage() {
                 totalAmount={totalAmount}
                 loading={loading || submitting}
                 syncing={syncing}
-                className={`${loading || (submitting && 'opacity-40 pointer-events-none')}`}
+                className={disabledClassName}
+                deliveryType={form.getValues('deliveryType')}
               />
               {/*  */}
             </div>
