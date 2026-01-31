@@ -460,7 +460,7 @@ async function up() {
         { id: 2, ...getIngredient(2), removable: false, isDisabled: false },
       ],
       addableIngredientIds: [1, 3, 4, 5, 8, 9, 10, 11, 12, 14, 15],
-      variants: [{ variantId: 1, sizeId: 4, typeId: 7, price: 5.99 }],
+      variants: [{ variantId: 1, sizeId: 7, typeId: 7, price: 5.99 }],
     },
   });
 

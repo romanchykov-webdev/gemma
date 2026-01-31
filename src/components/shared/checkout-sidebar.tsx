@@ -26,7 +26,7 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
   const DELIVERY_PRICE = 0;
   const allTotalPrice = (totalAmount + (totalAmount * TASSO) / 100 + DELIVERY_PRICE).toFixed(2);
 
-  console.log('🔄 deliveryType:', deliveryType);
+  // console.log('🔄 deliveryType:', deliveryType);
 
   return (
     <WhiteBlock className={cn('p-4 sticky top-4 ', className)}>
@@ -63,7 +63,7 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
 
       {/* upload block */}
       <div className="flex flex-col gap-2">
-        <Button
+        {/* <Button
           loading={loading || syncing}
           disabled={syncing}
           type="submit"
@@ -71,7 +71,7 @@ export const CheckoutSidebar: React.FC<ICheckoutSidebarProps> = ({
         >
           Vai al pagamento
           <ArrowRightIcon className="w-5 ml-2" />
-        </Button>
+        </Button> */}
 
         {/* order without payment */}
         <Button
