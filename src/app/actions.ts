@@ -497,7 +497,7 @@ const formatTelegramMessage = async (
     '',
     `👤 ${order.fullName}`,
     '',
-    `📞 <code>${order.phone}</code>`,
+    `📞 <b><a href="tel:${order.phone}">${order.phone}</a></b>`,
     '',
     ...(isPickup
       ? ['📍 <i>Ritiro presso il locale</i>']
