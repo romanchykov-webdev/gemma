@@ -12,8 +12,6 @@ import { profileUpdateSchema, TProfileUpdateValues } from './modals/auth-modal/f
 
 import { Loader2 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { FormAddressAutocomplete } from './form/form-address-autocomplete';
-import { FormInputPhone } from './form/form-input-phone';
 import { Title } from './title';
 
 interface Props {
@@ -86,29 +84,53 @@ export const ProfileForm: React.FC<Props> = ({ data }): JSX.Element => {
           className="flex flex-col gap-5 max-w-96 w-full mt-10"
           onSubmit={form.handleSubmit(onSubmit)}
         >
+          {/* email */}
           <FormInput name="email" label="E-Mail" required />
+
+          {/* nome completo */}
           <FormInput name="fullName" label="Nome completo" required />
 
-          <FormInputPhone
+          {/* numero di telefono */}
+          <FormInput
+            name="phone"
+            label="Telefono"
+            placeholder="Telefono"
+            className="text-base "
+            required
+          />
+
+          {/* <FormInputPhone
             name="phone"
             className="text-base "
             placeholder="Telefono"
             label="Telefono"
-          />
-          <FormAddressAutocomplete
+          /> */}
+
+          {/* indirizzo */}
+          {/* <FormAddressAutocomplete
             name="address"
             className="text-base "
             placeholder="Indirizzo"
             label="Indirizzo"
+          /> */}
+          <FormInput
+            name="address"
+            label="Indirizzo"
+            placeholder="Indirizzo"
+            className="text-base "
+            required
           />
 
+          {/* password */}
           <FormInput type="password" name="password" label="Nuova password" />
           <FormInput type="password" name="confirmPassword" label="Ripeti password" />
 
+          {/* bottone di salvataggio */}
           <Button disabled={form.formState.isSubmitting} className="text-base mt-10" type="submit">
             Salva
           </Button>
 
+          {/* bottone di uscita */}
           <Button
             onClick={onClickSignOut}
             variant="secondary"
