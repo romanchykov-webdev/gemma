@@ -74,6 +74,12 @@ export async function createOrder(data: CheckoutFormValues) {
                 imageUrl: true,
                 variants: true,
                 baseIngredients: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
             ingredients: {
@@ -534,7 +540,10 @@ export async function createCashOrder(data: CheckoutFormValues) {
                 variants: true,
                 baseIngredients: true,
                 category: {
-                  select: { name: true },
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },

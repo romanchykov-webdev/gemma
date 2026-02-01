@@ -1,5 +1,6 @@
-import { Container, StatusSearchDataSection, Title } from '@/components/shared';
+import { Container, OrdersBlock, StatusSearchDataSection, Title } from '@/components/shared';
 import { OrderInnfoSection } from '@/components/shared/orders-dashbord/header-info-section/order-innfo-section';
+
 import { adminRoles } from '@/constants/auth-options';
 import { getUserSession } from '@/lib/get-user-session';
 import { redirect } from 'next/navigation';
@@ -41,6 +42,9 @@ export default async function OrdersPage() {
       <OrderInnfoSection />
       {/* status search data section */}
       <StatusSearchDataSection />
+
+      {/* orders section */}
+      <OrdersBlock />
     </Container>
   );
 }
