@@ -606,12 +606,12 @@ export async function createCashOrder(data: CheckoutFormValues) {
       data.deliveryType,
     );
 
-    console.log('\n========== TELEGRAM MESSAGE ==========');
-    console.log(telegramMsg);
-    console.log('======================================\n');
+    // console.log('\n========== TELEGRAM MESSAGE ==========');
+    // console.log(telegramMsg);
+    // console.log('======================================\n');
 
     await sendTelegramMessage(telegramMsg);
-    // await clearCart(cartToken);
+    await clearCart(cartToken);
 
     return { success: true, orderId: order.id };
   } catch (error) {

@@ -40,7 +40,9 @@ export { Title } from './title';
 export { TopBar } from './top-bar';
 export { WhiteBlock } from './white-block';
 
+export { ClientProductsWrapper } from './client-products-wrapper';
 export { LazyCartDrawer } from './lazy-cart-drawer';
 export { ProfileForm } from './profile-form';
 export { Stories } from './stories';
-export { ClientProductsWrapper } from './client-products-wrapper';
+// dashboard orders
+export * from './orders-dashbord';
