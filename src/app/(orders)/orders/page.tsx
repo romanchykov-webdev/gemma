@@ -1,4 +1,4 @@
-import { Container, Title } from '@/components/shared';
+import { Container, StatusSearchDataSection, Title } from '@/components/shared';
 import { OrderInnfoSection } from '@/components/shared/orders-dashbord/header-info-section/order-innfo-section';
 import { adminRoles } from '@/constants/auth-options';
 import { getUserSession } from '@/lib/get-user-session';
@@ -39,6 +39,8 @@ export default async function OrdersPage() {
       <Title text="Gestione Ordini" size="lg" className="font-extrabold text-center" />
       {/* header info section */}
       <OrderInnfoSection />
+      {/* status search data section */}
+      <StatusSearchDataSection />
     </Container>
   );
 }
