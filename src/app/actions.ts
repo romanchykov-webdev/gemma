@@ -74,6 +74,12 @@ export async function createOrder(data: CheckoutFormValues) {
                 imageUrl: true,
                 variants: true,
                 baseIngredients: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
             ingredients: {
@@ -534,7 +540,10 @@ export async function createCashOrder(data: CheckoutFormValues) {
                 variants: true,
                 baseIngredients: true,
                 category: {
-                  select: { name: true },
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
@@ -606,12 +615,12 @@ export async function createCashOrder(data: CheckoutFormValues) {
       data.deliveryType,
     );
 
-    console.log('\n========== TELEGRAM MESSAGE ==========');
-    console.log(telegramMsg);
-    console.log('======================================\n');
+    // console.log('\n========== TELEGRAM MESSAGE ==========');
+    // console.log(telegramMsg);
+    // console.log('======================================\n');
 
     await sendTelegramMessage(telegramMsg);
-    // await clearCart(cartToken);
+    await clearCart(cartToken);
 
     return { success: true, orderId: order.id };
   } catch (error) {

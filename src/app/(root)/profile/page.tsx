@@ -38,10 +38,19 @@ export default async function ProfilePage() {
   return (
     <>
       {isAdmin && (
-        <div className="flex items-center justify-center mt-5">
+        <div className="flex items-center justify-center mt-15  gap-10 ">
+          {/* admin panel button */}
           <Button variant="outline" className="text-brand-primary">
             <Link href="/dashboard" className="flex gap-2 items-center">
               Admin panel
+              <ArrowRight size={16} />
+            </Link>
+          </Button>
+
+          {/* orders button */}
+          <Button variant="outline" className="text-brand-primary">
+            <Link href="/orders" className="flex gap-2 items-center">
+              Ordini
               <ArrowRight size={16} />
             </Link>
           </Button>
