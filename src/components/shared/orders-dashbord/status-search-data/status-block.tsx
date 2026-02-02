@@ -6,16 +6,21 @@ interface Props {
   tuttiCount: number;
   inAttesaCount: number;
   completatiCount: number;
+  activeStatus: string;
+  onStatusChange: (status: string) => void;
 }
 
 interface StatusItemProps {
   title: string;
   count: number;
   isActive?: boolean;
+  onClick: () => void;
 }
-const StatusItem = ({ title, count, isActive = false }: StatusItemProps) => {
+
+const StatusItem = ({ title, count, isActive = false, onClick }: StatusItemProps) => {
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center justify-center gap-2 cursor-pointer py-5 rounded-tl-md rounded-tr-md ',
         'hover:bg-brand-primary/50 hover:text-white transition-all duration-300',
@@ -27,18 +32,36 @@ const StatusItem = ({ title, count, isActive = false }: StatusItemProps) => {
     </div>
   );
 };
+
 export const StatusBlock: React.FC<Props> = ({
   className,
   tuttiCount,
   inAttesaCount,
   completatiCount,
+  activeStatus,
+  onStatusChange,
 }): JSX.Element => {
   return (
     <div className={cn('border-b border-brand-primary', className)}>
       <div className="grid grid-cols-3 gap-1">
-        <StatusItem isActive={true} title="Tutti" count={tuttiCount} />
-        <StatusItem isActive={false} title="In attesa" count={inAttesaCount} />
-        <StatusItem isActive={false} title="Pronti" count={completatiCount} />
+        <StatusItem
+          isActive={activeStatus === 'ALL'}
+          title="Tutti"
+          count={tuttiCount}
+          onClick={() => onStatusChange('ALL')}
+        />
+        <StatusItem
+          isActive={activeStatus === 'PENDING'}
+          title="In attesa"
+          count={inAttesaCount}
+          onClick={() => onStatusChange('PENDING')}
+        />
+        <StatusItem
+          isActive={activeStatus === 'SUCCEEDED'}
+          title="Pronti"
+          count={completatiCount}
+          onClick={() => onStatusChange('SUCCEEDED')}
+        />
       </div>
     </div>
   );

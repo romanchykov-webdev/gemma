@@ -1,86 +1,84 @@
+'use client';
+import { OrderFromDB } from '@/@types/orders';
 import { cn } from '@/lib/utils';
-import React, { JSX } from 'react';
+import { Loader2 } from 'lucide-react';
+import React, { JSX, useMemo } from 'react';
 import { OrderItem } from './order-item';
-import { prisma } from '../../../../../prisma/prisma-client';
-import { Prisma } from '@prisma/client';
+
+type StatusFilter = 'ALL' | 'PENDING' | 'SUCCEEDED';
 
 interface Props {
   className?: string;
-  status?: string;
+  orders: OrderFromDB[];
   searchQuery?: string;
-  dateFrom?: string;
-  dateTo?: string;
+  statusFilter?: StatusFilter;
+  isLoading?: boolean;
 }
 
-export const OrdersBlock: React.FC<Props> = async ({
+// 📋 Отрисовка списка: фильтрация по статусу и поиску только на клиенте
+export const OrdersBlock: React.FC<Props> = ({
   className,
-  status,
-  searchQuery,
-  dateFrom,
-  dateTo,
-}): Promise<JSX.Element> => {
-  // 🔍 Формируем фильтры для запроса
-  const where: Prisma.OrderWhereInput = {};
+  orders,
+  searchQuery: externalSearchQuery = '',
+  statusFilter = 'ALL',
+  isLoading = false,
+}): JSX.Element => {
+  const searchQuery = externalSearchQuery;
 
-  // Фильтр по статусу
-  if (status && status !== 'ALL') {
-    where.status = status as 'PENDING' | 'SUCCEEDED' | 'CANCELLED';
+  // 🔍 Клиентская фильтрация: сначала по статусу, затем по поиску
+  const filteredOrders = useMemo(() => {
+    let list = orders;
+
+    if (statusFilter !== 'ALL') {
+      list = list.filter(order => order.status === statusFilter);
+    }
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        order =>
+          order.fullName.toLowerCase().includes(query) ||
+          order.phone.includes(query) ||
+          order.email.toLowerCase().includes(query) ||
+          order.id.toLowerCase().includes(query),
+      );
+    }
+
+    return list;
+  }, [orders, statusFilter, searchQuery]);
+
+  // 🔄 Лоадер во время загрузки
+  if (isLoading) {
+    return (
+      <div className={cn('mt-10 mb-10', className)}>
+        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+          <Loader2 className="w-12 h-12 animate-spin text-brand-primary mb-4" />
+          <p className="text-xl font-semibold">Caricamento ordini...</p>
+          <p className="text-sm mt-2">Attendere prego</p>
+        </div>
+      </div>
+    );
   }
-
-  // Фильтр по поиску (имя, телефон, email, ID)
-  if (searchQuery) {
-    where.OR = [
-      { fullName: { contains: searchQuery, mode: 'insensitive' } },
-      { phone: { contains: searchQuery } },
-      { email: { contains: searchQuery, mode: 'insensitive' } },
-    ];
-  }
-
-  // Фильтр по датам
-  if (dateFrom || dateTo) {
-    where.createdAt = {};
-    if (dateFrom) where.createdAt.gte = new Date(dateFrom);
-    if (dateTo) where.createdAt.lte = new Date(dateTo);
-  }
-
-  // ⚡ Получаем заказы из базы данных с оптимизацией
-  const orders = await prisma.order.findMany({
-    where,
-    select: {
-      id: true,
-      status: true,
-      totalAmount: true,
-      fullName: true,
-      email: true,
-      phone: true,
-      address: true,
-      comment: true,
-      paymentId: true,
-      items: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: 'desc', // Новые заказы сверху
-    },
-    take: 50, // Ограничение для производительности
-  });
 
   return (
     <div className={cn('mt-10 mb-10', className)}>
-      {orders.length === 0 ? (
+      {filteredOrders.length === 0 ? (
         <div className="text-center py-10 text-gray-500">
           <p className="text-xl">📭 Nessun ordine trovato</p>
-          <p className="text-sm mt-2">Prova a modificare i filtri di ricerca</p>
+          <p className="text-sm mt-2">
+            {searchQuery
+              ? 'Prova a modificare la ricerca'
+              : 'Prova a modificare i filtri di ricerca'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map(order => (
+          {filteredOrders.map(order => (
             <OrderItem
               key={order.id}
               order={{
                 ...order,
                 totalAmount: Number(order.totalAmount),
-                // Преобразуем Prisma.JsonValue в нужный тип
                 items: order.items as Record<string, unknown> | unknown[],
               }}
             />

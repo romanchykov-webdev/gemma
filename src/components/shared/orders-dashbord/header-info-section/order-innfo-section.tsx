@@ -1,3 +1,4 @@
+import { OrderStats } from '@/@types/orders';
 import { cn } from '@/lib/utils';
 import React, { JSX } from 'react';
 import { InfoOrderItem } from './info-order-item';
@@ -5,7 +6,9 @@ import { InfoOrderTopItem } from './info-order-top-item';
 
 interface Props {
   className?: string;
+  stats: OrderStats;
 }
+
 const IncassoColors = {
   bgColor: '#FCFEFE',
   topTextColor: '#007F00',
@@ -29,51 +32,48 @@ const TopProdottoColors = {
   bottomTextColor: 'F5FFFF',
 };
 
-const totaleInncassa = '12,783,28';
-const totaleOrdini = '84';
-const scontrinnoMedio = '12,14';
-const prodottoTop = 'Margarita';
+export const OrderInnfoSection: React.FC<Props> = ({ className, stats }): JSX.Element => {
+  console.log('OrderInnfoSection status', stats);
 
-export const OrderInnfoSection: React.FC<Props> = ({ className }): JSX.Element => {
   return (
     <div
       className={cn(' mt-5 mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4', className)}
     >
-      {/* incasso */}
+      {/* incasso - Общая выручка */}
       <InfoOrderItem
         bgColor={IncassoColors.bgColor}
         topTextColor={IncassoColors.topTextColor}
-        topText={`${totaleInncassa}\u00A0€`}
+        topText={`${stats.totalRevenue.toFixed(2)}\u00A0€`}
         bottomTextColor={IncassoColors.bottomTextColor}
         bottomText="Totale incassa"
       />
 
-      {/* ordii totale */}
+      {/* ordii totale - Всего заказов */}
       <InfoOrderItem
         bgColor={OrdiiTotaleColors.bgColor}
         topTextColor={OrdiiTotaleColors.topTextColor}
-        topText={totaleOrdini}
+        topText={stats.totalOrders.toString()}
         bottomTextColor={OrdiiTotaleColors.bottomTextColor}
         bottomText="Totale ordini"
       />
 
-      {/* scontrino medio */}
+      {/* scontrino medio - Средний чек */}
       <InfoOrderItem
         bgColor={ScontrinoMedioColors.bgColor}
         topTextColor={ScontrinoMedioColors.topTextColor}
-        topText={`${scontrinnoMedio}\u00A0€`}
+        topText={`${stats.averageCheck.toFixed(2)}\u00A0€`}
         bottomTextColor={ScontrinoMedioColors.bottomTextColor}
         bottomText="Scontrino medio"
       />
 
-      {/* top prodotto */}
+      {/* top prodotto - Топ продукт */}
       <InfoOrderTopItem
-        imageUrl="/logo.png"
+        imageUrl={stats.topProduct?.imageUrl || '/logo.png'}
         bgColor={TopProdottoColors.bgColor}
         topTextColor={TopProdottoColors.topTextColor}
         topText="Prodotto TOP:"
         bottomTextColor={TopProdottoColors.bottomTextColor}
-        bottomText={prodottoTop}
+        bottomText={stats.topProduct?.name || 'N/A'}
       />
     </div>
   );

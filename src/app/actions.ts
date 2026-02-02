@@ -506,7 +506,7 @@ const formatTelegramMessage = async (
     `📞 <b><a href="tel:${order.phone}">${order.phone}</a></b>`,
     '',
     ...(isPickup
-      ? ['📍 <i>Ritiro presso il locale</i>']
+      ? ['📍 <i>Asporto</i>']
       : [
           `🏠 <b>Indirizzo:</b>`,
           `${order.address}`,
@@ -595,9 +595,10 @@ export async function createCashOrder(data: CheckoutFormValues) {
         fullName: `${data.firstname} ${data.lastname || ''}`.trim(),
         email: data.email || '',
         phone: data.phone,
-        address: isPickup ? 'Ritiro al locale' : data.address,
+        address: isPickup ? 'Asporto' : data.address,
         comment: data.comment || '',
-        paymentId: 'courier',
+        // paymentId: 'courier',
+        paymentId: isPickup ? null : 'courier',
       },
     });
 

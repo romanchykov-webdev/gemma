@@ -1,8 +1,12 @@
+'use client';
+import { updateOrderStatus } from '@/app/actions/orders';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { OrderStatus } from '@prisma/client';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import React, { JSX } from 'react';
+import React, { JSX, useTransition } from 'react';
+import toast from 'react-hot-toast';
 
 // 📦 Типы для ингредиентов
 interface OrderIngredient {
@@ -82,10 +86,23 @@ const statusConfig = {
 
 export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element => {
   const statusInfo = statusConfig[order.status];
+  const [isPending, startTransition] = useTransition();
+
+  // 🔄 Обработчик изменения статуса заказа
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    startTransition(async () => {
+      const result = await updateOrderStatus(order.id, newStatus);
+      if (result.success) {
+        toast.success('Stato aggiornato con successo');
+      } else {
+        toast.error(`Errore: ${result.error}`);
+      }
+    });
+  };
 
   // 🐛 Отладка: выводим структуру items
-  console.log('📦 Order ID:', order.id.slice(0, 8));
-  console.log('📦 Order items:', JSON.stringify(order.items, null, 2));
+  // console.log('📦 Order ID:', order.id.slice(0, 8));
+  // console.log('📦 Order items:', JSON.stringify(order.items, null, 2));
 
   return (
     <div className={cn('bg-white rounded-lg shadow-md p-6 mb-4 border border-gray-200', className)}>
@@ -93,7 +110,7 @@ export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element =>
       <div className="flex flex-col sm:flex-row justify-between items-start mb-4 pb-4 border-b gap-4">
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            🛵 ORDINE: {order.paymentId ? 'CONSEGNA' : 'RITIRO'}
+            🛵 ORDINE: {order.paymentId ? 'CONSEGNA' : 'Asporto'}
           </h3>
           <div className="text-sm text-gray-600 space-y-1">
             <p>📅 Data: {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: it })}</p>
@@ -122,7 +139,7 @@ export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element =>
       </div>
 
       {/* 👤 Информация о клиенте */}
-      <div>
+      <div className="mb-4 pb-4 border-b">
         <h4 className="font-bold text-lg mb-3 text-gray-900">CLIENTE:</h4>
         <div className="space-y-2 text-gray-700">
           <p className="flex items-center">
@@ -145,7 +162,7 @@ export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element =>
             <span className="font-semibold mr-2">🏠</span>
             <span>{order.address}</span>
           </p>
-          {order.address && (
+          {order.paymentId && order.address && (
             <p className="flex items-center ml-6">
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
@@ -165,6 +182,26 @@ export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element =>
           )}
         </div>
       </div>
+
+      {/* 🎛️ Кнопки управления статусом */}
+      {order.status === 'PENDING' && (
+        <div className="flex gap-2 flex-wrap items-center justify-between">
+          <Button
+            onClick={() => handleStatusChange('SUCCEEDED')}
+            disabled={isPending}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            ✅ Completato
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => handleStatusChange('CANCELLED')}
+            disabled={isPending}
+          >
+            ❌ Annullato
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -264,7 +301,7 @@ function renderOrderItems(items: OrderItems): JSX.Element | JSX.Element[] {
         .filter((item): item is OrderProduct => item !== null);
 
       if (convertedProducts.length === 0) {
-        return <p className="text-gray-500">Нет товаров для отображения</p>;
+        return <p className="text-gray-500">Non ci sono prodotti da visualizzare.</p>;
       }
 
       // Группируем по категориям
@@ -327,7 +364,7 @@ function renderOrderItems(items: OrderItems): JSX.Element | JSX.Element[] {
     // Обычный формат OrderProduct - тоже группируем по категориям если есть
     const validProducts = items.filter(isOrderProduct) as OrderProduct[];
     if (validProducts.length === 0) {
-      return <p className="text-gray-500">Нет товаров для отображения</p>;
+      return <p className="text-gray-500">Non ci sono prodotti da visualizzare.</p>;
     }
 
     // Проверяем, есть ли у товаров категории
