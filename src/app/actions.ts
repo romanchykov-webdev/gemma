@@ -562,6 +562,9 @@ export async function createCashOrder(data: CheckoutFormValues) {
 
     if (!cart || !cart.items.length) throw new Error('Cart is empty');
 
+    // Получаем пользователя если он авторизован для привязки заказа к пользователю
+    const user = await getUserSession();
+
     // ✅ РАСЧЕТ СУММЫ
     const serverTotalAmount = cart.items.reduce((sum, item) => {
       return sum + calcCatItemTotalPrice(item as CartItemDTO);
@@ -599,6 +602,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
         comment: data.comment || '',
         // paymentId: 'courier',
         paymentId: isPickup ? null : 'courier',
+        userId: user?.id ?? undefined,
       },
     });
 

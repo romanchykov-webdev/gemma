@@ -73,7 +73,7 @@ export const OrderInnfoSection: React.FC<Props> = ({ className, stats }): JSX.El
         topTextColor={TopProdottoColors.topTextColor}
         topText="Prodotto TOP:"
         bottomTextColor={TopProdottoColors.bottomTextColor}
-        bottomText={stats.topProduct?.name || 'N/A'}
+        bottomText={`${stats.topProduct?.name} -${stats.topProduct?.count}` || 'N/A'}
       />
     </div>
   );
