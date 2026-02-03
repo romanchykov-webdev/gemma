@@ -191,7 +191,7 @@ export const OrderItem: React.FC<Props> = ({ order, className }): JSX.Element =>
             disabled={isPending}
             className="bg-green-600 hover:bg-green-700"
           >
-            ✅ Completato
+            ✅ Pronto
           </Button>
           <Button
             variant="destructive"
