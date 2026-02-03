@@ -12,6 +12,7 @@ import { profileUpdateSchema, TProfileUpdateValues } from './modals/auth-modal/f
 
 import { Loader2 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { FormInputPhone } from './form/form-input-phone';
 import { Title } from './title';
 
 interface Props {
@@ -86,26 +87,24 @@ export const ProfileForm: React.FC<Props> = ({ data }): JSX.Element => {
         >
           {/* email */}
           <FormInput name="email" label="E-Mail" required />
-
           {/* nome completo */}
           <FormInput name="fullName" label="Nome completo" required />
 
           {/* numero di telefono */}
-          <FormInput
+          {/* <FormInput
+            type="number"
             name="phone"
             label="Telefono"
             placeholder="Telefono"
             className="text-base "
             required
-          />
-
-          {/* <FormInputPhone
+          /> */}
+          <FormInputPhone
             name="phone"
             className="text-base "
             placeholder="Telefono"
             label="Telefono"
-          /> */}
-
+          />
           {/* indirizzo */}
           {/* <FormAddressAutocomplete
             name="address"
@@ -120,16 +119,13 @@ export const ProfileForm: React.FC<Props> = ({ data }): JSX.Element => {
             className="text-base "
             required
           />
-
           {/* password */}
           <FormInput type="password" name="password" label="Nuova password" />
           <FormInput type="password" name="confirmPassword" label="Ripeti password" />
-
           {/* bottone di salvataggio */}
           <Button disabled={form.formState.isSubmitting} className="text-base mt-10" type="submit">
             Salva
           </Button>
-
           {/* bottone di uscita */}
           <Button
             onClick={onClickSignOut}
