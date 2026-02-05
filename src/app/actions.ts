@@ -425,6 +425,7 @@ const formatTelegramMessage = async (
   },
   items: CartItemWithRelations[],
   deliveryType: 'delivery' | 'pickup',
+  isRegistered: boolean,
 ) => {
   const isPickup = deliveryType === 'pickup';
   const now = new Date();
@@ -502,6 +503,9 @@ const formatTelegramMessage = async (
     '<b>CLIENTE:</b>',
     '',
     `👤 ${order.fullName}`,
+    '',
+    // Cтатус клиента
+    isRegistered ? '🏅 <i>Cliente Fedele</i>' : '🆕 <i>Nuovo cliente</i>',
     '',
     `📞 <b><a href="tel:${order.phone}">${order.phone}</a></b>`,
     '',
@@ -618,6 +622,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
       },
       cart.items,
       data.deliveryType,
+      !!user,
     );
 
     // console.log('\n========== TELEGRAM MESSAGE ==========');
