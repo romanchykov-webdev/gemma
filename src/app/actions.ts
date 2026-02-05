@@ -74,6 +74,12 @@ export async function createOrder(data: CheckoutFormValues) {
                 imageUrl: true,
                 variants: true,
                 baseIngredients: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
             ingredients: {
@@ -419,6 +425,7 @@ const formatTelegramMessage = async (
   },
   items: CartItemWithRelations[],
   deliveryType: 'delivery' | 'pickup',
+  isRegistered: boolean,
 ) => {
   const isPickup = deliveryType === 'pickup';
   const now = new Date();
@@ -497,10 +504,13 @@ const formatTelegramMessage = async (
     '',
     `👤 ${order.fullName}`,
     '',
+    // Cтатус клиента
+    isRegistered ? '🏅 <i>Cliente Fedele</i>' : '🆕 <i>Nuovo cliente</i>',
+    '',
     `📞 <b><a href="tel:${order.phone}">${order.phone}</a></b>`,
     '',
     ...(isPickup
-      ? ['📍 <i>Ritiro presso il locale</i>']
+      ? ['📍 <i>Asporto</i>']
       : [
           `🏠 <b>Indirizzo:</b>`,
           `${order.address}`,
@@ -534,7 +544,10 @@ export async function createCashOrder(data: CheckoutFormValues) {
                 variants: true,
                 baseIngredients: true,
                 category: {
-                  select: { name: true },
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
@@ -552,6 +565,9 @@ export async function createCashOrder(data: CheckoutFormValues) {
     });
 
     if (!cart || !cart.items.length) throw new Error('Cart is empty');
+
+    // Получаем пользователя если он авторизован для привязки заказа к пользователю
+    const user = await getUserSession();
 
     // ✅ РАСЧЕТ СУММЫ
     const serverTotalAmount = cart.items.reduce((sum, item) => {
@@ -586,9 +602,11 @@ export async function createCashOrder(data: CheckoutFormValues) {
         fullName: `${data.firstname} ${data.lastname || ''}`.trim(),
         email: data.email || '',
         phone: data.phone,
-        address: isPickup ? 'Ritiro al locale' : data.address,
+        address: isPickup ? 'Asporto' : data.address,
         comment: data.comment || '',
-        paymentId: 'courier',
+        // paymentId: 'courier',
+        paymentId: isPickup ? null : 'courier',
+        userId: user?.id ?? undefined,
       },
     });
 
@@ -604,14 +622,15 @@ export async function createCashOrder(data: CheckoutFormValues) {
       },
       cart.items,
       data.deliveryType,
+      !!user,
     );
 
-    console.log('\n========== TELEGRAM MESSAGE ==========');
-    console.log(telegramMsg);
-    console.log('======================================\n');
+    // console.log('\n========== TELEGRAM MESSAGE ==========');
+    // console.log(telegramMsg);
+    // console.log('======================================\n');
 
     await sendTelegramMessage(telegramMsg);
-    // await clearCart(cartToken);
+    await clearCart(cartToken);
 
     return { success: true, orderId: order.id };
   } catch (error) {

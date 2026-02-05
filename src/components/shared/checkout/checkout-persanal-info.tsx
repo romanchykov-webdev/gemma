@@ -2,6 +2,7 @@
 import { cn } from '@/lib/utils';
 import React, { JSX } from 'react';
 import { FormInput } from '../form/form-input';
+import { FormInputPhone } from '../form/form-input-phone';
 import { WhiteBlock } from '../white-block';
 
 interface ICheckoutPersanalInfoProps {
@@ -35,22 +36,22 @@ export const CheckoutPersanalInfo: React.FC<ICheckoutPersanalInfoProps> = ({
         <FormInput name="lastname" className="text-base " placeholder="Cognome" label="Cognome" />
 
         {/* phone */}
-        <FormInput
+        {/* <FormInput
           name="phone"
           type="number"
           className="text-base "
           placeholder="Numero di telefono"
           label="Numero di telefono"
           required
-        />
+        /> */}
 
-        {/* <FormInputPhone
+        <FormInputPhone
           name="phone"
           className="text-base "
           placeholder="Telefono"
           label="Telefono"
           required
-        /> */}
+        />
         {/*  */}
       </div>
       {/*  */}

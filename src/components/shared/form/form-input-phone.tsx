@@ -21,7 +21,7 @@ export const FormInputPhone: React.FC<IFormInputPhoneProps> = ({
   label,
   required,
   className,
-  placeholder = '+39 000 000 0000', // итальянский формат по умолчанию
+  placeholder = '000 000 0000', // итальянский формат по умолчанию
   ...props
 }) => {
   const {
@@ -51,7 +51,7 @@ export const FormInputPhone: React.FC<IFormInputPhoneProps> = ({
           control={control}
           render={({ field: { onChange, onBlur, ref, value } }) => (
             <IMaskInput
-              mask="+00 000 000 0000"
+              mask="000 000 0000"
               unmask={true}
               onAccept={(val: string) => onChange(val)}
               onBlur={onBlur}
