@@ -163,7 +163,7 @@ export async function createOrder(data: CheckoutFormValues) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items,
-      success_url: `${APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${APP_URL}/success?orderId=${order.id}`,
       cancel_url: `${APP_URL}/failed`,
       metadata: {
         orderId: String(order.id),
