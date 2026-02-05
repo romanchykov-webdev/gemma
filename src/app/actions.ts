@@ -10,11 +10,10 @@ import { prisma } from '../../prisma/prisma-client';
 
 import { calcCatItemTotalPrice } from '@/lib/calc-cart-item-total-price';
 import { getUserSession } from '@/lib/get-user-session';
-// import { sendTelegramMessage } from '@/lib/telegram';
 import { hashSync } from 'bcrypt';
 import { CartItemDTO } from '../../services/dto/cart.dto';
 
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendOrderNotification } from '@/lib/telegram';
 import { asProductVariants } from '../../@types/json-parsers';
 import { BaseIngredient } from '../../@types/prisma';
 
@@ -610,7 +609,7 @@ export async function createCashOrder(data: CheckoutFormValues) {
       },
     });
 
-    // ✅ TELEGRAM
+    // ✅ TELEGRAM - отправка уведомления с интерактивными кнопками
     const telegramMsg = await formatTelegramMessage(
       {
         id: order.id,
@@ -629,7 +628,13 @@ export async function createCashOrder(data: CheckoutFormValues) {
     // console.log(telegramMsg);
     // console.log('======================================\n');
 
-    await sendTelegramMessage(telegramMsg);
+    // 🚀 Отправляем уведомление с кнопками управления заказом
+    const notificationResult = await sendOrderNotification(telegramMsg, order.id);
+
+    if (!notificationResult.success) {
+      console.warn('[CREATE_CASH_ORDER] Failed to send Telegram notification');
+    }
+
     await clearCart(cartToken);
 
     return { success: true, orderId: order.id };
