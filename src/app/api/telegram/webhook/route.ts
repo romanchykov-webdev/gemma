@@ -1,11 +1,12 @@
 import { answerCallbackQuery, editTelegramMessage } from '@/lib/telegram';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
-
 import { prisma } from '../../../../../prisma/prisma-client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+// --- ТИПЫ ---
 
 type TelegramMessage = {
   message_id: number;
@@ -25,20 +26,51 @@ type TelegramUpdate = {
   callback_query?: TelegramCallbackQuery;
 };
 
-export async function POST(req: Request) {
-  console.log('🚀 [TELEGRAM_WEBHOOK] Webhook started');
+type OrderData = Prisma.OrderGetPayload<{
+  select: {
+    id: true;
+    status: true;
+    address: true;
+    type: true;
+  };
+}>;
 
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+
+function cleanMessageText(text: string): string {
+  // 1. Удаляем старые статусы (время, готовность)
+  // Используем [\s\S]* вместо флага 's', чтобы работало во всех версиях
+  const clean = text
+    .replace(/\n\n⏱️ Tempo:[\s\S]*\n🕐 Pronto alle:[\s\S]*\n👨‍🍳 In preparazione.../g, '')
+    .replace(/\n\n✅ ORDINE PRONTO![\s\S]*/g, '')
+    .replace(/\n\n👨‍🍳 In preparazione...[\s\S]*/g, '')
+    // 2. ВАЖНО: Удаляем старую ссылку на карту (даже если она сломана), чтобы добавить новую
+    .replace(/\n*📍.*Apri in Google Maps.*/g, '')
+    .trim();
+
+  return clean;
+}
+
+function appendMapLink(text: string, order: OrderData): string {
+  // Если самовывоз — ссылка не нужна
+  if (order.type === 'PICKUP') return text;
+  if (!order.address) return text;
+
+  const encodedAddress = encodeURIComponent(order.address);
+  // Формируем чистую, рабочую ссылку
+  const linkHtml = `\n\n📍 <a href="http://googleusercontent.com/maps.google.com/maps?q=${encodedAddress}">➤ Apri in Google Maps</a>`;
+
+  return text + linkHtml;
+}
+
+// --- ОСНОВНОЙ ХЕНДЛЕР ---
+
+export async function POST(req: Request) {
   try {
-    console.log('📥 [TELEGRAM_WEBHOOK] Reading request body...');
     const body = (await req.json()) as TelegramUpdate;
 
-    console.log('📝 [TELEGRAM_WEBHOOK] Received update:', JSON.stringify(body, null, 2));
-
     if (body.callback_query) {
-      console.log('✅ [TELEGRAM_WEBHOOK] Callback query found, processing...');
       await handleCallbackQuery(body.callback_query);
-    } else {
-      console.log('⚠️ [TELEGRAM_WEBHOOK] No callback_query in update, skipping');
     }
 
     return NextResponse.json({ ok: true });
@@ -51,36 +83,33 @@ export async function POST(req: Request) {
 async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery) {
   const { id: queryId, data: callbackData, message } = callbackQuery;
 
-  if (!callbackData || !message) {
-    console.error('❌ Missing data');
-    return;
-  }
+  if (!callbackData || !message) return;
 
   try {
     const parts = callbackData.split(':');
     const [action, value, orderId] = parts;
 
-    console.log(`🔍 Processing Action: ${action}, Value: ${value}, OrderID: ${orderId}`);
-
-    // Ищем заказ
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true },
+      select: {
+        id: true,
+        status: true,
+        address: true,
+        type: true,
+      },
     });
 
     if (!order) {
-      console.error('❌ Order not found in DB');
       await answerCallbackQuery(queryId, 'Ordine non trovato');
       return;
     }
 
-    // Логика обновления
     if (action === 'order_time') {
-      await handleOrderTime(orderId, parseInt(value, 10), message, queryId);
+      await handleOrderTime(order, parseInt(value, 10), message, queryId);
     } else if (action === 'order_status' && value === 'ready') {
-      await handleOrderReady(orderId, message, queryId);
+      await handleOrderReady(order, message, queryId);
     } else if (action === 'order_status' && value === 'cooking') {
-      await handleOrderCooking(orderId, message, queryId);
+      await handleOrderCooking(order, message, queryId);
     }
   } catch (error) {
     console.error('💥 Logic Error:', error);
@@ -88,91 +117,73 @@ async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery) {
   }
 }
 
-// --- ФУНКЦИИ ЛОГИКИ   ---
+// --- ОБРАБОТЧИКИ ДЕЙСТВИЙ ---
 
-// 🛠 Вспомогательная функция, чтобы убрать старые статусы из текста
-// и не ломать основное сообщение
-function cleanMessageText(text: string): string {
-  // Убираем строки, которые мы сами добавляли ранее
-  return text
-    .replace(/\n\n⏱️ Tempo:.*\n🕐 Pronto alle:.*\n👨‍🍳 In preparazione.../g, '')
-    .replace(/\n\n✅ ORDINE PRONTO!.*/g, '')
-    .replace(/\n\n👨‍🍳 In preparazione.../g, '')
-    .trim();
-}
-
-// ⏱️ Обработка установки времени (В РАБОТЕ + ВРЕМЯ)
 async function handleOrderTime(
-  orderId: string,
+  order: OrderData,
   minutes: number,
   message: TelegramMessage,
   queryId: string,
 ) {
-  console.log(`⏳ Setting time for order ${orderId} to ${minutes} min`);
-
   const now = new Date();
   const expectedReadyAt = new Date(now.getTime() + minutes * 60 * 1000);
 
-  // 1. Обновляем базу
   await prisma.order.update({
-    where: { id: orderId },
+    where: { id: order.id },
     data: { status: OrderStatus.PROCESSING, expectedReadyAt },
   });
 
   const timeStr = expectedReadyAt.toLocaleTimeString('it-IT', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Rome',
   });
 
-  // 2. Берем ВЕСЬ старый текст и чистим от старых статусов
-  const originalText = cleanMessageText(message.text || '');
+  // 1. Чистим всё лишнее
+  let text = cleanMessageText(message.text || '');
+  // 2. Добавляем ссылку заново (если нужна)
+  text = appendMapLink(text, order);
 
-  // 3. Формируем новый текст (Чек + Статус внизу)
-  const updatedText = `${originalText}\n\n⏱️ Tempo: ${minutes} min\n🕐 Pronto alle: ${timeStr}\n👨‍🍳 In preparazione...`;
+  const updatedText = `${text}\n\n⏱️ Tempo: ${minutes} min\n🕐 Pronto alle: ${timeStr}\n👨‍🍳 In preparazione...`;
 
-  // 4. Оставляем кнопку "Готово"
   const keyboard = {
-    inline_keyboard: [[{ text: '✅ Готово', callback_data: `order_status:ready:${orderId}` }]],
+    inline_keyboard: [[{ text: '✅ Pronto', callback_data: `order_status:ready:${order.id}` }]],
   };
 
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, keyboard);
   await answerCallbackQuery(queryId, `Pronto in ${minutes} min`);
 }
 
-// ✅ Обработка статуса "ГОТОВ"
-async function handleOrderReady(orderId: string, message: TelegramMessage, queryId: string) {
-  console.log(`⏳ Setting order ${orderId} to READY`);
-
+async function handleOrderReady(order: OrderData, message: TelegramMessage, queryId: string) {
   await prisma.order.update({
-    where: { id: orderId },
+    where: { id: order.id },
     data: { status: OrderStatus.READY, readyAt: new Date() },
   });
 
-  // Чистим текст и добавляем финал
-  const originalText = cleanMessageText(message.text || '');
-  const updatedText = `${originalText}\n\n✅ ORDINE PRONTO!`;
+  let text = cleanMessageText(message.text || '');
+  text = appendMapLink(text, order);
 
-  // Убираем все кнопки
+  const updatedText = `${text}\n\n✅ ORDINE PRONTO!`;
+
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, {
     inline_keyboard: [],
   });
   await answerCallbackQuery(queryId, '✅ Ordine pronto!');
 }
 
-// 👨‍🍳 Обработка статуса "В РАБОТЕ" (без времени)
-async function handleOrderCooking(orderId: string, message: TelegramMessage, queryId: string) {
-  console.log(`⏳ Setting order ${orderId} to COOKING`);
-
+async function handleOrderCooking(order: OrderData, message: TelegramMessage, queryId: string) {
   await prisma.order.update({
-    where: { id: orderId },
+    where: { id: order.id },
     data: { status: OrderStatus.PROCESSING },
   });
 
-  const originalText = cleanMessageText(message.text || '');
-  const updatedText = `${originalText}\n\n👨‍🍳 In preparazione...`;
+  let text = cleanMessageText(message.text || '');
+  text = appendMapLink(text, order);
+
+  const updatedText = `${text}\n\n👨‍🍳 In preparazione...`;
 
   const keyboard = {
-    inline_keyboard: [[{ text: '✅ Готово', callback_data: `order_status:ready:${orderId}` }]],
+    inline_keyboard: [[{ text: '✅ Pronto', callback_data: `order_status:ready:${order.id}` }]],
   };
 
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, keyboard);
