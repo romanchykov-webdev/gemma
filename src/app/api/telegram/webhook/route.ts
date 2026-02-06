@@ -90,6 +90,18 @@ async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery) {
 
 // --- ФУНКЦИИ ЛОГИКИ ---
 
+// 🛠 Вспомогательная функция, чтобы убрать старые статусы из текста
+// и не ломать основное сообщение
+function cleanMessageText(text: string): string {
+  // Убираем строки, которые мы сами добавляли ранее
+  return text
+    .replace(/\n\n⏱️ Tempo:.*\n🕐 Pronto alle:.*\n👨‍🍳 In preparazione.../g, '')
+    .replace(/\n\n✅ ORDINE PRONTO!.*/g, '')
+    .replace(/\n\n👨‍🍳 In preparazione.../g, '')
+    .trim();
+}
+
+// ⏱️ Обработка установки времени (В РАБОТЕ + ВРЕМЯ)
 async function handleOrderTime(
   orderId: string,
   minutes: number,
@@ -101,6 +113,7 @@ async function handleOrderTime(
   const now = new Date();
   const expectedReadyAt = new Date(now.getTime() + minutes * 60 * 1000);
 
+  // 1. Обновляем базу
   await prisma.order.update({
     where: { id: orderId },
     data: { status: OrderStatus.PROCESSING, expectedReadyAt },
@@ -110,18 +123,23 @@ async function handleOrderTime(
     hour: '2-digit',
     minute: '2-digit',
   });
-  const originalText = message.text?.split('\n\n')[0] || 'Ordine';
+
+  // 2. Берем ВЕСЬ старый текст и чистим от старых статусов
+  const originalText = cleanMessageText(message.text || '');
+
+  // 3. Формируем новый текст (Чек + Статус внизу)
   const updatedText = `${originalText}\n\n⏱️ Tempo: ${minutes} min\n🕐 Pronto alle: ${timeStr}\n👨‍🍳 In preparazione...`;
 
+  // 4. Оставляем кнопку "Готово"
   const keyboard = {
     inline_keyboard: [[{ text: '✅ Готово', callback_data: `order_status:ready:${orderId}` }]],
   };
 
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, keyboard);
   await answerCallbackQuery(queryId, `Pronto in ${minutes} min`);
-  console.log('✅ Order Time Updated');
 }
 
+// ✅ Обработка статуса "ГОТОВ"
 async function handleOrderReady(orderId: string, message: TelegramMessage, queryId: string) {
   console.log(`⏳ Setting order ${orderId} to READY`);
 
@@ -130,16 +148,18 @@ async function handleOrderReady(orderId: string, message: TelegramMessage, query
     data: { status: OrderStatus.READY, readyAt: new Date() },
   });
 
-  const originalText = message.text?.split('\n\n')[0] || 'Ordine';
+  // Чистим текст и добавляем финал
+  const originalText = cleanMessageText(message.text || '');
   const updatedText = `${originalText}\n\n✅ ORDINE PRONTO!`;
 
+  // Убираем все кнопки
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, {
     inline_keyboard: [],
   });
   await answerCallbackQuery(queryId, '✅ Ordine pronto!');
-  console.log('✅ Order Ready Updated');
 }
 
+// 👨‍🍳 Обработка статуса "В РАБОТЕ" (без времени)
 async function handleOrderCooking(orderId: string, message: TelegramMessage, queryId: string) {
   console.log(`⏳ Setting order ${orderId} to COOKING`);
 
@@ -148,7 +168,7 @@ async function handleOrderCooking(orderId: string, message: TelegramMessage, que
     data: { status: OrderStatus.PROCESSING },
   });
 
-  const originalText = message.text?.split('\n\n')[0] || 'Ordine';
+  const originalText = cleanMessageText(message.text || '');
   const updatedText = `${originalText}\n\n👨‍🍳 In preparazione...`;
 
   const keyboard = {
@@ -157,5 +177,4 @@ async function handleOrderCooking(orderId: string, message: TelegramMessage, que
 
   await editTelegramMessage(message.chat.id, message.message_id, updatedText, keyboard);
   await answerCallbackQuery(queryId, 'In preparazione');
-  console.log('✅ Order Cooking Updated');
 }
