@@ -1,5 +1,5 @@
 import { stripe } from '@/lib/stripe';
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendOrderNotification } from '@/lib/telegram';
 import { OrderStatus } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
@@ -152,7 +152,12 @@ export async function POST(req: Request) {
             `Commento: ${order.comment || '-'}`,
           ];
 
-          await sendTelegramMessage(msg.join('\n'));
+          // 🚀 Отправляем уведомление с интерактивными кнопками
+          const notificationResult = await sendOrderNotification(msg.join('\n'), order.id);
+
+          if (!notificationResult.success) {
+            console.warn('[WEBHOOK] Failed to send Telegram notification');
+          }
         }
 
         break;

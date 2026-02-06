@@ -80,6 +80,8 @@ interface Props {
 // 🎨 Цвета статусов
 const statusConfig = {
   PENDING: { label: '⏳ In attesa', color: 'bg-yellow-100 text-yellow-800' },
+  PROCESSING: { label: '🍕 In preparazione', color: 'bg-blue-100 text-blue-800' },
+  READY: { label: '🎉 Pronto', color: 'bg-purple-100 text-purple-800' },
   SUCCEEDED: { label: '✅ Completato', color: 'bg-green-100 text-green-800' },
   CANCELLED: { label: '❌ Annullato', color: 'bg-red-100 text-red-800' },
 };

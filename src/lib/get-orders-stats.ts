@@ -67,6 +67,8 @@ export const getOrdersStats = cache(async (filters: OrderFilters): Promise<Order
         total_revenue: string | null;
         avg_check: string | null;
         pending_count: number;
+        processing_count: number;
+        ready_count: number;
         succeeded_count: number;
       }>
     >(
@@ -76,6 +78,8 @@ export const getOrdersStats = cache(async (filters: OrderFilters): Promise<Order
         SUM("totalAmount")::decimal as total_revenue,
         AVG("totalAmount")::decimal as avg_check,
         COUNT(CASE WHEN status = 'PENDING' THEN 1 END)::int as pending_count,
+        COUNT(CASE WHEN status = 'PROCESSING' THEN 1 END)::int as processing_count,
+        COUNT(CASE WHEN status = 'READY' THEN 1 END)::int as ready_count,
         COUNT(CASE WHEN status = 'SUCCEEDED' THEN 1 END)::int as succeeded_count
       FROM "Order"
       WHERE ${whereClause}
@@ -96,6 +100,8 @@ export const getOrdersStats = cache(async (filters: OrderFilters): Promise<Order
       statusCounts: {
         all: result.total_orders || 0,
         pending: result.pending_count || 0,
+        processing: result.processing_count || 0,
+        ready: result.ready_count || 0,
         succeeded: result.succeeded_count || 0,
       },
     };
