@@ -1,7 +1,7 @@
 'use server';
 
 import { CheckoutFormValues } from '@/components/shared/checkout/checkout-form-schema';
-import { OrderStatus, Prisma } from '@prisma/client';
+import { OrderStatus, OrderType, Prisma } from '@prisma/client';
 import { cookies } from 'next/headers';
 
 import { stripe } from '@/lib/stripe';
@@ -123,12 +123,16 @@ export async function createOrder(data: CheckoutFormValues) {
     const deliveryCents = DELIVERY_EUR * 100;
     const grandCents = itemsCents + taxCents + deliveryCents;
 
+    // (определяем тип доставки)
+    const isPickup = data.deliveryType === 'pickup';
+
     // Создаём Order в статусе PENDING
     const order = await prisma.order.create({
       data: {
         tokenId: cartToken,
         totalAmount: Math.round(grandCents / 100),
         status: OrderStatus.PENDING,
+        type: isPickup ? OrderType.PICKUP : OrderType.DELIVERY,
         // items: JSON.stringify(cart.items),
         items: cart.items,
         fullName: `${data.firstname ?? ''} ${data.lastname ?? ''}`.trim(),
@@ -294,123 +298,6 @@ export async function registerUser(body: Prisma.UserCreateInput) {
     };
   }
 }
-
-// 1. Вспомогательная функция для форматирования Telegram сообщения
-// const formatTelegramMessage = async (
-//   order: {
-//     id: string;
-//     totalAmount: number;
-//     fullName: string;
-//     phone: string;
-//     address: string;
-//     comment: string | null;
-//   },
-//   items: CartItemWithRelations[],
-//   deliveryType: 'delivery' | 'pickup',
-// ) => {
-//   const isPickup = deliveryType === 'pickup';
-
-//   // Создаем дату и время
-//   const now = new Date();
-//   const dateStr = now.toLocaleDateString('it-IT'); // Формат 31/01/2026
-//   const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); // Формат 16:24
-
-//   // ✅ Загружаем справочники
-//   const [allSizes, allTypes] = await Promise.all([
-//     prisma.size.findMany({ select: { id: true, name: true } }),
-//     prisma.type.findMany({ select: { id: true, name: true } }),
-//   ]);
-
-//   // Группируем товары по категориям
-//   const groupedItems = items.reduce<Record<string, CartItemWithRelations[]>>((acc, item) => {
-//     const catName = item.product.category?.name || 'Altro';
-//     if (!acc[catName]) acc[catName] = [];
-//     acc[catName].push(item);
-//     return acc;
-//   }, {});
-
-//   const lines: string[] = [];
-
-//   Object.entries(groupedItems).forEach(([category, catItems]) => {
-//     lines.push(`\n🔸 *${category.toUpperCase()}*:`);
-
-//     catItems.forEach((it, index) => {
-//       const name = it.product?.name ?? 'Prodotto';
-//       const itemSum = calcCatItemTotalPrice(it as CartItemDTO);
-
-//       // ✅ Получаем вариант
-//       const variants = asProductVariants(it.product?.variants);
-//       const variant = variants.find(v => v.variantId === it.variantId);
-
-//       // ✅ Получаем size и type из справочников
-//       const sizeObj = allSizes.find(s => s.id === variant?.sizeId);
-//       const typeObj = allTypes.find(t => t.id === variant?.typeId);
-
-//       const size = sizeObj?.name ? ` (${sizeObj.name})` : '';
-//       const dough = typeObj ? `, : ${typeObj.name}` : '';
-
-//       lines.push(` • *${it.quantity}x* ${name}${size}${dough} — ${itemSum.toFixed(2)} €`);
-
-//       // ✅ Добавленные ингредиенты
-//       if (it.ingredients?.length) {
-//         const added = it.ingredients.map(i => i.name).join(', ');
-//         lines.push(`   ✅ + _Extra:_ ${added}`);
-//       }
-
-//       // ✅ Удалённые ингредиенты
-//       const baseSnapshot = it.baseIngredientsSnapshot as unknown as BaseIngredient[] | null;
-//       const removed = (baseSnapshot ?? [])
-//         .filter(ing => ing.isDisabled && ing.removable)
-//         .map(ing => ing.name);
-
-//       if (removed.length) {
-//         lines.push(`   ❌ - _Senza:_ ${removed.join(', ')}`);
-//       }
-
-//       // ✅  РАЗДЕЛИТЕЛЬ (если это не последний элемент в категории)
-//       if (index < catItems.length - 1) {
-//         lines.push('\n');
-//       }
-//     });
-//   });
-
-//   return [
-//     isPickup ? '📦 *NUOVO ORDINE: ASPORTO*' : '🛵 *NUOVO ORDINE: CONSEGNA*',
-//     '',
-//     `📅 Data: _${dateStr} ${timeStr}_`,
-//     '',
-//     `🆔 ID: \`${order.id.split('-')[0]}\``,
-//     '',
-//     `💰 Totale: *${order.totalAmount.toFixed(2)} €*`,
-//     '',
-//     `💳 Pagamento: ${isPickup ? 'Al ritiro' : 'Alla consegna'}`,
-//     '',
-//     '*COMPOSIZIONE:*',
-//     ...lines,
-//     '',
-//     '— — — — — — — — — — — —',
-//     '',
-//     '*CLIENTE:*',
-//     '',
-//     `👤 ${order.fullName}`,
-//     '',
-//     `📞 ${order.phone}`,
-//     '',
-//     // Блок адреса с проверкой
-//     ...(isPickup
-//       ? ['📍 _Ritiro presso il locale_']
-//       : [
-//           `🏠 *Indirizzo:*`,
-//           `${order.address}`,
-//           '', // Воздух перед ссылкой
-//           `📍 [➤ Apri in Google Maps](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)})`,
-//         ]),
-//     '',
-//     order.comment ? `💬 Commento: _${order.comment}_` : '',
-//   ]
-//     .filter(val => val !== null && val !== undefined)
-//     .join('\n');
-// };
 
 // 1. Вспомогательная функция для форматирования Telegram сообщения
 const formatTelegramMessage = async (
@@ -597,11 +484,13 @@ export async function createCashOrder(data: CheckoutFormValues) {
         tokenId: cartToken,
         totalAmount: grandTotal,
         status: OrderStatus.PENDING,
+        // (Явно указываем тип доставки)
+        type: isPickup ? OrderType.PICKUP : OrderType.DELIVERY,
         items: cart.items as unknown as Prisma.JsonArray,
         fullName: `${data.firstname} ${data.lastname || ''}`.trim(),
         email: data.email || '',
         phone: data.phone,
-        address: isPickup ? 'Asporto' : data.address,
+        address: data.address,
         comment: data.comment || '',
         // paymentId: 'courier',
         paymentId: isPickup ? null : 'courier',
