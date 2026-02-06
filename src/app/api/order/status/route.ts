@@ -13,10 +13,7 @@ export async function GET(req: NextRequest) {
 
     // 🔍 Валидация: проверяем наличие orderId
     if (!orderId) {
-      return NextResponse.json(
-        { error: 'orderId è richiesto' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'orderId è richiesto' }, { status: 400 });
     }
 
     // 🔍 Поиск заказа в БД
@@ -30,16 +27,18 @@ export async function GET(req: NextRequest) {
         createdAt: true,
         fullName: true,
         totalAmount: true,
+        address: true,
+        type: true,
       },
     });
 
     // ❌ Заказ не найден
     if (!order) {
-      return NextResponse.json(
-        { error: 'Ordine non trovato' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Ordine non trovato' }, { status: 404 });
     }
+
+    // Проверяем тип (PICKUP или DELIVERY)
+    const deliveryType = order.type === 'PICKUP' ? 'pickup' : 'delivery';
 
     // ✅ Возвращаем данные заказа
     return NextResponse.json({
@@ -50,12 +49,11 @@ export async function GET(req: NextRequest) {
       createdAt: order.createdAt,
       fullName: order.fullName,
       totalAmount: Number(order.totalAmount),
+      address: order.address,
+      deliveryType: deliveryType,
     });
   } catch (error) {
     console.error('[ORDER_STATUS_API] Error:', error);
-    return NextResponse.json(
-      { error: 'Errore del server' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Errore del server' }, { status: 500 });
   }
 }

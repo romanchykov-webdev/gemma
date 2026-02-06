@@ -60,41 +60,25 @@ export async function sendOrderNotification(
   }
 
   try {
-    // 🎨 Создаем Inline-клавиатуру
+    // 🇮🇹 Создаем Inline-клавиатуру на итальянском
     const keyboard: InlineKeyboardMarkup = {
       inline_keyboard: [
-        // Первый ряд: кнопки статусов
+        // 1. Быстрые таймеры
+        [
+          { text: '15 min', callback_data: `order_time:15:${orderId}` },
+          { text: '30 min', callback_data: `order_time:30:${orderId}` },
+          { text: '45 min', callback_data: `order_time:45:${orderId}` },
+          { text: '60 min', callback_data: `order_time:60:${orderId}` },
+        ],
+        // 2. Статусы без таймера
         [
           {
-            text: '👨‍🍳 В работе',
+            text: '👨‍🍳 In preparazione', // Было "В работе"
             callback_data: `order_status:cooking:${orderId}`,
           },
           {
-            text: '✅ Готов',
+            text: '✅ Pronto', // Было "Готов"
             callback_data: `order_status:ready:${orderId}`,
-          },
-        ],
-        // Второй ряд: кнопки времени
-        [
-          {
-            text: '5 мин',
-            callback_data: `order_time:5:${orderId}`,
-          },
-          {
-            text: '15 мин',
-            callback_data: `order_time:15:${orderId}`,
-          },
-          {
-            text: '20 мин',
-            callback_data: `order_time:20:${orderId}`,
-          },
-          {
-            text: '25 мин',
-            callback_data: `order_time:25:${orderId}`,
-          },
-          {
-            text: '30 мин',
-            callback_data: `order_time:30:${orderId}`,
           },
         ],
       ],
@@ -121,7 +105,6 @@ export async function sendOrderNotification(
       return { success: false };
     }
 
-    // ✅ Возвращаем ID сообщения для возможной дальнейшей работы
     return {
       success: true,
       messageId: data.result?.message_id,
@@ -169,6 +152,10 @@ export async function editTelegramMessage(
 
     const data = await resp.json();
     if (!resp.ok || !data?.ok) {
+      // Игнорируем ошибку, если сообщение не изменилось (Telegram часто ругается на это)
+      if (data.description?.includes('message is not modified')) {
+        return true;
+      }
       console.error('[TELEGRAM] Edit message error:', data);
       return false;
     }
@@ -179,7 +166,7 @@ export async function editTelegramMessage(
   }
 }
 
-// ✅ Функция ответа на callback query (убирает "часики" на кнопке)
+// ✅ Функция ответа на callback query
 export async function answerCallbackQuery(
   callbackQueryId: string,
   text?: string,
@@ -197,7 +184,7 @@ export async function answerCallbackQuery(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         callback_query_id: callbackQueryId,
-        text: text || 'Статус обновлен!',
+        text: text || 'Fatto!', // Итальянский по умолчанию
         show_alert: false,
       }),
       cache: 'no-store',
