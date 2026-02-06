@@ -149,7 +149,7 @@ export default function CheckoutPage() {
         icon: '✅',
       });
 
-      window.location.href = '/success';
+      window.location.href = `/success?orderId=${res.orderId}`;
       // ✅ ДОБАВИТЬ для тестирования
       // setSubmitting(false);
       // toast.success('Тестирование: данные выведены в консоль! ✅');

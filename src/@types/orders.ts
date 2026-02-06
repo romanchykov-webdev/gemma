@@ -1,6 +1,6 @@
 // 📦 Типы для системы управления заказами
 
-export type OrderStatus = 'PENDING' | 'SUCCEEDED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'PROCESSING' | 'READY' | 'SUCCEEDED' | 'CANCELLED';
 
 export type OrderFilters = {
   status?: 'ALL' | OrderStatus;
@@ -19,6 +19,8 @@ export type OrderStats = {
   statusCounts: {
     all: number;
     pending: number;
+    processing: number;
+    ready: number;
     succeeded: number;
   };
 };
