@@ -43,7 +43,7 @@ const SuccessContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen  py-12 px-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-orange-50 to-transparent -z-10" />
 
       <div className="max-w-xl mx-auto text-center z-10 relative">

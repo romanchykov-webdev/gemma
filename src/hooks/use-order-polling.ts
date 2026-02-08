@@ -14,7 +14,7 @@ export const useOrderPolling = () => {
     setOrderData({
       orderId: 'TEST-123-DEV',
       // 1. МЕНЯЙ СТАТУС ЗДЕСЬ: 'PENDING' | 'PROCESSING' | 'READY' | 'CANCELLED'
-      status: 'PENDING',
+      status: 'READY',
 
       // 2. МЕНЯЙ ТИП ДОСТАВКИ: 'pickup' | 'delivery'
       deliveryType: 'delivery',
@@ -67,15 +67,15 @@ export const useOrderPolling = () => {
   }, [orderId]);
 
   // 3. Polling Effect
-  useEffect(() => {
-    if (!orderId) return;
-    fetchOrderStatus();
-    const pollInterval = setInterval(async () => {
-      const shouldStop = await fetchOrderStatus();
-      if (shouldStop) clearInterval(pollInterval);
-    }, 4000);
-    return () => clearInterval(pollInterval);
-  }, [orderId, fetchOrderStatus]);
+  //   useEffect(() => {
+  //     if (!orderId) return;
+  //     fetchOrderStatus();
+  //     const pollInterval = setInterval(async () => {
+  //       const shouldStop = await fetchOrderStatus();
+  //       if (shouldStop) clearInterval(pollInterval);
+  //     }, 5000);
+  //     return () => clearInterval(pollInterval);
+  //   }, [orderId, fetchOrderStatus]);
 
   // 4. Confetti Effect
   useEffect(() => {

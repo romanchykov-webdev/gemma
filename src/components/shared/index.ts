@@ -46,3 +46,5 @@ export { ProfileForm } from './profile-form';
 export { Stories } from './stories';
 // dashboard orders
 export * from './orders-dashbord';
+
+export { PickupLocationCard } from './pickup-location-card';

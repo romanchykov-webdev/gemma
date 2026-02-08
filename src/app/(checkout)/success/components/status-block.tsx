@@ -1,9 +1,18 @@
+import { PickupLocationCard } from '@/components/shared';
 import { Button } from '@/components/ui';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Check, Clock, ExternalLink, Flame, MapPin, Truck } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { Clock, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { OrderStatusData } from './order-status-data';
 import { StatusCard } from './status-card';
+
+// Импорт lottie animations
+import Lottie from 'lottie-react';
+import chefAnimation from '../../../../../public/assets/lottie/chef.json';
+import deliveryAnimation from '../../../../../public/assets/lottie/Delivery.json';
+import errorAnimation from '../../../../../public/assets/lottie/error.json';
+import loadingAnimation from '../../../../../public/assets/lottie/Loading.json';
+import pizzaReadyAnimation from '../../../../../public/assets/lottie/Pizza-ready.json';
 
 export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
   const router = useRouter();
@@ -13,7 +22,12 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
       {data.status === 'PENDING' && (
         <StatusCard
           key="pending"
-          icon={<Clock className="w-16 h-16 text-yellow-500" />}
+          //   icon={<Clock className="w-16 h-16 text-yellow-500" />}
+          icon={
+            <div className="w-100 h-100 flex items-center justify-center">
+              <Lottie animationData={loadingAnimation} loop={true} />
+            </div>
+          }
           title="In attesa di conferma"
           description="Il ristorante sta ricevendo il tuo ordine."
           color="bg-white border-yellow-400"
@@ -30,13 +44,18 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
       {data.status === 'PROCESSING' && (
         <StatusCard
           key="processing"
+          //   icon={
+          //     <motion.div
+          //       animate={{ scale: [1, 1.1, 1] }}
+          //       transition={{ repeat: Infinity, duration: 2 }}
+          //     >
+          //       <Flame className="w-20 h-20 text-orange-500" />
+          //     </motion.div>
+          //   }
           icon={
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              <Flame className="w-20 h-20 text-orange-500" />
-            </motion.div>
+            <div className="w-100 h-100 flex items-center justify-center">
+              <Lottie animationData={chefAnimation} loop={true} />
+            </div>
           }
           title="Stiamo cucinando!"
           description="I nostri chef sono all'opera."
@@ -47,7 +66,7 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
           {data.expectedReadyAt ? (
             <div className="mt-6 flex flex-col items-center">
               <div className="text-sm text-neutral-400 font-medium uppercase tracking-wider mb-1">
-                Pronto stimato alle
+                Pronto alle
               </div>
               <div className="text-5xl font-black text-neutral-900 tabular-nums tracking-tighter">
                 {new Date(data.expectedReadyAt).toLocaleTimeString('it-IT', {
@@ -77,9 +96,14 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
         (data.deliveryType === 'pickup' ? (
           <StatusCard
             key="ready-pickup"
+            // icon={
+            //   <div className="bg-green-100 p-4 rounded-full">
+            //     <Check className="w-12 h-12 text-green-600" />
+            //   </div>
+            // }
             icon={
-              <div className="bg-green-100 p-4 rounded-full">
-                <Check className="w-12 h-12 text-green-600" />
+              <div className="w-80 h-100 flex items-center justify-center">
+                <Lottie animationData={pizzaReadyAnimation} loop={true} />
               </div>
             }
             title="Vieni a ritirare!"
@@ -88,37 +112,20 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
             textColor="text-neutral-900"
             shadow="shadow-green-100"
           >
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="flex items-center justify-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center ">
-                  <MapPin className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <a
-                    href="https://www.google.com/maps/search/?api=1&query=Viale+Roma,+15,+30020+Torre+di+Mosto+VE"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:text-orange-700 font-medium flex flex-col items-start gap-1"
-                  >
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                      Ritira il tuo ordine presso:
-                    </p>
-                    <p className="flex items-center gap-3 text-left">
-                      Viale Roma, 15, 30020 Torre di Mosto VE
-                      <ExternalLink className="w-3 h-3" />
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">Clicca per aprire in Google Maps</p>
-                  </a>
-                </div>
-              </div>
-            </div>
+            {/* ссылка на адрис клиента */}
+            <PickupLocationCard className="mt-4 w-full" />
           </StatusCard>
         ) : (
           <StatusCard
             key="ready-delivery"
+            // icon={
+            //   <div className="bg-green-100 p-4 rounded-full">
+            //     <Truck className="w-12 h-12 text-green-600" />
+            //   </div>
+            // }
             icon={
-              <div className="bg-green-100 p-4 rounded-full">
-                <Truck className="w-12 h-12 text-green-600" />
+              <div className="w-100 h-100 flex items-center justify-center">
+                <Lottie animationData={deliveryAnimation} loop={true} />
               </div>
             }
             title="In consegna!"
@@ -149,9 +156,14 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
       {data.status === 'CANCELLED' && (
         <StatusCard
           key="cancelled"
+          //   icon={
+          //     <div className="bg-red-100 p-4 rounded-full">
+          //       <ArrowRight className="w-12 h-12 text-red-600 rotate-45" />
+          //     </div>
+          //   }
           icon={
-            <div className="bg-red-100 p-4 rounded-full">
-              <ArrowRight className="w-12 h-12 text-red-600 rotate-45" />
+            <div className="w-100 h-100 flex items-center justify-center">
+              <Lottie animationData={errorAnimation} loop={true} />
             </div>
           }
           title="Ordine Annullato"

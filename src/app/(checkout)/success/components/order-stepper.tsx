@@ -37,7 +37,10 @@ export const OrderStepper = ({ currentStatus }: { currentStatus: OrderStatus }) 
           const Icon = step.icon;
 
           return (
-            <div key={step.status} className="flex flex-col items-center gap-2">
+            <div
+              key={step.status}
+              className={`flex flex-col items-center gap-2 ${index === 0 ? '-translate-x-4' : ''}`}
+            >
               <motion.div
                 initial={false}
                 animate={{

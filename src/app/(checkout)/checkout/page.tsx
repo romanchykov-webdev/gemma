@@ -164,15 +164,15 @@ export default function CheckoutPage() {
   };
 
   const disabledClassName = cn((loading || submitting) && 'opacity-40 pointer-events-none');
-  // console.log('🔄 items:', JSON.stringify(items, null, 2));
+  console.log('🔄 items:', JSON.stringify(items, null, 2));
   // console.log('rerender checkout page');
-  // console.log('🛒 Checkout state:', {
-  //   itemsCount: items.length,
-  //   tempItems: items.filter(i => String(i.id).startsWith('temp-')),
-  //   loading,
-  //   syncing,
-  //   totalAmount,
-  // });
+  console.log('🛒 Checkout state:', {
+    itemsCount: items.length,
+    tempItems: items.filter(i => String(i.id).startsWith('temp-')),
+    loading,
+    syncing,
+    totalAmount,
+  });
   return (
     <div className={cn('mt-10 pb-40')}>
       <Title text="Ordine" size="xl" className="mb-8" />
