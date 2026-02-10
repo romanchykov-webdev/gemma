@@ -13,10 +13,16 @@ import { ProfileButton } from './profile-button';
 interface IHeaderProps {
   hasSearch?: boolean;
   hasCart?: boolean;
+  hasRightSide?: boolean;
   className?: string;
 }
 
-export const Header: React.FC<IHeaderProps> = ({ className, hasSearch = true, hasCart = true }) => {
+export const Header: React.FC<IHeaderProps> = ({
+  className,
+  hasSearch = true,
+  hasCart = true,
+  hasRightSide = true,
+}) => {
   const [openAuthModal, setOpenAuthModal] = useState(false);
 
   const Logo = () => (
@@ -56,8 +62,8 @@ export const Header: React.FC<IHeaderProps> = ({ className, hasSearch = true, ha
           )}
         </div>
 
-        {/* Правая часть (вход + корзина) */}
-        <RightSide />
+        {/* Правая часть (вход) */}
+        {hasRightSide && <RightSide />}
       </Container>
     </header>
   );
