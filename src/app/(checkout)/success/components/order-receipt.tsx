@@ -1,8 +1,11 @@
 'use client';
 
+import { PickupLocationCard } from '@/components/shared/pickup-location-card';
 import { motion } from 'framer-motion';
-import { Receipt } from 'lucide-react';
+import { ReceiptEuro } from 'lucide-react';
 import { OrderStatusData } from './order-status-data';
+
+const SHOP_PHONE = '+39 345 678 9000';
 
 export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
   <motion.div
@@ -22,9 +25,9 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
     />
 
     {/* Шапка */}
-    <div className="flex items-center justify-between mb-4 pb-4 border-b border-dashed border-neutral-200">
+    <div className="flex items-center justify-between  pb-4 border-b border-dashed border-neutral-200">
       <div className="flex items-center gap-2 text-neutral-500">
-        <Receipt className="w-4 h-4" />
+        <ReceiptEuro className="w-4 h-4" />
         <span className="text-sm font-medium">Scontrino digitale</span>
       </div>
       <span className="text-xs bg-neutral-100 px-2 py-1 rounded text-neutral-600 font-mono">
@@ -33,7 +36,8 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
     </div>
 
     {/* 🛒 СПИСОК ТОВАРОВ (GRID LAYOUT) */}
-    <div className="mb-4 pb-4  space-y-4">
+    {/* <div className="mb-4 pb-4 "> */}
+    <div className=" ">
       {data.items?.map((item, index) => {
         // Считаем цену
         const ingredientsPrice = item.ingredients?.reduce((acc, ing) => acc + ing.price, 0) || 0;
@@ -46,15 +50,17 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
         return (
           <div
             key={index}
-            className="grid grid-cols-12 gap-2 text-sm border-b border-dashed border-neutral-200 "
+            className="grid grid-cols-12  text-sm border-b border-dashed border-neutral-200 py-4"
           >
             {/* КОЛОНКА 1: Название и Тип (5/12 ширины) */}
             <div className="col-span-5 flex flex-col  items-start">
-              <span className="font-bold text-neutral-900 leading-tight mb-1">
+              <span className="font-bold text-neutral-900 leading-tight mb-1 text-left">
                 {item.quantity}x {item.name}
               </span>
               {details && (
-                <span className="text-[10px] text-neutral-400 leading-tight">{details}</span>
+                <span className="text-[10px] text-neutral-400 leading-tight text-left">
+                  {details}
+                </span>
               )}
             </div>
 
@@ -86,20 +92,45 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
     </div>
 
     {/* Итоговая информация */}
-    <div className="space-y-3">
-      <div className="flex justify-between text-sm">
+    <div className="">
+      {/* name client */}
+      <div className="flex justify-between text-sm py-4 border-b border-dashed border-neutral-200">
         <span className="text-neutral-600">Cliente</span>
         <span className="font-semibold text-neutral-900 text-right">{data.fullName}</span>
       </div>
-      <div className="flex justify-between text-sm">
+
+      {/* metodo */}
+      <div className="flex justify-between text-sm py-4 border-b border-dashed border-neutral-200">
         <span className="text-neutral-600">Metodo</span>
         <span className="text-neutral-900 text-right">
           {data.deliveryType === 'pickup' ? 'Asporto (Ritiro)' : 'Consegna a domicilio'}
         </span>
       </div>
 
+      {/*  Телефон пиццерии */}
+      <div className="flex justify-between items-center py-4 border-b border-dashed border-neutral-200">
+        <span className="text-gray-500">Pizzeria</span>
+        <a href={`tel:${SHOP_PHONE}`} className="font-medium text-primary hover:underline">
+          {SHOP_PHONE}
+        </a>
+      </div>
+
+      {/*  Умный адрес самовывоз -пицерии доставка - адрис клиента */}
+      <div className="flex flex-col  py-4">
+        <span className="text-gray-500 text-left">
+          {data.deliveryType === 'delivery' ? 'Indirizzo' : ''}
+        </span>
+        <span className="font-medium text-left  ">
+          {data.deliveryType === 'delivery' ? (
+            data.address // Адрес клиента
+          ) : (
+            <PickupLocationCard /> // Адрес пиццерии
+          )}
+        </span>
+      </div>
+
       {/* Жирный итог */}
-      <div className="flex justify-between items-end mt-2 pt-2 border-t border-dashed border-neutral-200">
+      <div className="flex justify-between items-end  pt-2 border-t border-dashed border-neutral-200">
         <span className="font-bold text-neutral-900 text-lg">Totale</span>
         <span className="font-bold text-primary text-xl">{data.totalAmount.toFixed(2)} €</span>
       </div>

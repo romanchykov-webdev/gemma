@@ -14,7 +14,7 @@ export const useOrderPolling = () => {
   // ===========================================================================
   // 🛠️ DEV MODE (ТЕСТОВЫЙ РЕЖИМ)
   // ===========================================================================
-  // Поставь true, чтобы включить мок-данные и отключить запросы к серверу
+  //  true, чтобы включить мок-данные и отключить запросы к серверу
   const IS_DEV_MODE = false;
 
   const [devData, setDevData] = useState<OrderStatusData | null>(null);
@@ -23,8 +23,8 @@ export const useOrderPolling = () => {
     if (IS_DEV_MODE) {
       setDevData({
         orderId: 'TEST-123-DEV',
-        status: 'PROCESSING', // PENDING | PROCESSING | READY | CANCELLED
-        deliveryType: 'delivery', // pickup | delivery
+        status: 'CANCELLED', // PENDING | PROCESSING | READY | CANCELLED
+        deliveryType: 'pickup', // pickup | delivery
         address: 'Via Molino, 42 interrno 3, 30020 Torre di Mosto VE',
         expectedReadyAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         readyAt: null,
