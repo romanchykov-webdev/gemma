@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { ReceiptEuro } from 'lucide-react';
 import { OrderStatusData } from './order-status-data';
 
-const SHOP_PHONE = '+39 345 678 9000';
-
 export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -110,8 +108,11 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
       {/*  Телефон пиццерии */}
       <div className="flex justify-between items-center py-4 border-b border-dashed border-neutral-200">
         <span className="text-gray-500">Pizzeria</span>
-        <a href={`tel:${SHOP_PHONE}`} className="font-medium text-primary hover:underline">
-          {SHOP_PHONE}
+        <a
+          href={`tel:${data.storeInfo?.phone || '+39 345 357 5021'}`}
+          className="font-medium text-primary hover:underline"
+        >
+          {data.storeInfo?.phone || '+39 345 357 5021'}
         </a>
       </div>
 
@@ -124,7 +125,7 @@ export const OrderReceipt = ({ data }: { data: OrderStatusData }) => (
           {data.deliveryType === 'delivery' ? (
             data.address // Адрес клиента
           ) : (
-            <PickupLocationCard /> // Адрес пиццерии
+            <PickupLocationCard storeInfo={data.storeInfo} /> // Адрес пиццерии
           )}
         </span>
       </div>

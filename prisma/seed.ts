@@ -17,6 +17,8 @@ async function down() {
   await prisma.$executeRaw`TRUNCATE TABLE "VerificationCode" RESTART IDENTITY CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "Size" RESTART IDENTITY CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "Type" RESTART IDENTITY CASCADE`;
+
+  await prisma.$executeRaw`TRUNCATE TABLE "StoreSettings" RESTART IDENTITY CASCADE`;
 }
 
 async function up() {
@@ -187,6 +189,40 @@ async function up() {
   await prisma.ingredient.createMany({
     data: _ingredients,
   });
+
+  // 🏪 Создаем настройки магазина (Singleton)
+  await prisma.storeSettings.create({
+    data: {
+      id: 1, // Всегда 1
+      storeName: 'Pizza Gemma',
+      phone: '+39 345 357 5021',
+      email: 'gemma@example.com',
+      address: 'Viale Roma, 15, 30020 Torre di Mosto VE',
+
+      // Финансы (все дефолтные значения из схемы подтянутся сами,
+      // но лучше явно указать важные)
+      deliveryPrice: 0,
+      minOrderAmount: 0,
+      vatPercent: 0,
+
+      // Соцсети (пока пусто, но структуру заложим)
+      socialLinks: {
+        instagram: null,
+        facebook: null,
+      },
+
+      // График работы (твои данные)
+      monday: '18:00 - 22:00',
+      tuesday: '18:00 - 22:00',
+      wednesday: '18:00 - 22:00',
+      thursday: 'Chiuso',
+      friday: '18:00 - 22:00',
+      saturday: '18:00 - 22:00',
+      sunday: '18:00 - 22:00',
+    },
+  });
+
+  console.log('✅ Настройки магазина созданы');
 
   console.log('✅ Базовые данные созданы');
 

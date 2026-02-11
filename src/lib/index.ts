@@ -10,4 +10,5 @@ export { getPizzaDetails } from './get-pizza-details';
 // export { getUserSession } from "./get-user-session";
 export { enrichProductData } from './enrich-product';
 
+export { getStoreSettings } from './get-store-settings';
 export { searchProductsLocally } from './search-utils';
