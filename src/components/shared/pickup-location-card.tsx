@@ -4,9 +4,25 @@ import { ExternalLink, MapPin } from 'lucide-react';
 
 interface Props {
   className?: string;
+
+  storeInfo?: {
+    address: string;
+    storeName?: string;
+  };
 }
 
-export const PickupLocationCard = ({ className }: Props) => {
+export const PickupLocationCard = ({ className, storeInfo }: Props) => {
+  // 🛡️ Fallback (на случай если база не отдала адрес)
+  const address = storeInfo?.address || 'Viale Roma, 15, 30020 Torre di Mosto VE';
+  const storeName = storeInfo?.storeName || 'Pizza Gemma';
+
+  // 🔥 ХИТРОСТЬ: Ищем "Имя + Адрес"
+  // Это заставит Google Maps открыть именно карточку бизнеса, а не просто точку на улице
+  const searchQuery = `${storeName} ${address}`;
+
+  // 🌍 Генерируем ссылку динамически
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=Viale+Roma+15+30020+Torre+di+Mosto+VE?q=${encodeURIComponent(searchQuery)}`;
+
   return (
     <div className={cn('p-4 bg-orange-50 border border-orange-200 rounded-lg', className)}>
       <div className="flex  items-center justify-center gap-3">
@@ -17,17 +33,15 @@ export const PickupLocationCard = ({ className }: Props) => {
         {/* text */}
         <div className="flex-1 ">
           <a
-            href="https://www.google.com/maps/search/?api=1&query=Viale+Roma+15+30020+Torre+di+Mosto+VE"
-            // href="https://www.google.com/maps/dir/?api=1&destination=45.7489,12.6872"
+            href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-brand-primary hover:text-brand-hover font-medium  flex flex-col items-start gap-1
-          
-          "
+            // className="group block"
+            className="text-sm text-brand-primary hover:text-brand-hover font-medium  flex flex-col items-start gap-1"
           >
             <p className="text-sm font-medium text-gray-900 mb-1 ">Ritira il tuo ordine presso:</p>
             <p className="flex items-center gap-3">
-              Viale Roma, 15, 30020 Torre di Mosto VE
+              {address}
               <ExternalLink className="w-3 h-3" />
             </p>
             <p className="text-xs text-gray-500 mt-1">Clicca per aprire in Google Maps</p>

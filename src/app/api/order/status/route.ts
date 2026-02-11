@@ -1,4 +1,5 @@
 import { OrderItemDTO } from '@/app/(checkout)/success/components/order-status-data';
+import { getStoreSettings } from '@/lib/get-store-settings';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../prisma/prisma-client';
 
@@ -150,7 +151,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 🔥 1. Параллельная загрузка данных (Order + Справочники)
-    const [order, sizes, types] = await Promise.all([
+    const [order, sizes, types, storeSettings] = await Promise.all([
       prisma.order.findUnique({
         where: { id: orderId },
         select: {
@@ -163,11 +164,12 @@ export async function GET(req: NextRequest) {
           totalAmount: true,
           address: true,
           type: true,
-          items: true, // Это поле типа Json
+          items: true,
         },
       }),
       prisma.size.findMany(),
       prisma.type.findMany(),
+      getStoreSettings(),
     ]);
 
     if (!order) {
@@ -193,6 +195,21 @@ export async function GET(req: NextRequest) {
       address: order.address,
       deliveryType: deliveryType,
       items: mappedItems,
+      storeInfo: {
+        storeName: storeSettings.storeName,
+        phone: storeSettings.phone,
+        address: storeSettings.address,
+        email: storeSettings.email,
+        workingHours: {
+          monday: storeSettings.monday,
+          tuesday: storeSettings.tuesday,
+          wednesday: storeSettings.wednesday,
+          thursday: storeSettings.thursday,
+          friday: storeSettings.friday,
+          saturday: storeSettings.saturday,
+          sunday: storeSettings.sunday,
+        },
+      },
     });
   } catch (error) {
     console.error('[ORDER_STATUS_API] Error:', error);

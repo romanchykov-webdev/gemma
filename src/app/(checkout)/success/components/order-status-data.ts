@@ -30,4 +30,19 @@ export type OrderStatusData = {
   deliveryType: 'pickup' | 'delivery';
   address: string | null;
   items: OrderItemDTO[];
+  storeInfo: {
+    storeName: string;
+    phone: string;
+    address: string;
+    email: string;
+    workingHours: {
+      monday: string;
+      tuesday: string;
+      wednesday: string;
+      thursday: string;
+      friday: string;
+      saturday: string;
+      sunday: string;
+    };
+  };
 };
