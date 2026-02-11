@@ -191,6 +191,38 @@ model StoryItem {
   @@index([storyId])
 }
 
+// --- НАСТРОЙКИ МАГАЗИНА (Singleton: id=1) ---
+model StoreSettings {
+  id Int @id @default(1)
+
+  // Контакты 
+  storeName String 
+  phone     String 
+  email     String 
+  address   String 
+
+  // Соцсети
+  socialLinks Json?
+
+  // Финансы
+ 
+  deliveryPrice         Decimal  @default(0)
+  minOrderAmount        Decimal  @default(0)
+  vatPercent            Decimal  @default(0)
+  freeDeliveryThreshold Decimal  @default(0)
+
+  // График работы
+  monday    String 
+  tuesday   String 
+  wednesday String 
+  thursday  String 
+  friday    String 
+  saturday  String 
+  sunday    String 
+
+  updatedAt DateTime @updatedAt
+}
+
 enum OrderStatus {
   PENDING
   PROCESSING

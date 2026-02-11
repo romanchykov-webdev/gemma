@@ -113,7 +113,7 @@ export const StatusBlock = ({ data }: { data: OrderStatusData }) => {
             shadow="shadow-green-100"
           >
             {/* ссылка на адрис клиента */}
-            <PickupLocationCard className="mt-4 w-full" />
+            <PickupLocationCard className="mt-4 w-full" storeInfo={data.storeInfo} />
           </StatusCard>
         ) : (
           <StatusCard
