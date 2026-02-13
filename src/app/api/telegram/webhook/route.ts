@@ -58,7 +58,7 @@ function appendMapLink(text: string, order: OrderData): string {
 
   const encodedAddress = encodeURIComponent(order.address);
   // Формируем чистую, рабочую ссылку
-  const linkHtml = `\n\n📍 <a href="http://googleusercontent.com/maps.google.com/maps?q=${encodedAddress}">➤ Apri in Google Maps</a>`;
+  const linkHtml = `\n\n📍 <a href="https://www.google.com/maps/search/?api=1&query=${encodedAddress}">➤ Apri in Google Maps</a>`;
 
   return text + linkHtml;
 }
