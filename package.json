@@ -19,7 +19,8 @@
     "prisma:seed": "prisma db seed",
     "check": "npm run type-check && npm run lint && npm run format:check && npm run prisma:validate",
     "check:fix": "npm run type-check && npm run lint:fix && npm run format && npm run prisma:format",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -81,6 +82,7 @@
     "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }
