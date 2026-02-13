@@ -11,4 +11,6 @@ export { getPizzaDetails } from './get-pizza-details';
 export { enrichProductData } from './enrich-product';
 
 export { getStoreSettings } from './get-store-settings';
+export { calculateOrderItemPrice, formatItemDetails } from './order-calc';
+export { formatOrderTime, getRemainingMinutes } from './order-time-utils';
 export { searchProductsLocally } from './search-utils';

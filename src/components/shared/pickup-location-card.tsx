@@ -21,8 +21,11 @@ export const PickupLocationCard = ({ className, storeInfo }: Props) => {
   const searchQuery = `${storeName} ${address}`;
 
   // 🌍 Генерируем ссылку динамически
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=Viale+Roma+15+30020+Torre+di+Mosto+VE?q=${encodeURIComponent(searchQuery)}`;
+  // const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=Viale+Roma+15+30020+Torre+di+Mosto+VE?q=${encodeURIComponent(searchQuery)}`;
+  // Формируем запрос
 
+  // ✅ ПРАВИЛЬНЫЙ URL: без дублей '?' и 'q='
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`;
   return (
     <div className={cn('p-4 bg-orange-50 border border-orange-200 rounded-lg', className)}>
       <div className="flex  items-center justify-center gap-3">

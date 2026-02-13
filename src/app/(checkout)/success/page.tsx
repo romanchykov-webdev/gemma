@@ -1,24 +1,19 @@
 'use client';
 
-import { Button } from '@/components/ui';
-
-import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
-import { motion } from 'framer-motion';
-
+import { Button } from '@/components/ui/button';
 import { useOrderPolling } from '@/hooks/use-order-polling';
-import { Loader2 } from 'lucide-react';
+
 import { OrderReceipt, OrderStepper, OrderSuccessHeader, StatusBlock } from './components';
 
 const SuccessContent = () => {
-  const router = useRouter();
-
-  // 1. Используем наш кастомный хук!
-  // (Вставь код хука useOrderPolling выше или импортируй его)
   const { orderData, loading, orderId } = useOrderPolling();
 
-  // Обработка загрузки
+  // 1. Твой кастомный лоадер (сохранил дизайн)
   if (loading && !orderData) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4">
@@ -33,49 +28,55 @@ const SuccessContent = () => {
     );
   }
 
+  // 2. Обработка ошибок
   if (!orderData) {
-    if (orderId)
+    if (orderId) {
       return (
-        <div className="min-h-screen flex items-center justify-center">Ordine non trovato</div>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-lg font-medium">Ordine non trovato</p>
+        </div>
       );
-    // Если вообще нет ID
-    return <div className="min-h-screen flex items-center justify-center">Link non valido</div>;
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg font-medium">Link non valido</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen  py-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen py-12 px-4 relative overflow-hidden">
+      {/* фон-градиент */}
       <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-orange-50 to-transparent -z-10" />
 
-      <div className="max-w-xl mx-auto text-center z-10 relative">
+      <div className="max-w-xl mx-auto text-center z-10 relative space-y-8">
         {/* Заголовок */}
+
         <OrderSuccessHeader data={orderData} />
 
-        {/* Прогресс-бар (скрываем при отмене) */}
+        {/* Прогресс-бар */}
         {orderData.status !== 'CANCELLED' && <OrderStepper currentStatus={orderData.status} />}
 
-        {/* Блок с карточками статусов */}
+        {/* ✅ StatusBlock */}
         <StatusBlock data={orderData} />
 
-        {/* Чек */}
+        {/* ✅ Чек */}
         <OrderReceipt data={orderData} />
 
         {/* Кнопка "Домой" */}
-        {orderData.status !== 'CANCELLED' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-12"
-          >
-            <Button
-              variant="ghost"
-              onClick={() => router.push('/')}
-              className="text-neutral-400 hover:text-neutral-600"
-            >
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mt-12"
+        >
+          <Link href="/">
+            <Button variant="ghost" className="text-neutral-400 hover:text-neutral-600">
               Torna alla home
             </Button>
-          </motion.div>
-        )}
+          </Link>
+        </motion.div>
       </div>
     </div>
   );
