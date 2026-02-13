@@ -4,8 +4,18 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 
-// Простой фетчер для SWR
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+// 🔥 проверяет статус ответа. Если 404 или 500 - кидает ошибку.
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    // Если сервер вернул ошибку,
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Errore nella richiesta');
+  }
+
+  return res.json();
+};
 
 export const useOrderPolling = () => {
   const params = useSearchParams();
@@ -24,7 +34,7 @@ export const useOrderPolling = () => {
       setDevData({
         orderId: 'TEST-123-DEV',
         status: 'CANCELLED', // PENDING | PROCESSING | READY | CANCELLED
-        deliveryType: 'pickup', // pickup | delivery
+        deliveryType: 'delivery', // pickup | delivery
         address: 'Via Molino, 42 interrno 3, 30020 Torre di Mosto VE',
         expectedReadyAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         readyAt: null,
@@ -67,27 +77,43 @@ export const useOrderPolling = () => {
   // Если включен Dev Mode, мы передаем null в ключ SWR, чтобы запросы НЕ шли
   const shouldFetch = !IS_DEV_MODE && orderId;
 
-  const { data: swrData, isLoading: swrLoading } = useSWR<OrderStatusData>(
+  const {
+    data: swrData,
+    error: swrError,
+    isLoading: swrLoading,
+  } = useSWR<OrderStatusData>(
     shouldFetch ? `/api/order/status?orderId=${orderId}` : null,
     fetcher,
     {
-      // 🔥 Умный интервал опроса
       refreshInterval: latestData => {
-        // Если статус PENDING (ждем подтверждения) -> часто (4 сек)
-        if (latestData?.status === 'PENDING') return 4000;
-        // Если PROCESSING (готовится) -> редко (15 сек), чтобы не грузить сервер
-        if (latestData?.status === 'PROCESSING') return 15000;
-        // Если READY или CANCELLED -> 0 (остановить опрос)
+        if (!latestData) return 4000;
+
+        if (latestData.status === 'PENDING') return 4000;
+        if (latestData.status === 'PROCESSING') return 15000;
+
+        // ✅ ЯВНО останавливаем запросы для конечных статусов
+        if (
+          latestData.status === 'READY' ||
+          latestData.status === 'SUCCEEDED' ||
+          latestData.status === 'CANCELLED'
+        )
+          return 0;
+
         return 0;
       },
-      // Обновлять данные, когда юзер возвращается на вкладку (экономия батареи)
       revalidateOnFocus: true,
+
+      shouldRetryOnError: err => {
+        console.log('err', err);
+        return true;
+      },
     },
   );
 
   // Определяем, какие данные возвращать (Dev или Real)
   const orderData = IS_DEV_MODE ? devData : swrData;
   const loading = IS_DEV_MODE ? false : swrLoading;
+  const hasError = !!swrError;
 
   // ===========================================================================
   // 🎉 ЭФФЕКТЫ (Конфетти)
@@ -106,7 +132,7 @@ export const useOrderPolling = () => {
     }
   }, [orderData?.status]);
 
-  return { orderData, loading: loading && !orderData, orderId };
+  return { orderData, loading: loading && !orderData && !hasError, orderId, hasError };
 };
 
 /* ================================================================================

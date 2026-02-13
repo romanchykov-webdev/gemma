@@ -5,32 +5,35 @@ export type OrderItemDTO = {
   name: string;
   price: number;
   quantity: number;
-  sizeName?: string; // Например: "Grande"
-  typeName?: string; // Например: "Sottile"
-  // Добавленные ингредиенты (с ценой)
+  sizeName?: string;
+  typeName?: string;
+
+  // Ингредиенты могут не прийти
   ingredients?: Array<{
     id: number;
     name: string;
     price: number;
   }>;
-  // Убранные ингредиенты (без цены)
   removedIngredients?: Array<{
     name: string;
   }>;
 };
 
 export type OrderStatusData = {
-  orderId: string;
-  status: OrderStatus;
-  expectedReadyAt: string | null;
-  readyAt: string | null;
-  createdAt: string;
-  fullName: string;
-  totalAmount: number;
-  deliveryType: 'pickup' | 'delivery';
-  address: string | null;
-  items: OrderItemDTO[];
-  storeInfo: {
+  // 🛡️ Все поля опциональными для безопасности
+  orderId?: string;
+  status?: OrderStatus;
+  expectedReadyAt?: string | null;
+  readyAt?: string | null;
+  createdAt?: string;
+  fullName?: string;
+  totalAmount?: number;
+  deliveryType?: 'pickup' | 'delivery';
+  address?: string | null;
+  items?: OrderItemDTO[];
+
+  // 🛡️ StoreInfo  тоже опционален
+  storeInfo?: {
     storeName: string;
     phone: string;
     address: string;

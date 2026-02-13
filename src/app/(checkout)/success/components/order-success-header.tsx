@@ -1,20 +1,24 @@
 import { motion } from 'framer-motion';
 import { OrderStatusData } from './order-status-data';
 
-export const OrderSuccessHeader = ({ data }: { data: OrderStatusData }) => {
+export const OrderSuccessHeader = ({ data }: { data?: OrderStatusData }) => {
+  // 🛡️ Если данных нет, используем безопасные дефолтные значения
+
   const getTitle = () => {
-    if (data.status === 'READY') return 'Tutto pronto! 🍕';
-    if (data.status === 'CANCELLED') return 'Ordine Annullato ❌';
+    if (data?.status === 'READY') return 'Tutto pronto! 🍕';
+    if (data?.status === 'CANCELLED') return 'Ordine Annullato ❌';
     return "Grazie per l'ordine!";
   };
 
   const getSubtitle = () => {
-    if (data.status === 'READY') {
-      return data.deliveryType === 'pickup'
+    if (data?.status === 'READY') {
+      return data?.deliveryType === 'pickup'
         ? 'Corri a ritirare la tua pizza.'
         : 'Mettiti comodo, stiamo arrivando!';
     }
-    if (data.status === 'CANCELLED') return 'Se è un errore, contattaci subito.';
+    if (data?.status === 'CANCELLED') return 'Se è un errore, contattaci subito.';
+
+    // Дефолтный текст для PENDING / PROCESSING
     return 'Rilassati, ci pensiamo noi.';
   };
 
