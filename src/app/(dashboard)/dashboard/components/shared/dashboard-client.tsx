@@ -57,19 +57,18 @@ export const DashboardClient: React.FC<Props> = ({ className, userRole }): JSX.E
       </div>
 
       {/* admin owner can see all sections */}
-      {userRole === UserRole.ADMIN ||
-        (userRole === UserRole.OWNER && (
-          <>
-            {activeSection === 'categories' && <CategoriesDashboard className="mt-5" />}
-            {activeSection === 'products' && <ProductsDashboard className="mt-5" />}
-            {activeSection === 'ingredients' && <IngredientsDashboard className="mt-5" />}
-            {activeSection === 'sizes' && <ProductSizesDashboard className="mt-5" />}
-            {activeSection === 'types' && <DoughTypesDashboard className="mt-5" />}
-            {activeSection === 'orders' && <OrdersDashboard className="mt-5" />}
-            {activeSection === 'users' && <UsersDashboard className="mt-5" />}
-            {activeSection === 'stories' && <StoriesDashboard className="mt-5" />}
-          </>
-        ))}
+      {(userRole === UserRole.ADMIN || userRole === UserRole.OWNER) && (
+        <>
+          {activeSection === 'categories' && <CategoriesDashboard className="mt-5" />}
+          {activeSection === 'products' && <ProductsDashboard className="mt-5" />}
+          {activeSection === 'ingredients' && <IngredientsDashboard className="mt-5" />}
+          {activeSection === 'sizes' && <ProductSizesDashboard className="mt-5" />}
+          {activeSection === 'types' && <DoughTypesDashboard className="mt-5" />}
+          {activeSection === 'orders' && <OrdersDashboard className="mt-5" />}
+          {activeSection === 'users' && <UsersDashboard className="mt-5" />}
+          {activeSection === 'stories' && <StoriesDashboard className="mt-5" />}
+        </>
+      )}
 
       {/* content maker can see only Stories section */}
       {userRole === UserRole.CONTENT_MAKER && (
