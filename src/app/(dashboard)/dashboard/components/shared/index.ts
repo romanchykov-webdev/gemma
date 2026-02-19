@@ -27,6 +27,7 @@ export { ProductSizeCreateForm } from './product-sizes/product-size-create-form'
 export { ProductsDashboard } from './products-dashboard';
 export { ProductCardDashboard } from './products/product-card/product-card';
 export { ProductCategoryFilter } from './products/product-category-filter';
+export { BaseIngredientsSelector } from './products/product-create-form-dashboard/base-ingredients-selector';
 export { ProductCreateFormDashboard } from './products/product-create-form-dashboard/product-create-form';
 export { ProductIngredientsDashboard } from './products/product-create-form-dashboard/product-ingredients-dashboard';
 export { ProductVariantsDashboard } from './products/product-create-form-dashboard/product-variants-dashboard';

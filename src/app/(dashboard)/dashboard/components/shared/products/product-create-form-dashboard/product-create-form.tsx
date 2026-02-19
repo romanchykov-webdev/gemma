@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { ImageUpload } from '../../image-upload';
 import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from '../product-types';
+import { BaseIngredientsSelector } from './base-ingredients-selector';
 import { ProductIngredientsDashboard } from './product-ingredients-dashboard';
 import { ProductVariantsDashboard } from './product-variants-dashboard';
 
@@ -29,25 +30,31 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || 0);
 
+  // 🔄 Варианты продукта
   const [variants, setVariants] = useState<
-    { sizeId: number | null; doughTypeId: number | null; price: number }[]
+    { sizeId: number | null; typeId: number | null; price: number }[]
   >([]);
   const [showVariants, setShowVariants] = useState(false);
 
-  const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
-  const [showIngredients, setShowIngredients] = useState(false);
+  // 🔄 Базовые ингредиенты (которые УЖЕ входят в продукт)
+  const [baseIngredients, setBaseIngredients] = useState<
+    Array<{ id: number; removable: boolean; isDisabled: boolean }>
+  >([]);
+  const [showBaseIngredients, setShowBaseIngredients] = useState(false);
+
+  // 🔄 Дополнительные ингредиенты (которые пользователь может добавить за доплату)
+  const [addableIngredientIds, setAddableIngredientIds] = useState<number[]>([]);
+  const [showAddableIngredients, setShowAddableIngredients] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
-
   const [isUploading, setIsUploading] = useState(false);
 
+  // ========== Методы для вариантов ==========
   const addVariant = () => {
     const defaultSizeId = sizes[0]?.id || null;
-    const defaultDoughTypeId = doughTypes[0]?.id || null;
-    setVariants([
-      ...variants,
-      { sizeId: defaultSizeId, doughTypeId: defaultDoughTypeId, price: 0 },
-    ]);
+    const defaultTypeId = doughTypes[0]?.id || null;
+
+    setVariants([...variants, { sizeId: defaultSizeId, typeId: defaultTypeId, price: 0 }]);
     setShowVariants(true);
   };
 
@@ -63,11 +70,38 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
     setVariants(updated);
   };
 
-  const toggleIngredient = (id: number) =>
-    setSelectedIngredientIds(prev =>
+  // ========== Методы для базовых ингредиентов ==========
+  const addBaseIngredient = (id: number) => {
+    setBaseIngredients(prev => [
+      ...prev,
+      { id, removable: true, isDisabled: false }, // Дефолтные значения
+    ]);
+  };
+
+  const removeBaseIngredient = (id: number) => {
+    setBaseIngredients(prev => prev.filter(ing => ing.id !== id));
+  };
+
+  const toggleRemovable = (id: number) => {
+    setBaseIngredients(prev =>
+      prev.map(ing => (ing.id === id ? { ...ing, removable: !ing.removable } : ing)),
+    );
+  };
+
+  const toggleDisabled = (id: number) => {
+    setBaseIngredients(prev =>
+      prev.map(ing => (ing.id === id ? { ...ing, isDisabled: !ing.isDisabled } : ing)),
+    );
+  };
+
+  // ========== Методы для дополнительных ингредиентов ==========
+  const toggleAddableIngredient = (id: number) => {
+    setAddableIngredientIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
     );
+  };
 
+  // ========== Создание продукта ==========
   const handleCreate = async () => {
     if (!name.trim()) return toast.error('Inserisci il nome del prodotto');
     if (!imageUrl.trim()) return toast.error("Inserisci l'URL dell'immagine");
@@ -79,19 +113,33 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
     try {
       setIsCreating(true);
 
+      // ✅ 1. Собираем полные объекты базовых ингредиентов
+      const enrichedBaseIngredients = baseIngredients.map(selected => {
+        const ing = ingredients.find(i => i.id === selected.id)!;
+        return {
+          id: ing.id,
+          name: ing.name,
+          imageUrl: ing.imageUrl,
+          removable: selected.removable, // ✅ Из состояния
+          isDisabled: selected.isDisabled, // ✅ Из состояния
+        };
+      });
+
+      // ✅ 2. Формируем варианты с variantId и typeId
+      const formattedVariants = variants.map((v, index) => ({
+        variantId: index + 1,
+        price: Number(v.price),
+        sizeId: v.sizeId ?? undefined,
+        typeId: v.typeId ?? undefined,
+      }));
+
       await onSubmit({
         name: name.trim(),
         imageUrl: imageUrl.trim(),
         categoryId,
-        ingredientIds: selectedIngredientIds.length > 0 ? selectedIngredientIds : undefined,
-        items:
-          variants.length > 0
-            ? variants.map(v => ({
-                price: v.price,
-                sizeId: v.sizeId ?? undefined,
-                doughTypeId: v.doughTypeId ?? undefined,
-              }))
-            : undefined,
+        baseIngredients: enrichedBaseIngredients.length > 0 ? enrichedBaseIngredients : undefined,
+        addableIngredientIds: addableIngredientIds.length > 0 ? addableIngredientIds : [],
+        variants: formattedVariants.length > 0 ? formattedVariants : undefined,
       });
 
       // Очистка формы после успешного создания
@@ -99,9 +147,11 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
       setImageUrl('');
       setCategoryId(categories[0]?.id || 0);
       setVariants([]);
-      setSelectedIngredientIds([]);
+      setBaseIngredients([]);
+      setAddableIngredientIds([]);
       setShowVariants(false);
-      setShowIngredients(false);
+      setShowBaseIngredients(false);
+      setShowAddableIngredients(false);
     } catch (error: unknown) {
       console.error('Error creating product:', error);
     } finally {
@@ -156,7 +206,6 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
                 size="sm"
                 variant="destructive"
                 className="absolute top-2 right-2"
-                // disabled={disabled || isUploading}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -187,7 +236,7 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
         </select>
       </div>
 
-      {/* Варианты */}
+      {/* Варианты продукта */}
       <ProductVariantsDashboard
         variants={variants}
         availableSizes={sizes}
@@ -201,13 +250,26 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
         isCreating={isCreating}
       />
 
-      {/* Ингредиенты */}
+      {/* Базовые ингредиенты (которые УЖЕ входят в продукт) */}
+      <BaseIngredientsSelector
+        availableIngredients={ingredients}
+        selectedIngredients={baseIngredients}
+        onAdd={addBaseIngredient}
+        onRemove={removeBaseIngredient}
+        onToggleRemovable={toggleRemovable}
+        onToggleDisabled={toggleDisabled}
+        showSelector={showBaseIngredients}
+        setShowSelector={setShowBaseIngredients}
+        isCreating={isCreating}
+      />
+
+      {/* Дополнительные ингредиенты (которые пользователь может добавить за доплату) */}
       <ProductIngredientsDashboard
         availableIngredients={ingredients}
-        selectedIngredientIds={selectedIngredientIds}
-        toggleIngredient={toggleIngredient}
-        showIngredients={showIngredients}
-        setShowIngredients={setShowIngredients}
+        selectedIngredientIds={addableIngredientIds}
+        toggleIngredient={toggleAddableIngredient}
+        showIngredients={showAddableIngredients}
+        setShowIngredients={setShowAddableIngredients}
         isCreating={isCreating}
       />
 

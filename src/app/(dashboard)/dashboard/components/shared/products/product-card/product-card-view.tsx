@@ -33,7 +33,7 @@ export const ProductCardView: React.FC<Props> = ({
   // console.log(ProductCardView, { sizes, doughTypes });
   const categoryName = getCategoryName(product.categoryId, categories);
   const variantsCount = getVariantsCount(product);
-  const ingredientsCount = product.ingredients?.length || 0;
+  const ingredientsCount = product.baseIngredients?.length || 0;
 
   return (
     <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition relative ">
@@ -93,15 +93,16 @@ export const ProductCardView: React.FC<Props> = ({
         <div className="border-t bg-gray-50 p-4">
           <h4 className="font-semibold mb-2">Varianti del prodotto:</h4>
           <div className="space-y-1 text-sm">
-            {product.items.map(item => {
-              const size = sizes.find(s => s.id === item.sizeId);
-              const doughType = doughTypes.find(d => d.id === item.doughTypeId);
+            {product.variants.map(variant => {
+              // ✅ variants
+              const size = sizes.find(s => s.id === variant.sizeId);
+              const type = doughTypes.find(d => d.id === variant.typeId);
               return (
-                <div key={item.id} className="flex justify-between">
+                <div key={variant.variantId} className="flex justify-between">
                   <span>
-                    {size?.name} - {doughType?.name}
+                    {size?.name} - {type?.name}
                   </span>
-                  <span className="font-medium">{formatPrice(item.price)}</span>
+                  <span className="font-medium">{formatPrice(variant.price)}</span>
                 </div>
               );
             })}
@@ -111,7 +112,7 @@ export const ProductCardView: React.FC<Props> = ({
             <>
               <h4 className="font-semibold mb-2 mt-4">Ingredienti:</h4>
               <div className="flex flex-wrap gap-2">
-                {product.ingredients?.map(ing => (
+                {product.baseIngredients?.map(ing => (
                   <span key={ing.id} className="px-2 py-1 bg-white rounded-md text-xs border">
                     {ing.name}
                   </span>

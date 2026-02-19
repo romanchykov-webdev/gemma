@@ -1,5 +1,5 @@
-export { Button } from './button';
 export { Badge } from './badge';
+export { Button } from './button';
 export { Checkbox } from './checkbox';
 export { Dialog } from './dialog';
 export { Drawer } from './drawer';
@@ -9,3 +9,4 @@ export { RadioGroup } from './radio-group';
 export { Select } from './select';
 export { Skeleton } from './skeleton';
 export { Slider } from './slider';
+export { Switch } from './switch';

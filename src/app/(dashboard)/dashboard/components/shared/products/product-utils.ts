@@ -1,7 +1,7 @@
 import { CreateProductData, UpdateProductData } from './product-types';
 
 /**
- * Валидация данных продукта
+ * Валидация основных данных продукта (Metadata)
  */
 export const validateProductData = (
   data: Partial<CreateProductData> | Partial<UpdateProductData>,
@@ -29,16 +29,24 @@ export const validateProductData = (
 
 /**
  * Валидация вариантов продукта
+ * 🔄 REFACTOR: Используется для проверки массива variants
  */
-export const validateProductVariants = (variants: Array<{ price: number }>): string | null => {
-  if (variants.length === 0) {
+export const validateProductVariants = (
+  variants: Array<{ price: number; sizeId?: number | null; doughTypeId?: number | null }>,
+): string | null => {
+  if (!variants || variants.length === 0) {
     return 'Aggiungi almeno una variante del prodotto';
   }
 
-  const invalidVariant = variants.find(v => !v.price || v.price <= 0);
-  if (invalidVariant) {
+  // Проверяем цену
+  const invalidPrice = variants.find(v => !v.price || Number(v.price) <= 0);
+  if (invalidPrice) {
     return 'Tutte le varianti devono avere un prezzo valido';
   }
+
+  // Проверяем уникальность комбинаций (опционально, но полезно)
+  // Например, нельзя создать две пиццы "Большая + Традиционное"
+  // Но пока оставим простую валидацию
 
   return null;
 };
@@ -48,7 +56,7 @@ export const validateProductVariants = (variants: Array<{ price: number }>): str
  */
 export const formatPrice = (price: number | { toString(): string }): string => {
   const numericPrice = typeof price === 'number' ? price : Number(price);
-  return `${numericPrice.toFixed(2)} €`;
+  return `${isNaN(numericPrice) ? 0 : numericPrice.toFixed(2)} €`;
 };
 
 /**
@@ -64,14 +72,16 @@ export const getCategoryName = (
 
 /**
  * Получение количества вариантов
+ * 🔄 REFACTOR: items -> variants
  */
-export const getVariantsCount = (product: { items: unknown[] }): number => {
-  return product.items?.length || 0;
+export const getVariantsCount = (product: { variants?: unknown[] }): number => {
+  return product.variants?.length || 0;
 };
 
 /**
  * Проверка наличия ингредиентов
+ * 🔄 REFACTOR: ingredients -> baseIngredients
  */
-export const hasIngredients = (product: { ingredients?: unknown[] }): boolean => {
-  return (product.ingredients?.length || 0) > 0;
+export const hasIngredients = (product: { baseIngredients?: unknown[] }): boolean => {
+  return (product.baseIngredients?.length || 0) > 0;
 };

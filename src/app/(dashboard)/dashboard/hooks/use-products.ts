@@ -1,8 +1,8 @@
 'use client';
 
-import { Api } from '@/../services/api-client';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Api } from '../../../../../services/api-client';
 import {
   Category,
   CreateProductData,
@@ -13,6 +13,34 @@ import {
   UpdateProductData,
 } from '../components/shared/products/product-types';
 import { validateProductData } from '../components/shared/products/product-utils';
+
+// 🛠️ DTO (Data Transfer Object)
+interface ProductVariantDTO {
+  variantId: number;
+  price: number | string;
+  sizeId: number | null;
+  typeId: number | null;
+}
+interface BaseIngredientDTO {
+  id: number;
+  name: string;
+  imageUrl: string;
+  removable: boolean;
+  isDisabled: boolean;
+}
+
+interface ProductResponseDTO {
+  id: number;
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  category: { id: number; name: string };
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  variants: ProductVariantDTO[];
+  baseIngredients: BaseIngredientDTO[];
+  addableIngredientIds: number[];
+}
 
 interface UseProductsReturn {
   categories: Category[];
@@ -29,10 +57,35 @@ interface UseProductsReturn {
   handleDelete: (id: number) => Promise<void>;
 }
 
-/**
- * Кастомный хук для управления продуктами
- * Изолирует всю логику работы с API и состоянием от UI компонента
- */
+// 🔄 API Request Types
+interface CreateProductRequest {
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  baseIngredients?: BaseIngredientDTO[];
+  addableIngredientIds?: number[];
+  variants?: Array<{
+    variantId: number;
+    price: number;
+    sizeId?: number;
+    typeId?: number;
+  }>;
+}
+
+interface UpdateProductRequest {
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  baseIngredients?: BaseIngredientDTO[];
+  addableIngredientIds?: number[];
+  variants?: Array<{
+    variantId: number;
+    price: number;
+    sizeId?: number | null;
+    typeId?: number | null;
+  }>;
+}
+
 export const useProducts = (): UseProductsReturn => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,7 +97,6 @@ export const useProducts = (): UseProductsReturn => {
   const [sizes, setSizes] = useState<ProductSize[]>([]);
   const [doughTypes, setDoughTypes] = useState<DoughType[]>([]);
 
-  // Состояние загрузки для отдельных продуктов
   const [loadingProductIds, setLoadingProductIds] = useState<Set<number>>(new Set());
 
   // Загрузка категорий
@@ -58,23 +110,23 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Загрузка продуктов
+  // 🔄 Загрузка продуктов
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined);
 
-      // Конвертируем Decimal в number
-      const normalizedData = data.map(product => ({
+      const data = (await Api.product_dashboard.getProducts(
+        selectedCategoryId || undefined,
+      )) as unknown as ProductResponseDTO[];
+
+      const normalizedData: Product[] = data.map(product => ({
         ...product,
-        items: product.items.map(item => ({
-          ...item,
-          price: Number(item.price),
+        variants: (product.variants || []).map(variant => ({
+          ...variant,
+          price: Number(variant.price),
         })),
-        ingredients: product.ingredients?.map(ing => ({
-          ...ing,
-          price: Number(ing.price),
-        })),
+        baseIngredients: product.baseIngredients || [],
+        addableIngredientIds: product.addableIngredientIds || [],
       }));
 
       setProducts(normalizedData);
@@ -86,7 +138,7 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Загрузка данных для форм (один раз)
+  // Загрузка справочников
   const loadFormData = async () => {
     try {
       const [ingredientsData, sizesData, doughTypesData] = await Promise.all([
@@ -108,8 +160,9 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Создание продукта
+  // 🔄 Создание продукта
   const handleCreate = async (data: CreateProductData) => {
+    // ✅ Раскомментировали валидацию
     const validationError = validateProductData(data);
     if (validationError) {
       toast.error(validationError);
@@ -117,28 +170,35 @@ export const useProducts = (): UseProductsReturn => {
     }
 
     try {
-      // Конвертируем null в undefined для API
       const apiData = {
-        ...data,
-        items: data.items?.map(item => ({
-          price: item.price,
-          sizeId: item.sizeId ?? undefined,
-          doughTypeId: item.doughTypeId ?? undefined,
+        name: data.name,
+        imageUrl: data.imageUrl,
+        categoryId: data.categoryId,
+        baseIngredients: data.baseIngredients,
+        addableIngredientIds: data.addableIngredientIds,
+        variants: data.variants?.map(variant => ({
+          variantId: variant.variantId,
+          price: variant.price,
+          sizeId: variant.sizeId ?? undefined,
+          typeId: variant.typeId ?? undefined,
         })),
       };
 
-      const newProduct = await Api.product_dashboard.createProduct(apiData);
+      const newProduct = (await Api.product_dashboard.createProduct(
+        apiData as CreateProductRequest,
+      )) as unknown as ProductResponseDTO;
 
-      // Нормализуем данные
-      const normalized = {
+      const normalized: Product = {
         ...newProduct,
-        items: newProduct.items.map(item => ({ ...item, price: Number(item.price) })),
-        ingredients: newProduct.ingredients?.map(ing => ({ ...ing, price: Number(ing.price) })),
+        variants: (newProduct.variants || []).map(v => ({ ...v, price: Number(v.price) })),
+        baseIngredients: newProduct.baseIngredients || [],
+        addableIngredientIds: newProduct.addableIngredientIds || [],
       };
 
       setProducts([normalized, ...products]);
       toast.success('Prodotto creato con successo');
     } catch (error: unknown) {
+      console.error(error);
       const message =
         error instanceof Error && 'response' in error
           ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -147,48 +207,54 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Обновление продукта
+  // 🔄 Обновление продукта
   const handleUpdate = async (id: number, data: UpdateProductData) => {
+    // ✅ Раскомментировали валидацию
     const validationError = validateProductData(data);
     if (validationError) {
       toast.error(validationError);
       return;
     }
 
-    // Добавляем ID в состояние загрузки
     setLoadingProductIds(prev => new Set(prev).add(id));
 
     try {
-      // Конвертируем items в правильный формат для API
-      const apiData: UpdateProductData = {
-        ...data,
-        items: data.items?.map(item => ({
-          id: item.id,
-          price: Number(item.price),
-          sizeId: item.sizeId,
-          doughTypeId: item.doughTypeId,
+      const apiData = {
+        name: data.name,
+        imageUrl: data.imageUrl,
+        categoryId: data.categoryId,
+        baseIngredients: data.baseIngredients,
+        addableIngredientIds: data.addableIngredientIds,
+        variants: data.variants?.map(variant => ({
+          variantId: variant.variantId,
+          price: Number(variant.price),
+          sizeId: variant.sizeId,
+          typeId: variant.typeId,
         })),
       };
 
-      const updated = await Api.product_dashboard.updateProduct(id, apiData);
+      const updated = (await Api.product_dashboard.updateProduct(
+        id,
+        apiData as UpdateProductRequest,
+      )) as unknown as ProductResponseDTO;
 
-      // Нормализуем данные
-      const normalized = {
+      const normalized: Product = {
         ...updated,
-        items: updated.items.map(item => ({ ...item, price: Number(item.price) })),
-        ingredients: updated.ingredients?.map(ing => ({ ...ing, price: Number(ing.price) })),
+        variants: (updated.variants || []).map(v => ({ ...v, price: Number(v.price) })),
+        baseIngredients: updated.baseIngredients || [],
+        addableIngredientIds: updated.addableIngredientIds || [],
       };
 
       setProducts(products.map(prod => (prod.id === id ? normalized : prod)));
       toast.success('Prodotto aggiornato');
     } catch (error: unknown) {
+      console.error(error);
       const message =
         error instanceof Error && 'response' in error
           ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
           : "Errore nell'aggiornamento";
       toast.error(message || "Errore nell'aggiornamento");
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -197,9 +263,7 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Удаление продукта
   const handleDelete = async (id: number) => {
-    // Добавляем ID в состояние загрузки
     setLoadingProductIds(prev => new Set(prev).add(id));
 
     try {
@@ -213,7 +277,6 @@ export const useProducts = (): UseProductsReturn => {
           : "Errore nell'eliminazione";
       toast.error(message || "Errore nell'eliminazione");
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -222,13 +285,11 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Загрузка категорий и данных форм при монтировании
   useEffect(() => {
     loadCategories();
     loadFormData();
   }, []);
 
-  // Загрузка продуктов при изменении категории
   useEffect(() => {
     if (categories.length > 0) {
       loadProducts();

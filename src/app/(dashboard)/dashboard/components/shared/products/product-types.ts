@@ -26,12 +26,12 @@ export type Ingredient = {
   imageUrl: string;
 };
 
-// Вариант продукта (ProductItem)
-export type ProductItem = {
-  id: number;
+// 🔄 REFACTOR: Структура варианта, как она хранится в JSON БД
+export type ProductVariant = {
+  variantId: number;
   price: number;
   sizeId: number | null;
-  doughTypeId: number | null;
+  typeId: number | null;
 };
 
 // Продукт
@@ -44,8 +44,20 @@ export type Product = {
     id: number;
     name: string;
   };
-  items: ProductItem[];
-  ingredients?: Ingredient[];
+  createdAt: string | Date;
+  updatedAt: string | Date;
+
+  // 🔄 REFACTOR: Новая структура данных
+  variants: ProductVariant[];
+  // baseIngredients хранит полные объекты, чтобы не делать лишних джоинов
+  baseIngredients: Array<{
+    id: number;
+    name: string;
+    imageUrl: string;
+    removable: boolean;
+    isDisabled: boolean;
+  }>;
+  addableIngredientIds: number[];
 };
 
 // Данные для создания продукта
@@ -53,11 +65,24 @@ export type CreateProductData = {
   name: string;
   imageUrl: string;
   categoryId: number;
-  ingredientIds?: number[];
-  items?: Array<{
+
+  // 🔄 REFACTOR: Отправляем полные объекты сразу
+  baseIngredients?: Array<{
+    id: number;
+    name: string;
+    imageUrl: string;
+    removable: boolean;
+    isDisabled: boolean;
+  }>;
+
+  addableIngredientIds?: number[];
+
+  // 🔄 REFACTOR: Генерируем variantId и используем typeId
+  variants?: Array<{
+    variantId: number;
     price: number;
     sizeId?: number | undefined;
-    doughTypeId?: number | undefined;
+    typeId?: number | undefined;
   }>;
 };
 
@@ -66,11 +91,23 @@ export type UpdateProductData = {
   name: string;
   imageUrl: string;
   categoryId: number;
-  ingredientIds?: number[];
-  items?: Array<{
-    id?: number;
+
+  // 🔄 REFACTOR: Полные объекты для обновления
+  baseIngredients?: Array<{
+    id: number;
+    name: string;
+    imageUrl: string;
+    removable: boolean;
+    isDisabled: boolean;
+  }>;
+
+  addableIngredientIds?: number[];
+
+  // 🔄 REFACTOR: Соответствие БД
+  variants?: Array<{
+    variantId: number; // Обязательно нужен ID для обновления
     price: number;
     sizeId?: number | null;
-    doughTypeId?: number | null;
+    typeId?: number | null;
   }>;
 };

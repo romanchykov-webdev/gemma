@@ -37,9 +37,9 @@ export const ProductEditForm: React.FC<Props> = ({
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
   const [categoryId, setCategoryId] = useState(product.categoryId);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>(
-    product.ingredients?.map(ing => ing.id) || [],
+    product.baseIngredients?.map(ing => ing.id) || [],
   );
-  const [variants, setVariants] = useState(product.items);
+  const [variants, setVariants] = useState(product.variants);
   const [showIngredients, setShowIngredients] = useState(false);
 
   // console.log(ProductEditForm, { product, categories, ingredients, sizes, doughTypes });
@@ -49,12 +49,22 @@ export const ProductEditForm: React.FC<Props> = ({
       name: name.trim(),
       imageUrl: imageUrl.trim(),
       categoryId,
-      ingredientIds: selectedIngredientIds,
-      items: variants.map(v => ({
-        id: v.id,
+      // ✅ Преобразуем selectedIngredientIds в baseIngredients
+      baseIngredients: ingredients
+        .filter(ing => selectedIngredientIds.includes(ing.id))
+        .map(ing => ({
+          id: ing.id,
+          name: ing.name,
+          imageUrl: ing.imageUrl,
+          removable: true,
+          isDisabled: false,
+        })),
+      addableIngredientIds: [],
+      variants: variants.map(v => ({
+        variantId: v.variantId,
         price: Number(v.price),
         sizeId: v.sizeId,
-        doughTypeId: v.doughTypeId,
+        typeId: v.typeId,
       })),
     });
   };
