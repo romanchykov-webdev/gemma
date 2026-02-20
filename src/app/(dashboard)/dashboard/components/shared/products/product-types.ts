@@ -92,6 +92,8 @@ export type UpdateProductData = {
   imageUrl: string;
   categoryId: number;
 
+  previousImageUrl?: string; // Для удаления старой картинки
+
   // 🔄 REFACTOR: Полные объекты для обновления
   baseIngredients?: Array<{
     id: number;

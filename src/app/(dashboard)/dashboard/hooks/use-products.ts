@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Api } from '../../../../../services/api-client';
+
+import { deleteImage } from '../lib/supabase';
+
 import {
   Category,
   CreateProductData,
@@ -162,7 +165,6 @@ export const useProducts = (): UseProductsReturn => {
 
   // 🔄 Создание продукта
   const handleCreate = async (data: CreateProductData) => {
-    // ✅ Раскомментировали валидацию
     const validationError = validateProductData(data);
     if (validationError) {
       toast.error(validationError);
@@ -195,7 +197,8 @@ export const useProducts = (): UseProductsReturn => {
         addableIngredientIds: newProduct.addableIngredientIds || [],
       };
 
-      setProducts([normalized, ...products]);
+      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
+      setProducts(prev => [normalized, ...prev]);
       toast.success('Prodotto creato con successo');
     } catch (error: unknown) {
       console.error(error);
@@ -209,7 +212,6 @@ export const useProducts = (): UseProductsReturn => {
 
   // 🔄 Обновление продукта
   const handleUpdate = async (id: number, data: UpdateProductData) => {
-    // ✅ Раскомментировали валидацию
     const validationError = validateProductData(data);
     if (validationError) {
       toast.error(validationError);
@@ -238,6 +240,18 @@ export const useProducts = (): UseProductsReturn => {
         apiData as UpdateProductRequest,
       )) as unknown as ProductResponseDTO;
 
+      // 👇========== НОВАЯ ЛОГИКА: ОЧИСТКА SUPABASE ==========👇
+      // Если передали старую картинку, и она отличается от новой, удаляем старую
+      if (data.previousImageUrl && data.previousImageUrl !== data.imageUrl) {
+        try {
+          console.log('[CLEANUP] Удаляем старую картинку:', data.previousImageUrl);
+          await deleteImage(data.previousImageUrl);
+        } catch (err) {
+          console.error('[CLEANUP] Ошибка при удалении старой картинки:', err);
+        }
+      }
+      // 👆======================================================👆
+
       const normalized: Product = {
         ...updated,
         variants: (updated.variants || []).map(v => ({ ...v, price: Number(v.price) })),
@@ -245,7 +259,8 @@ export const useProducts = (): UseProductsReturn => {
         addableIngredientIds: updated.addableIngredientIds || [],
       };
 
-      setProducts(products.map(prod => (prod.id === id ? normalized : prod)));
+      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
+      setProducts(prev => prev.map(prod => (prod.id === id ? normalized : prod)));
       toast.success('Prodotto aggiornato');
     } catch (error: unknown) {
       console.error(error);
@@ -268,7 +283,9 @@ export const useProducts = (): UseProductsReturn => {
 
     try {
       await Api.product_dashboard.deleteProduct(id);
-      setProducts(products.filter(prod => prod.id !== id));
+
+      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
+      setProducts(prev => prev.filter(prod => prod.id !== id));
       toast.success('Prodotto eliminato');
     } catch (error: unknown) {
       const message =

@@ -32,6 +32,7 @@ export { ProductCreateFormDashboard } from './products/product-create-form-dashb
 export { ProductIngredientsDashboard } from './products/product-create-form-dashboard/product-ingredients-dashboard';
 export { ProductVariantsDashboard } from './products/product-create-form-dashboard/product-variants-dashboard';
 export { ProductVariantsEditTable } from './products/product-create-form-dashboard/product-variants-edit-table';
+export { UniversalIngredientsSelector } from './products/product-create-form-dashboard/universal-ingredients-selector';
 export { ProductImagePreview } from './products/product-image-preview';
 // users
 export { UsersDashboard } from './users-dashboard';
