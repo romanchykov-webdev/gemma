@@ -4,6 +4,7 @@ import { searchProductsLocally } from '@/lib/search-utils';
 import { cn } from '@/lib/utils';
 import { useProductsStore } from '@/store';
 import { Loader2, Search } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import React, { JSX, useRef, useState } from 'react';
 import { useClickAway, useDebounce } from 'react-use';
@@ -87,11 +88,18 @@ export const SearchInput: React.FC<ISearchInputProps> = (): JSX.Element => {
                 className="flex items-center  w-full hover:bg-primary/10 cursor-pointer rounded-sm pl-5"
               >
                 {/* ✅ Ленивая загрузка для превью в поиске */}
-                <img
+                {/* <img
                   src={product.imageUrl}
                   alt={product.name}
                   className="rounded-sm h-8 w-8"
                   loading="lazy"
+                /> */}
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  width={32}
+                  height={32}
+                  className="rounded-sm object-cover w-8 h-8"
                 />
                 <div className="px-3 py-2 ">{product.name}</div>
               </Link>
