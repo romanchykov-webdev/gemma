@@ -6,6 +6,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 import { slugify } from '@/lib/slugify'; // 👈 Добавляем импорт
+import Image from 'next/image';
 import { ImageUpload } from '../../image-upload';
 import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from '../product-types';
 import { ProductVariantsDashboard } from './product-variants-dashboard';
@@ -172,7 +173,13 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
         <div className="flex items-center justify-center ">
           {imageUrl ? (
             <div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
-              <img src={imageUrl} alt="Preview" className=" h-50 object-cover" />
+              <Image
+                src={imageUrl}
+                alt="Preview"
+                width={300}
+                height={300}
+                className="max-h-48 w-auto object-contain drop-shadow-md"
+              />
               <Button
                 type="button"
                 onClick={() => setImageUrl('')}

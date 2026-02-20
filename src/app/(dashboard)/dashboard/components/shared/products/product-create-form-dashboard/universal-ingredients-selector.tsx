@@ -9,6 +9,7 @@ import {
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
+import Image from 'next/image';
 import React from 'react';
 import { Ingredient } from '../product-types';
 
@@ -106,9 +107,11 @@ export const UniversalIngredientsSelector: React.FC<UniversalIngredientsSelector
 
                     <div className="h-10 w-10 shrink-0 flex items-center justify-center">
                       {ingredient.imageUrl ? (
-                        <img
+                        <Image
                           src={ingredient.imageUrl}
                           alt={ingredient.name}
+                          width={40}
+                          height={40}
                           className="max-h-full max-w-full object-contain drop-shadow-sm"
                         />
                       ) : (

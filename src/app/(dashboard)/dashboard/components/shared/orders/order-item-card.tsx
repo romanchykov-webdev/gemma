@@ -1,6 +1,7 @@
 'use client';
 
 import { Package } from 'lucide-react';
+import Image from 'next/image';
 import React from 'react';
 import { OrderItem } from './order-types';
 
@@ -19,9 +20,11 @@ export const OrderItemCard: React.FC<Props> = ({ item }) => {
         {/* Изображение продукта */}
         <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white border">
           {item.productItem.product.imageUrl ? (
-            <img
+            <Image
               src={item.productItem.product.imageUrl}
               alt={item.productItem.product.name}
+              width={64}
+              height={64}
               className="w-full h-full object-cover"
             />
           ) : (

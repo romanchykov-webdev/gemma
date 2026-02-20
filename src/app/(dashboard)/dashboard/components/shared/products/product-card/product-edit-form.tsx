@@ -16,6 +16,8 @@ import {
   UpdateProductData,
 } from '../product-types';
 
+import Image from 'next/image';
+
 interface Props {
   product: Product;
   categories: Category[];
@@ -142,10 +144,12 @@ export const ProductEditForm: React.FC<Props> = ({
         <div className="flex items-center justify-center">
           {imageUrl ? (
             <div className="relative flex p-2 w-full items-center justify-center h-full min-h-[200px] border rounded-lg overflow-hidden bg-gray-50">
-              <img
+              <Image
                 src={imageUrl}
                 alt="Preview"
-                className="max-h-48 object-contain drop-shadow-md"
+                width={300}
+                height={300}
+                className="max-h-48 w-auto object-contain drop-shadow-md"
               />
               <Button
                 type="button"
