@@ -47,3 +47,5 @@ export { StoryCreateForm } from './stories/stories-create-form';
 export { ImageUpload } from './image-upload';
 // loading overlay
 export { LoadingOverlay } from './loading-overlay';
+// product image section
+export { ProductImageSection } from './products/product-image-section';

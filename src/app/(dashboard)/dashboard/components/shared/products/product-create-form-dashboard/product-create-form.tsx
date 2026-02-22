@@ -1,18 +1,17 @@
 'use client';
 
-import { Button, Input } from '@/components/ui';
-import { ImageIcon, Loader2, Plus, X } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { slugify } from '@/lib/slugify'; // 👈 Добавляем импорт
-import Image from 'next/image';
-import { ImageUpload } from '../../image-upload';
+import { slugify } from '@/lib/slugify';
 import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from '../product-types';
 import { ProductVariantsDashboard } from './product-variants-dashboard';
 import { UniversalIngredientsSelector } from './universal-ingredients-selector';
 
 import { LoadingOverlay } from '../../loading-overlay';
+import { ProductImageSection } from '../product-image-section';
 
 interface Props {
   categories: Category[];
@@ -150,54 +149,17 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 
       <h3 className="font-semibold">Aggiungi nuovo prodotto</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="flex flex-col gap-3">
-          <Input
-            placeholder="Nome prodotto..."
-            value={name}
-            onChange={e => setName(e.target.value)}
-            disabled={isCreating}
-          />
-          <ImageUpload
-            imageUrl={imageUrl}
-            onImageChange={setImageUrl}
-            folder={uploadFolder}
-            customFileName={uploadFileName}
-            label="Immagine prodotto"
-            required
-            isUploading={isUploading}
-            setIsUploading={setIsUploading}
-          />
-        </div>
-
-        <div className="flex items-center justify-center ">
-          {imageUrl ? (
-            <div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
-              <Image
-                src={imageUrl}
-                alt="Preview"
-                width={300}
-                height={300}
-                className="max-h-48 w-auto object-contain drop-shadow-md"
-              />
-              <Button
-                type="button"
-                onClick={() => setImageUrl('')}
-                size="sm"
-                variant="destructive"
-                className="absolute top-2 right-2"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="border-2 border-dashed w-full h-full flex flex-col items-center justify-center rounded p-8 text-center">
-              <ImageIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">Preview image</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProductImageSection
+        name={name}
+        onNameChange={setName}
+        nameDisabled={isCreating}
+        imageUrl={imageUrl}
+        onImageChange={setImageUrl}
+        uploadFolder={uploadFolder}
+        uploadFileName={uploadFileName}
+        isUploading={isUploading}
+        onUploadingChange={setIsUploading}
+      />
 
       <div className="flex gap-2">
         <select
