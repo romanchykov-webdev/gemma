@@ -28,30 +28,6 @@ export const validateProductData = (
 };
 
 /**
- * Валидация вариантов продукта
- * 🔄 REFACTOR: Используется для проверки массива variants
- */
-export const validateProductVariants = (
-  variants: Array<{ price: number; sizeId?: number | null; doughTypeId?: number | null }>,
-): string | null => {
-  if (!variants || variants.length === 0) {
-    return 'Aggiungi almeno una variante del prodotto';
-  }
-
-  // Проверяем цену
-  const invalidPrice = variants.find(v => !v.price || Number(v.price) <= 0);
-  if (invalidPrice) {
-    return 'Tutte le varianti devono avere un prezzo valido';
-  }
-
-  // Проверяем уникальность комбинаций (опционально, но полезно)
-  // Например, нельзя создать две пиццы "Большая + Традиционное"
-  // Но пока оставим простую валидацию
-
-  return null;
-};
-
-/**
  * Форматирование цены
  */
 export const formatPrice = (price: number | { toString(): string }): string => {
@@ -72,7 +48,7 @@ export const getCategoryName = (
 
 /**
  * Получение количества вариантов
- * 🔄 REFACTOR: items -> variants
+
  */
 export const getVariantsCount = (product: { variants?: unknown[] }): number => {
   return product.variants?.length || 0;
@@ -80,7 +56,7 @@ export const getVariantsCount = (product: { variants?: unknown[] }): number => {
 
 /**
  * Проверка наличия ингредиентов
- * 🔄 REFACTOR: ingredients -> baseIngredients
+
  */
 export const hasIngredients = (product: { baseIngredients?: unknown[] }): boolean => {
   return (product.baseIngredients?.length || 0) > 0;

@@ -113,3 +113,61 @@ export type UpdateProductData = {
     typeId?: number | null;
   }>;
 };
+
+// 👇========== DTO (Data Transfer Objects) ==========👇
+
+export interface ProductVariantDTO {
+  variantId: number;
+  price: number | string;
+  sizeId: number | null;
+  typeId: number | null;
+}
+
+export interface BaseIngredientDTO {
+  id: number;
+  name: string;
+  imageUrl: string;
+  removable: boolean;
+  isDisabled: boolean;
+}
+
+export interface ProductResponseDTO {
+  id: number;
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  category: { id: number; name: string };
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  variants: ProductVariantDTO[];
+  baseIngredients: BaseIngredientDTO[];
+  addableIngredientIds: number[];
+}
+
+export interface CreateProductRequest {
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  baseIngredients?: BaseIngredientDTO[];
+  addableIngredientIds?: number[];
+  variants?: Array<{
+    variantId: number;
+    price: number;
+    sizeId?: number;
+    typeId?: number;
+  }>;
+}
+
+export interface UpdateProductRequest {
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+  baseIngredients?: BaseIngredientDTO[];
+  addableIngredientIds?: number[];
+  variants?: Array<{
+    variantId: number;
+    price: number;
+    sizeId?: number | null;
+    typeId?: number | null;
+  }>;
+}

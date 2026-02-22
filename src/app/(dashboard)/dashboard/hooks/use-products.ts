@@ -9,41 +9,16 @@ import { deleteImage } from '../lib/supabase';
 import {
   Category,
   CreateProductData,
+  CreateProductRequest,
   DoughType,
   Ingredient,
   Product,
+  ProductResponseDTO,
   ProductSize,
   UpdateProductData,
+  UpdateProductRequest,
 } from '../components/shared/products/product-types';
 import { validateProductData } from '../components/shared/products/product-utils';
-
-// 🛠️ DTO (Data Transfer Object)
-interface ProductVariantDTO {
-  variantId: number;
-  price: number | string;
-  sizeId: number | null;
-  typeId: number | null;
-}
-interface BaseIngredientDTO {
-  id: number;
-  name: string;
-  imageUrl: string;
-  removable: boolean;
-  isDisabled: boolean;
-}
-
-interface ProductResponseDTO {
-  id: number;
-  name: string;
-  imageUrl: string;
-  categoryId: number;
-  category: { id: number; name: string };
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  variants: ProductVariantDTO[];
-  baseIngredients: BaseIngredientDTO[];
-  addableIngredientIds: number[];
-}
 
 interface UseProductsReturn {
   categories: Category[];
@@ -58,35 +33,6 @@ interface UseProductsReturn {
   handleCreate: (data: CreateProductData) => Promise<void>;
   handleUpdate: (id: number, data: UpdateProductData) => Promise<void>;
   handleDelete: (id: number) => Promise<void>;
-}
-
-// 🔄 API Request Types
-interface CreateProductRequest {
-  name: string;
-  imageUrl: string;
-  categoryId: number;
-  baseIngredients?: BaseIngredientDTO[];
-  addableIngredientIds?: number[];
-  variants?: Array<{
-    variantId: number;
-    price: number;
-    sizeId?: number;
-    typeId?: number;
-  }>;
-}
-
-interface UpdateProductRequest {
-  name: string;
-  imageUrl: string;
-  categoryId: number;
-  baseIngredients?: BaseIngredientDTO[];
-  addableIngredientIds?: number[];
-  variants?: Array<{
-    variantId: number;
-    price: number;
-    sizeId?: number | null;
-    typeId?: number | null;
-  }>;
 }
 
 export const useProducts = (): UseProductsReturn => {
@@ -197,7 +143,6 @@ export const useProducts = (): UseProductsReturn => {
         addableIngredientIds: newProduct.addableIngredientIds || [],
       };
 
-      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
       setProducts(prev => [normalized, ...prev]);
       toast.success('Prodotto creato con successo');
     } catch (error: unknown) {
@@ -240,8 +185,6 @@ export const useProducts = (): UseProductsReturn => {
         apiData as UpdateProductRequest,
       )) as unknown as ProductResponseDTO;
 
-      // 👇========== НОВАЯ ЛОГИКА: ОЧИСТКА SUPABASE ==========👇
-      // Если передали старую картинку, и она отличается от новой, удаляем старую
       if (data.previousImageUrl && data.previousImageUrl !== data.imageUrl) {
         try {
           console.log('[CLEANUP] Удаляем старую картинку:', data.previousImageUrl);
@@ -250,7 +193,6 @@ export const useProducts = (): UseProductsReturn => {
           console.error('[CLEANUP] Ошибка при удалении старой картинки:', err);
         }
       }
-      // 👆======================================================👆
 
       const normalized: Product = {
         ...updated,
@@ -259,7 +201,6 @@ export const useProducts = (): UseProductsReturn => {
         addableIngredientIds: updated.addableIngredientIds || [],
       };
 
-      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
       setProducts(prev => prev.map(prod => (prod.id === id ? normalized : prod)));
       toast.success('Prodotto aggiornato');
     } catch (error: unknown) {
@@ -284,7 +225,6 @@ export const useProducts = (): UseProductsReturn => {
     try {
       await Api.product_dashboard.deleteProduct(id);
 
-      // ✅ FIX: Функциональное обновление (берем свежий список 'prev')
       setProducts(prev => prev.filter(prod => prod.id !== id));
       toast.success('Prodotto eliminato');
     } catch (error: unknown) {
