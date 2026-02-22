@@ -2,7 +2,7 @@
 
 import { Button, Input } from '@/components/ui';
 import { slugify } from '@/lib/slugify'; // 👈 Добавляем импорт
-import { Check, ImageIcon, Loader2, X } from 'lucide-react';
+import { Check, ImageIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { ImageUpload } from '../../image-upload';
 import { ProductVariantsEditTable } from '../product-create-form-dashboard/product-variants-edit-table';
@@ -17,6 +17,7 @@ import {
 } from '../product-types';
 
 import Image from 'next/image';
+import { LoadingOverlay } from '../../loading-overlay';
 
 interface Props {
   product: Product;
@@ -116,11 +117,8 @@ export const ProductEditForm: React.FC<Props> = ({
 
   return (
     <div className="bg-white border rounded-lg p-4 space-y-4 shadow-sm relative overflow-hidden">
-      {isUploading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500/50 flex items-center justify-center z-20">
-          <Loader2 size={50} className="animate-spin text-white" />
-        </div>
-      )}
+      {/* loading overlay */}
+      <LoadingOverlay isVisible={isUploading} className="z-20" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col gap-3">

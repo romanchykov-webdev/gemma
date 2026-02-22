@@ -45,3 +45,5 @@ export { StoryCard } from './stories/stories-card';
 export { StoryCreateForm } from './stories/stories-create-form';
 // image
 export { ImageUpload } from './image-upload';
+// loading overlay
+export { LoadingOverlay } from './loading-overlay';

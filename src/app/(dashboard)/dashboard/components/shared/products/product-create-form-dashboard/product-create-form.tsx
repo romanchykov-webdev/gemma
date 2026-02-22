@@ -12,6 +12,8 @@ import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from 
 import { ProductVariantsDashboard } from './product-variants-dashboard';
 import { UniversalIngredientsSelector } from './universal-ingredients-selector';
 
+import { LoadingOverlay } from '../../loading-overlay';
+
 interface Props {
   categories: Category[];
   ingredients: Ingredient[];
@@ -143,11 +145,9 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 
   return (
     <div className="bg-white p-4 rounded-lg border space-y-3 relative overflow-hidden">
-      {isUploading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500/50 flex items-center justify-center z-20">
-          <Loader2 size={50} className=" animate-spin text-white" />
-        </div>
-      )}
+      {/* loading overlay */}
+      <LoadingOverlay isVisible={isUploading} className="z-20" />
+
       <h3 className="font-semibold">Aggiungi nuovo prodotto</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
