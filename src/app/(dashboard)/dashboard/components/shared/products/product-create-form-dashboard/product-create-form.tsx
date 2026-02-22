@@ -10,6 +10,7 @@ import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from 
 import { ProductVariantsDashboard } from './product-variants-dashboard';
 import { UniversalIngredientsSelector } from './universal-ingredients-selector';
 
+import { useIngredientsSelection } from '@/app/(dashboard)/dashboard/hooks';
 import { LoadingOverlay } from '../../loading-overlay';
 import { ProductImageSection } from '../product-image-section';
 
@@ -38,15 +39,21 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
   // const uploadFileName = name.trim() ? slugify(name) : undefined;
   const uploadFileName = name.trim() ? name : undefined;
 
-  // ... (остальные стейты и методы без изменений)
   const [variants, setVariants] = useState<
     { sizeId: number | null; typeId: number | null; price: number }[]
   >([]);
   const [showVariants, setShowVariants] = useState(false);
-  const [baseIngredients, setBaseIngredients] = useState<
-    Array<{ id: number; removable: boolean; isDisabled: boolean }>
-  >([]);
-  const [addableIngredientIds, setAddableIngredientIds] = useState<number[]>([]);
+
+  const {
+    baseIngredients,
+    addableIngredientIds,
+    toggleBaseIngredient,
+    toggleRemovable,
+    toggleAddableIngredient,
+    resetIngredients,
+    enrichedBaseIngredients,
+  } = useIngredientsSelection({ availableIngredients: ingredients });
+
   const [isCreating, setIsCreating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -69,26 +76,6 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
     setVariants(updated);
   };
 
-  const toggleBaseIngredient = (id: number) => {
-    setBaseIngredients(prev => {
-      const exists = prev.some(ing => ing.id === id);
-      if (exists) return prev.filter(ing => ing.id !== id);
-      return [...prev, { id, removable: true, isDisabled: false }];
-    });
-  };
-
-  const toggleRemovable = (id: number) => {
-    setBaseIngredients(prev =>
-      prev.map(ing => (ing.id === id ? { ...ing, removable: !ing.removable } : ing)),
-    );
-  };
-
-  const toggleAddableIngredient = (id: number) => {
-    setAddableIngredientIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
-    );
-  };
-
   const handleCreate = async () => {
     if (!name.trim()) return toast.error('Inserisci il nome del prodotto');
     if (!imageUrl.trim()) return toast.error("Carica l'immagine del prodotto");
@@ -96,21 +83,6 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 
     try {
       setIsCreating(true);
-
-      const enrichedBaseIngredients = baseIngredients
-        .map(selected => {
-          const ing = ingredients.find(i => i.id === selected.id);
-          if (!ing) return null;
-
-          return {
-            id: ing.id,
-            name: ing.name,
-            imageUrl: ing.imageUrl,
-            removable: selected.removable,
-            isDisabled: selected.isDisabled,
-          };
-        })
-        .filter((ing): ing is NonNullable<typeof ing> => ing !== null);
 
       const formattedVariants = variants.map((v, index) => ({
         variantId: index + 1,
@@ -132,8 +104,7 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
       setImageUrl('');
       setCategoryId(categories[0]?.id || 0);
       setVariants([]);
-      setBaseIngredients([]);
-      setAddableIngredientIds([]);
+      resetIngredients();
       setShowVariants(false);
     } catch (error) {
       console.error(error);

@@ -19,6 +19,8 @@ import { LoadingOverlay } from '../../loading-overlay';
 
 import { ProductImageSection } from '../product-image-section';
 
+import { useIngredientsSelection } from '@/app/(dashboard)/dashboard/hooks';
+
 interface Props {
   product: Product;
   categories: Category[];
@@ -50,55 +52,26 @@ export const ProductEditForm: React.FC<Props> = ({
   // const uploadFileName = name.trim() ? slugify(name) : undefined;
   const uploadFileName = name.trim() ? name : undefined;
 
-  // ... (остальные стейты и методы)
-  const [baseIngredients, setBaseIngredients] = useState<
-    Array<{ id: number; removable: boolean; isDisabled: boolean }>
-  >(
-    product.baseIngredients?.map(ing => ({
-      id: ing.id,
-      removable: ing.removable,
-      isDisabled: ing.isDisabled,
-    })) || [],
-  );
-  const [addableIngredientIds, setAddableIngredientIds] = useState<number[]>(
-    product.addableIngredientIds || [],
-  );
+  const {
+    baseIngredients,
+    addableIngredientIds,
+    toggleBaseIngredient,
+    toggleRemovable,
+    toggleAddableIngredient,
+    enrichedBaseIngredients,
+  } = useIngredientsSelection({
+    availableIngredients: ingredients,
 
-  const toggleBaseIngredient = (id: number) => {
-    setBaseIngredients(prev => {
-      const exists = prev.some(ing => ing.id === id);
-      if (exists) return prev.filter(ing => ing.id !== id);
-      return [...prev, { id, removable: true, isDisabled: false }];
-    });
-  };
-
-  const toggleRemovable = (id: number) => {
-    setBaseIngredients(prev =>
-      prev.map(ing => (ing.id === id ? { ...ing, removable: !ing.removable } : ing)),
-    );
-  };
-
-  const toggleAddableIngredient = (id: number) => {
-    setAddableIngredientIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
-    );
-  };
+    initialBaseIngredients:
+      product.baseIngredients?.map(ing => ({
+        id: ing.id,
+        removable: ing.removable,
+        isDisabled: ing.isDisabled,
+      })) || [],
+    initialAddableIngredientIds: product.addableIngredientIds || [],
+  });
 
   const handleSubmit = () => {
-    const enrichedBaseIngredients = baseIngredients
-      .map(selected => {
-        const ing = ingredients.find(i => i.id === selected.id);
-        if (!ing) return null;
-        return {
-          id: ing.id,
-          name: ing.name,
-          imageUrl: ing.imageUrl,
-          removable: selected.removable,
-          isDisabled: selected.isDisabled,
-        };
-      })
-      .filter((ing): ing is NonNullable<typeof ing> => ing !== null);
-
     onSave({
       name: name.trim(),
       imageUrl: imageUrl.trim(),
