@@ -13,7 +13,6 @@ import {
   DoughType,
   Ingredient,
   Product,
-  ProductResponseDTO,
   ProductSize,
   UpdateProductData,
   UpdateProductRequest,
@@ -59,14 +58,12 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // 🔄 Загрузка продуктов
-  const loadProducts = async () => {
+  // 🔄 Загрузка продуктов (с защитой от Race Condition)
+  const loadProducts = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
 
-      const data = (await Api.product_dashboard.getProducts(
-        selectedCategoryId || undefined,
-      )) as unknown as ProductResponseDTO[];
+      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined);
 
       const normalizedData: Product[] = data.map(product => ({
         ...product,
@@ -78,12 +75,24 @@ export const useProducts = (): UseProductsReturn => {
         addableIngredientIds: product.addableIngredientIds || [],
       }));
 
+      // Если запрос был отменен (компонент размонтирован или id сменился), не обновляем стейт
+      if (signal?.aborted) return;
+
       setProducts(normalizedData);
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        (error.name === 'AbortError' || error.name === 'CanceledError')
+      ) {
+        console.log('Загрузка продуктов отменена (смена категории)');
+        return;
+      }
       console.error('Errore nel caricamento dei prodotti:', error);
       toast.error('Impossibile caricare i prodotti');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -132,9 +141,7 @@ export const useProducts = (): UseProductsReturn => {
         })),
       };
 
-      const newProduct = (await Api.product_dashboard.createProduct(
-        apiData as CreateProductRequest,
-      )) as unknown as ProductResponseDTO;
+      const newProduct = await Api.product_dashboard.createProduct(apiData as CreateProductRequest);
 
       const normalized: Product = {
         ...newProduct,
@@ -180,10 +187,10 @@ export const useProducts = (): UseProductsReturn => {
         })),
       };
 
-      const updated = (await Api.product_dashboard.updateProduct(
+      const updated = await Api.product_dashboard.updateProduct(
         id,
         apiData as UpdateProductRequest,
-      )) as unknown as ProductResponseDTO;
+      );
 
       if (data.previousImageUrl && data.previousImageUrl !== data.imageUrl) {
         try {
@@ -248,9 +255,19 @@ export const useProducts = (): UseProductsReturn => {
   }, []);
 
   useEffect(() => {
-    if (categories.length > 0) {
-      loadProducts();
-    }
+    // Ждем, пока загрузятся категории, прежде чем грузить продукты
+    if (categories.length === 0) return;
+
+    // Создаем "пульт управления" запросом
+    const controller = new AbortController();
+
+    // Передаем сигнал от пульта в функцию загрузки
+    loadProducts(controller.signal);
+
+    // Функция очистки: срабатывает КАЖДЫЙ РАЗ, когда меняется selectedCategoryId
+    return () => {
+      controller.abort(); // Нажимаем кнопку "Отмена" на пульте для старого запроса
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategoryId, categories]);
 

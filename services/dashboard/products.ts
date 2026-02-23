@@ -1,4 +1,4 @@
-import { Product } from '@/app/(dashboard)/dashboard/components/shared/products/product-types';
+import { ProductResponseDTO } from '@/app/(dashboard)/dashboard/components/shared/products/product-types';
 import { axiosInstance } from '../instance';
 
 // 🔄 Типы для API запросов
@@ -41,15 +41,17 @@ interface UpdateProductRequest {
 }
 
 // ✅ GET - Получение продуктов
-export const getProducts = async (categoryId?: number): Promise<Product[]> => {
+export const getProducts = async (categoryId?: number): Promise<ProductResponseDTO[]> => {
   const url = categoryId ? `/dashboard/products?categoryId=${categoryId}` : '/dashboard/products';
-  const { data } = await axiosInstance.get<Product[]>(url);
+  const { data } = await axiosInstance.get<ProductResponseDTO[]>(url);
   return data;
 };
 
 // ✅ POST - Создание продукта
-export const createProduct = async (productData: CreateProductRequest): Promise<Product> => {
-  const { data } = await axiosInstance.post<Product>('/dashboard/products', productData);
+export const createProduct = async (
+  productData: CreateProductRequest,
+): Promise<ProductResponseDTO> => {
+  const { data } = await axiosInstance.post<ProductResponseDTO>('/dashboard/products', productData);
   return data;
 };
 
@@ -57,8 +59,11 @@ export const createProduct = async (productData: CreateProductRequest): Promise<
 export const updateProduct = async (
   id: number,
   productData: UpdateProductRequest,
-): Promise<Product> => {
-  const { data } = await axiosInstance.patch<Product>(`/dashboard/products/${id}`, productData);
+): Promise<ProductResponseDTO> => {
+  const { data } = await axiosInstance.patch<ProductResponseDTO>(
+    `/dashboard/products/${id}`,
+    productData,
+  );
   return data;
 };
 
