@@ -32,7 +32,8 @@ export const validateProductData = (
  */
 export const formatPrice = (price: number | { toString(): string }): string => {
   const numericPrice = typeof price === 'number' ? price : Number(price);
-  return `${isNaN(numericPrice) ? 0 : numericPrice.toFixed(2)} €`;
+
+  return `${isNaN(numericPrice) ? '0.00' : numericPrice.toFixed(2)} €`;
 };
 
 /**
