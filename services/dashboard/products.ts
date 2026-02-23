@@ -41,9 +41,12 @@ interface UpdateProductRequest {
 }
 
 // ✅ GET - Получение продуктов
-export const getProducts = async (categoryId?: number): Promise<ProductResponseDTO[]> => {
+export const getProducts = async (
+  categoryId?: number,
+  options?: { signal?: AbortSignal },
+): Promise<ProductResponseDTO[]> => {
   const url = categoryId ? `/dashboard/products?categoryId=${categoryId}` : '/dashboard/products';
-  const { data } = await axiosInstance.get<ProductResponseDTO[]>(url);
+  const { data } = await axiosInstance.get<ProductResponseDTO[]>(url, { signal: options?.signal });
   return data;
 };
 

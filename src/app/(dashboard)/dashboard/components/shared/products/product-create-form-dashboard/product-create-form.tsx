@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui';
 import { Loader2, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import { slugify } from '@/lib/slugify';
@@ -36,13 +36,15 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
   // ========== ЛОГИКА ДЛЯ ПУТЕЙ И ИМЕН ==========
   const currentCategory = categories.find(c => c.id === categoryId);
   const uploadFolder = slugify(currentCategory?.name ?? 'products');
-  // const uploadFileName = name.trim() ? slugify(name) : undefined;
   const uploadFileName = name.trim() ? name : undefined;
 
   const [variants, setVariants] = useState<
-    { sizeId: number | null; typeId: number | null; price: number }[]
+    { variantId: number; sizeId: number | null; typeId: number | null; price: number }[]
   >([]);
   const [showVariants, setShowVariants] = useState(false);
+
+  // Счетчик для новых вариантов
+  const nextVariantId = useRef(1);
 
   const {
     baseIngredients,
@@ -60,7 +62,11 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
   const addVariant = () => {
     const defaultSizeId = sizes[0]?.id || null;
     const defaultTypeId = doughTypes[0]?.id || null;
-    setVariants([...variants, { sizeId: defaultSizeId, typeId: defaultTypeId, price: 0 }]);
+    setVariants([
+      ...variants,
+      { variantId: nextVariantId.current, sizeId: defaultSizeId, typeId: defaultTypeId, price: 0 },
+    ]);
+    nextVariantId.current += 1;
     setShowVariants(true);
   };
 
@@ -84,8 +90,8 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
     try {
       setIsCreating(true);
 
-      const formattedVariants = variants.map((v, index) => ({
-        variantId: index + 1,
+      const formattedVariants = variants.map(v => ({
+        variantId: v.variantId,
         price: Number(v.price),
         sizeId: v.sizeId ?? undefined,
         typeId: v.typeId ?? undefined,

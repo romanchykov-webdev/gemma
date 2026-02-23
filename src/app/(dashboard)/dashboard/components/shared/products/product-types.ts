@@ -44,19 +44,13 @@ export type Product = {
     id: number;
     name: string;
   };
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: string;
+  updatedAt: string;
 
   // 🔄 REFACTOR: Новая структура данных
   variants: ProductVariant[];
   // baseIngredients хранит полные объекты, чтобы не делать лишних джоинов
-  baseIngredients: Array<{
-    id: number;
-    name: string;
-    imageUrl: string;
-    removable: boolean;
-    isDisabled: boolean;
-  }>;
+  baseIngredients: BaseIngredientDTO[];
   addableIngredientIds: number[];
 };
 
@@ -67,13 +61,7 @@ export type CreateProductData = {
   categoryId: number;
 
   // 🔄 REFACTOR: Отправляем полные объекты сразу
-  baseIngredients?: Array<{
-    id: number;
-    name: string;
-    imageUrl: string;
-    removable: boolean;
-    isDisabled: boolean;
-  }>;
+  baseIngredients?: BaseIngredientDTO[];
 
   addableIngredientIds?: number[];
 
@@ -95,13 +83,7 @@ export type UpdateProductData = {
   previousImageUrl?: string; // Для удаления старой картинки
 
   // 🔄 REFACTOR: Полные объекты для обновления
-  baseIngredients?: Array<{
-    id: number;
-    name: string;
-    imageUrl: string;
-    removable: boolean;
-    isDisabled: boolean;
-  }>;
+  baseIngredients?: BaseIngredientDTO[];
 
   addableIngredientIds?: number[];
 
@@ -137,8 +119,8 @@ export interface ProductResponseDTO {
   imageUrl: string;
   categoryId: number;
   category: { id: number; name: string };
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt: string;
+  updatedAt: string;
   variants: ProductVariantDTO[];
   baseIngredients: BaseIngredientDTO[];
   addableIngredientIds: number[];

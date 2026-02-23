@@ -51,8 +51,8 @@ describe('ProductEditForm', () => {
     imageUrl: 'https://old-image.png',
     categoryId: 1,
     category: { id: 1, name: 'Pizze' },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     variants: [],
     baseIngredients: [
       { id: 10, name: 'Cheese', imageUrl: 'cheese.png', removable: true, isDisabled: false },

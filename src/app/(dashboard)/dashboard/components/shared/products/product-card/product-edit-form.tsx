@@ -49,7 +49,6 @@ export const ProductEditForm: React.FC<Props> = ({
   // ========== ЛОГИКА ДЛЯ ПУТЕЙ И ИМЕН ==========
   const currentCategory = categories.find(c => c.id === categoryId);
   const uploadFolder = slugify(currentCategory?.name ?? 'products');
-  // const uploadFileName = name.trim() ? slugify(name) : undefined;
   const uploadFileName = name.trim() ? name : undefined;
 
   const {

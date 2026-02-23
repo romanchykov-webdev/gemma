@@ -19,6 +19,14 @@ import {
 } from '../components/shared/products/product-types';
 import { validateProductData } from '../components/shared/products/product-utils';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (!(error instanceof Error) || !('response' in error)) return fallback;
+  const msg = (error as { response?: { data?: { message?: unknown } } }).response?.data?.message;
+  if (typeof msg === 'string') return msg;
+  if (Array.isArray(msg)) return msg.join(', ');
+  return fallback;
+};
+
 interface UseProductsReturn {
   categories: Category[];
   products: Product[];
@@ -63,7 +71,9 @@ export const useProducts = (): UseProductsReturn => {
     try {
       setLoading(true);
 
-      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined);
+      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined, {
+        signal,
+      });
 
       const normalizedData: Product[] = data.map(product => ({
         ...product,
@@ -154,11 +164,7 @@ export const useProducts = (): UseProductsReturn => {
       toast.success('Prodotto creato con successo');
     } catch (error: unknown) {
       console.error(error);
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : 'Errore nella creazione';
-      toast.error(message || 'Errore nella creazione del prodotto');
+      toast.error(getErrorMessage(error, 'Errore nella creazione del prodotto'));
     }
   };
 
@@ -194,7 +200,7 @@ export const useProducts = (): UseProductsReturn => {
 
       if (data.previousImageUrl && data.previousImageUrl !== data.imageUrl) {
         try {
-          console.log('[CLEANUP] Удаляем старую картинку:', data.previousImageUrl);
+          // console.log('[CLEANUP] Удаляем старую картинку:', data.previousImageUrl);
           await deleteImage(data.previousImageUrl);
         } catch (err) {
           console.error('[CLEANUP] Ошибка при удалении старой картинки:', err);
@@ -212,11 +218,7 @@ export const useProducts = (): UseProductsReturn => {
       toast.success('Prodotto aggiornato');
     } catch (error: unknown) {
       console.error(error);
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'aggiornamento";
-      toast.error(message || "Errore nell'aggiornamento");
+      toast.error(getErrorMessage(error, "Errore nell'aggiornamento"));
     } finally {
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);
@@ -235,11 +237,7 @@ export const useProducts = (): UseProductsReturn => {
       setProducts(prev => prev.filter(prod => prod.id !== id));
       toast.success('Prodotto eliminato');
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'eliminazione";
-      toast.error(message || "Errore nell'eliminazione");
+      toast.error(getErrorMessage(error, "Errore nell'eliminazione"));
     } finally {
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);

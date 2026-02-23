@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useRef } from 'react';
 import { DoughType, ProductSize, ProductVariant } from '../product-types';
 
 interface Props {
@@ -26,6 +26,12 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
   doughTypes,
   onChange,
 }) => {
+  // Находим максимальный существующий ID при первом рендере
+  const initialMaxId = variants.length > 0 ? Math.max(...variants.map(v => v.variantId)) : 0;
+
+  // Создаем счетчик, который начинается со следующего числа
+  const nextVariantId = useRef(initialMaxId + 1);
+
   // update variant price
   const updateVariantPrice = (index: number, newPrice: number) => {
     const updated = [...variants];
@@ -55,11 +61,14 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
   // add variant
   const addVariant = () => {
     const newVariant: ProductVariant = {
-      variantId: Date.now(),
+      variantId: nextVariantId.current,
       price: 0,
       sizeId: sizes[0]?.id || null,
       typeId: doughTypes[0]?.id || null,
     };
+
+    nextVariantId.current += 1;
+
     onChange([...variants, newVariant]);
   };
 
