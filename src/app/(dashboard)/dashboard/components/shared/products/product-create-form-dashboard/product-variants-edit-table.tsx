@@ -10,14 +10,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Trash2 } from 'lucide-react';
-import React from 'react';
-import { DoughType, ProductItem, ProductSize } from '../product-types';
+import React, { useRef } from 'react';
+import { DoughType, ProductSize, ProductVariant } from '../product-types';
 
 interface Props {
-  variants: ProductItem[];
+  variants: ProductVariant[];
   sizes: ProductSize[];
   doughTypes: DoughType[];
-  onChange: (variants: ProductItem[]) => void;
+  onChange: (variants: ProductVariant[]) => void;
 }
 
 export const ProductVariantsEditTable: React.FC<Props> = ({
@@ -26,6 +26,12 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
   doughTypes,
   onChange,
 }) => {
+  // Находим максимальный существующий ID при первом рендере
+  const initialMaxId = variants.length > 0 ? Math.max(...variants.map(v => v.variantId)) : 0;
+
+  // Создаем счетчик, который начинается со следующего числа
+  const nextVariantId = useRef(initialMaxId + 1);
+
   // update variant price
   const updateVariantPrice = (index: number, newPrice: number) => {
     const updated = [...variants];
@@ -43,7 +49,7 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
   // update variant dough type
   const updateVariantDoughType = (index: number, newDoughTypeId: number) => {
     const updated = [...variants];
-    updated[index] = { ...updated[index], doughTypeId: newDoughTypeId };
+    updated[index] = { ...updated[index], typeId: newDoughTypeId };
     onChange(updated);
   };
 
@@ -54,12 +60,15 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
 
   // add variant
   const addVariant = () => {
-    const newVariant: ProductItem = {
-      id: Date.now(), // временный ID
+    const newVariant: ProductVariant = {
+      variantId: nextVariantId.current,
       price: 0,
       sizeId: sizes[0]?.id || null,
-      doughTypeId: doughTypes[0]?.id || null,
+      typeId: doughTypes[0]?.id || null,
     };
+
+    nextVariantId.current += 1;
+
     onChange([...variants, newVariant]);
   };
 
@@ -75,11 +84,11 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
       <div className="space-y-2">
         {variants.map((variant, index) => {
           const size = sizes.find(s => s.id === variant.sizeId);
-          const doughType = doughTypes.find(d => d.id === variant.doughTypeId);
+          const doughType = doughTypes.find(d => d.id === variant.typeId);
 
           return (
             <div
-              key={variant.id}
+              key={variant.variantId}
               className="flex items-center gap-2 bg-gray-50 p-2 rounded border justify-between"
             >
               <div className="flex gap-2 flex-wrap">
@@ -108,7 +117,7 @@ export const ProductVariantsEditTable: React.FC<Props> = ({
 
                 {/* select types */}
                 <Select
-                  value={variant.doughTypeId?.toString()}
+                  value={variant.typeId?.toString()}
                   onValueChange={value => updateVariantDoughType(index, Number(value))}
                 >
                   <SelectTrigger className="w-[150px]">

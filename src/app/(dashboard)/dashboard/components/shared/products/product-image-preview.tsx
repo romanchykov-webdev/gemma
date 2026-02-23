@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 import React from 'react';
 
 interface Props {
@@ -32,9 +33,11 @@ export const ProductImagePreview: React.FC<Props> = ({
       )}
     >
       {imageUrl ? (
-        <img
+        <Image
           src={imageUrl}
-          alt={alt}
+          alt={alt || 'Product preview'}
+          width={128}
+          height={128}
           className="w-full h-full object-cover"
           onError={e => {
             e.currentTarget.style.display = 'none';

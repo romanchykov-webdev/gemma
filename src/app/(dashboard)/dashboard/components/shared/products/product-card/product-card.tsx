@@ -50,6 +50,7 @@ export const ProductCardDashboard: React.FC<Props> = ({
   if (isEditing) {
     return (
       <ProductEditForm
+        key={product.id}
         product={product}
         categories={categories}
         ingredients={ingredients}

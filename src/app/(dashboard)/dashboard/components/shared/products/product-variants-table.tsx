@@ -89,18 +89,18 @@ export const ProductVariantsTable: React.FC<Props> = ({ product }) => {
 
       {/* Список всех вариантов */}
       <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-        {product.items.map(item => {
-          const size = sizes.find(s => s.id === item.sizeId);
-          const doughType = doughTypes.find(d => d.id === item.doughTypeId);
+        {product.variants.map(variant => {
+          const size = sizes.find(s => s.id === variant.sizeId); // ✅ variant
+          const doughType = doughTypes.find(d => d.id === variant.typeId);
           return (
             <div
-              key={item.id}
+              key={variant.variantId}
               className="text-xs bg-white p-2 rounded border flex justify-between items-center"
             >
               <span>
                 {size?.name} - {doughType?.name}
               </span>
-              <span className="font-semibold">{Number(item.price).toFixed(2)} €</span>
+              <span className="font-semibold">{Number(variant.price).toFixed(2)} €</span>
             </div>
           );
         })}

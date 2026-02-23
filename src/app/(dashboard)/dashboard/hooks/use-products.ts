@@ -1,18 +1,31 @@
 'use client';
 
-import { Api } from '@/../services/api-client';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Api } from '../../../../../services/api-client';
+
+import { deleteImage } from '../lib/supabase';
+
 import {
   Category,
   CreateProductData,
+  CreateProductRequest,
   DoughType,
   Ingredient,
   Product,
   ProductSize,
   UpdateProductData,
+  UpdateProductRequest,
 } from '../components/shared/products/product-types';
 import { validateProductData } from '../components/shared/products/product-utils';
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (!(error instanceof Error) || !('response' in error)) return fallback;
+  const msg = (error as { response?: { data?: { message?: unknown } } }).response?.data?.message;
+  if (typeof msg === 'string') return msg;
+  if (Array.isArray(msg)) return msg.join(', ');
+  return fallback;
+};
 
 interface UseProductsReturn {
   categories: Category[];
@@ -29,10 +42,6 @@ interface UseProductsReturn {
   handleDelete: (id: number) => Promise<void>;
 }
 
-/**
- * Кастомный хук для управления продуктами
- * Изолирует всю логику работы с API и состоянием от UI компонента
- */
 export const useProducts = (): UseProductsReturn => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,7 +53,6 @@ export const useProducts = (): UseProductsReturn => {
   const [sizes, setSizes] = useState<ProductSize[]>([]);
   const [doughTypes, setDoughTypes] = useState<DoughType[]>([]);
 
-  // Состояние загрузки для отдельных продуктов
   const [loadingProductIds, setLoadingProductIds] = useState<Set<number>>(new Set());
 
   // Загрузка категорий
@@ -58,35 +66,47 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Загрузка продуктов
-  const loadProducts = async () => {
+  // 🔄 Загрузка продуктов (с защитой от Race Condition)
+  const loadProducts = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined);
 
-      // Конвертируем Decimal в number
-      const normalizedData = data.map(product => ({
+      const data = await Api.product_dashboard.getProducts(selectedCategoryId || undefined, {
+        signal,
+      });
+
+      const normalizedData: Product[] = data.map(product => ({
         ...product,
-        items: product.items.map(item => ({
-          ...item,
-          price: Number(item.price),
+        variants: (product.variants || []).map(variant => ({
+          ...variant,
+          price: Number(variant.price),
         })),
-        ingredients: product.ingredients?.map(ing => ({
-          ...ing,
-          price: Number(ing.price),
-        })),
+        baseIngredients: product.baseIngredients || [],
+        addableIngredientIds: product.addableIngredientIds || [],
       }));
 
+      // Если запрос был отменен (компонент размонтирован или id сменился), не обновляем стейт
+      if (signal?.aborted) return;
+
       setProducts(normalizedData);
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        (error.name === 'AbortError' || error.name === 'CanceledError')
+      ) {
+        console.log('Загрузка продуктов отменена (смена категории)');
+        return;
+      }
       console.error('Errore nel caricamento dei prodotti:', error);
       toast.error('Impossibile caricare i prodotti');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
-  // Загрузка данных для форм (один раз)
+  // Загрузка справочников
   const loadFormData = async () => {
     try {
       const [ingredientsData, sizesData, doughTypesData] = await Promise.all([
@@ -108,7 +128,7 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Создание продукта
+  // 🔄 Создание продукта
   const handleCreate = async (data: CreateProductData) => {
     const validationError = validateProductData(data);
     if (validationError) {
@@ -117,37 +137,38 @@ export const useProducts = (): UseProductsReturn => {
     }
 
     try {
-      // Конвертируем null в undefined для API
       const apiData = {
-        ...data,
-        items: data.items?.map(item => ({
-          price: item.price,
-          sizeId: item.sizeId ?? undefined,
-          doughTypeId: item.doughTypeId ?? undefined,
+        name: data.name,
+        imageUrl: data.imageUrl,
+        categoryId: data.categoryId,
+        baseIngredients: data.baseIngredients,
+        addableIngredientIds: data.addableIngredientIds,
+        variants: data.variants?.map(variant => ({
+          variantId: variant.variantId,
+          price: variant.price,
+          sizeId: variant.sizeId ?? undefined,
+          typeId: variant.typeId ?? undefined,
         })),
       };
 
-      const newProduct = await Api.product_dashboard.createProduct(apiData);
+      const newProduct = await Api.product_dashboard.createProduct(apiData as CreateProductRequest);
 
-      // Нормализуем данные
-      const normalized = {
+      const normalized: Product = {
         ...newProduct,
-        items: newProduct.items.map(item => ({ ...item, price: Number(item.price) })),
-        ingredients: newProduct.ingredients?.map(ing => ({ ...ing, price: Number(ing.price) })),
+        variants: (newProduct.variants || []).map(v => ({ ...v, price: Number(v.price) })),
+        baseIngredients: newProduct.baseIngredients || [],
+        addableIngredientIds: newProduct.addableIngredientIds || [],
       };
 
-      setProducts([normalized, ...products]);
+      setProducts(prev => [normalized, ...prev]);
       toast.success('Prodotto creato con successo');
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : 'Errore nella creazione';
-      toast.error(message || 'Errore nella creazione del prodotto');
+      console.error(error);
+      toast.error(getErrorMessage(error, 'Errore nella creazione del prodotto'));
     }
   };
 
-  // Обновление продукта
+  // 🔄 Обновление продукта
   const handleUpdate = async (id: number, data: UpdateProductData) => {
     const validationError = validateProductData(data);
     if (validationError) {
@@ -155,40 +176,50 @@ export const useProducts = (): UseProductsReturn => {
       return;
     }
 
-    // Добавляем ID в состояние загрузки
     setLoadingProductIds(prev => new Set(prev).add(id));
 
     try {
-      // Конвертируем items в правильный формат для API
-      const apiData: UpdateProductData = {
-        ...data,
-        items: data.items?.map(item => ({
-          id: item.id,
-          price: Number(item.price),
-          sizeId: item.sizeId,
-          doughTypeId: item.doughTypeId,
+      const apiData = {
+        name: data.name,
+        imageUrl: data.imageUrl,
+        categoryId: data.categoryId,
+        baseIngredients: data.baseIngredients,
+        addableIngredientIds: data.addableIngredientIds,
+        variants: data.variants?.map(variant => ({
+          variantId: variant.variantId,
+          price: Number(variant.price),
+          sizeId: variant.sizeId,
+          typeId: variant.typeId,
         })),
       };
 
-      const updated = await Api.product_dashboard.updateProduct(id, apiData);
+      const updated = await Api.product_dashboard.updateProduct(
+        id,
+        apiData as UpdateProductRequest,
+      );
 
-      // Нормализуем данные
-      const normalized = {
+      if (data.previousImageUrl && data.previousImageUrl !== data.imageUrl) {
+        try {
+          // console.log('[CLEANUP] Удаляем старую картинку:', data.previousImageUrl);
+          await deleteImage(data.previousImageUrl);
+        } catch (err) {
+          console.error('[CLEANUP] Ошибка при удалении старой картинки:', err);
+        }
+      }
+
+      const normalized: Product = {
         ...updated,
-        items: updated.items.map(item => ({ ...item, price: Number(item.price) })),
-        ingredients: updated.ingredients?.map(ing => ({ ...ing, price: Number(ing.price) })),
+        variants: (updated.variants || []).map(v => ({ ...v, price: Number(v.price) })),
+        baseIngredients: updated.baseIngredients || [],
+        addableIngredientIds: updated.addableIngredientIds || [],
       };
 
-      setProducts(products.map(prod => (prod.id === id ? normalized : prod)));
+      setProducts(prev => prev.map(prod => (prod.id === id ? normalized : prod)));
       toast.success('Prodotto aggiornato');
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'aggiornamento";
-      toast.error(message || "Errore nell'aggiornamento");
+      console.error(error);
+      toast.error(getErrorMessage(error, "Errore nell'aggiornamento"));
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -197,23 +228,17 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Удаление продукта
   const handleDelete = async (id: number) => {
-    // Добавляем ID в состояние загрузки
     setLoadingProductIds(prev => new Set(prev).add(id));
 
     try {
       await Api.product_dashboard.deleteProduct(id);
-      setProducts(products.filter(prod => prod.id !== id));
+
+      setProducts(prev => prev.filter(prod => prod.id !== id));
       toast.success('Prodotto eliminato');
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'eliminazione";
-      toast.error(message || "Errore nell'eliminazione");
+      toast.error(getErrorMessage(error, "Errore nell'eliminazione"));
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingProductIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -222,17 +247,25 @@ export const useProducts = (): UseProductsReturn => {
     }
   };
 
-  // Загрузка категорий и данных форм при монтировании
   useEffect(() => {
     loadCategories();
     loadFormData();
   }, []);
 
-  // Загрузка продуктов при изменении категории
   useEffect(() => {
-    if (categories.length > 0) {
-      loadProducts();
-    }
+    // Ждем, пока загрузятся категории, прежде чем грузить продукты
+    if (categories.length === 0) return;
+
+    // Создаем "пульт управления" запросом
+    const controller = new AbortController();
+
+    // Передаем сигнал от пульта в функцию загрузки
+    loadProducts(controller.signal);
+
+    // Функция очистки: срабатывает КАЖДЫЙ РАЗ, когда меняется selectedCategoryId
+    return () => {
+      controller.abort(); // Нажимаем кнопку "Отмена" на пульте для старого запроса
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategoryId, categories]);
 

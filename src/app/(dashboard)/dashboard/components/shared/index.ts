@@ -27,10 +27,12 @@ export { ProductSizeCreateForm } from './product-sizes/product-size-create-form'
 export { ProductsDashboard } from './products-dashboard';
 export { ProductCardDashboard } from './products/product-card/product-card';
 export { ProductCategoryFilter } from './products/product-category-filter';
+
 export { ProductCreateFormDashboard } from './products/product-create-form-dashboard/product-create-form';
-export { ProductIngredientsDashboard } from './products/product-create-form-dashboard/product-ingredients-dashboard';
+
 export { ProductVariantsDashboard } from './products/product-create-form-dashboard/product-variants-dashboard';
 export { ProductVariantsEditTable } from './products/product-create-form-dashboard/product-variants-edit-table';
+export { UniversalIngredientsSelector } from './products/product-create-form-dashboard/universal-ingredients-selector';
 export { ProductImagePreview } from './products/product-image-preview';
 // users
 export { UsersDashboard } from './users-dashboard';
@@ -43,3 +45,7 @@ export { StoryCard } from './stories/stories-card';
 export { StoryCreateForm } from './stories/stories-create-form';
 // image
 export { ImageUpload } from './image-upload';
+// loading overlay
+export { LoadingOverlay } from './loading-overlay';
+// product image section
+export { ProductImageSection } from './products/product-image-section';

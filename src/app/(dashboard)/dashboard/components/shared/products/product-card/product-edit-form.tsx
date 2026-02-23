@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { slugify } from '@/lib/slugify';
 import { Check, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { ProductIngredientsDashboard } from '../product-create-form-dashboard/product-ingredients-dashboard';
 import { ProductVariantsEditTable } from '../product-create-form-dashboard/product-variants-edit-table';
+import { UniversalIngredientsSelector } from '../product-create-form-dashboard/universal-ingredients-selector';
 import {
   Category,
   DoughType,
@@ -13,6 +14,12 @@ import {
   ProductSize,
   UpdateProductData,
 } from '../product-types';
+
+import { LoadingOverlay } from '../../loading-overlay';
+
+import { ProductImageSection } from '../product-image-section';
+
+import { useIngredientsSelection } from '@/app/(dashboard)/dashboard/hooks';
 
 interface Props {
   product: Product;
@@ -36,48 +43,68 @@ export const ProductEditForm: React.FC<Props> = ({
   const [name, setName] = useState(product.name);
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
   const [categoryId, setCategoryId] = useState(product.categoryId);
-  const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>(
-    product.ingredients?.map(ing => ing.id) || [],
-  );
-  const [variants, setVariants] = useState(product.items);
-  const [showIngredients, setShowIngredients] = useState(false);
+  const [variants, setVariants] = useState(product.variants);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // console.log(ProductEditForm, { product, categories, ingredients, sizes, doughTypes });
+  // ========== ЛОГИКА ДЛЯ ПУТЕЙ И ИМЕН ==========
+  const currentCategory = categories.find(c => c.id === categoryId);
+  const uploadFolder = slugify(currentCategory?.name ?? 'products');
+  const uploadFileName = name.trim() ? name : undefined;
+
+  const {
+    baseIngredients,
+    addableIngredientIds,
+    toggleBaseIngredient,
+    toggleRemovable,
+    toggleAddableIngredient,
+    enrichedBaseIngredients,
+  } = useIngredientsSelection({
+    availableIngredients: ingredients,
+
+    initialBaseIngredients:
+      product.baseIngredients?.map(ing => ({
+        id: ing.id,
+        removable: ing.removable,
+        isDisabled: ing.isDisabled,
+      })) || [],
+    initialAddableIngredientIds: product.addableIngredientIds || [],
+  });
 
   const handleSubmit = () => {
     onSave({
       name: name.trim(),
       imageUrl: imageUrl.trim(),
       categoryId,
-      ingredientIds: selectedIngredientIds,
-      items: variants.map(v => ({
-        id: v.id,
+      previousImageUrl: product.imageUrl,
+      baseIngredients: enrichedBaseIngredients.length > 0 ? enrichedBaseIngredients : undefined,
+      addableIngredientIds: addableIngredientIds.length > 0 ? addableIngredientIds : [],
+      variants: variants.map(v => ({
+        variantId: v.variantId,
         price: Number(v.price),
         sizeId: v.sizeId,
-        doughTypeId: v.doughTypeId,
+        typeId: v.typeId,
       })),
     });
   };
 
-  const toggleIngredient = (id: number) => {
-    setSelectedIngredientIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
-    );
-  };
-
   return (
-    <div className="bg-white border rounded-lg p-4 space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nome" />
-        <Input
-          value={imageUrl}
-          onChange={e => setImageUrl(e.target.value)}
-          placeholder="URL immagine"
-        />
-      </div>
+    <div className="bg-white border rounded-lg p-4 space-y-4 shadow-sm relative overflow-hidden">
+      {/* loading overlay */}
+      <LoadingOverlay isVisible={isUploading} className="z-20" />
+
+      <ProductImageSection
+        name={name}
+        onNameChange={setName}
+        imageUrl={imageUrl}
+        onImageChange={setImageUrl}
+        uploadFolder={uploadFolder}
+        uploadFileName={uploadFileName}
+        isUploading={isUploading}
+        onUploadingChange={setIsUploading}
+      />
 
       <select
-        className="flex h-10 w-full rounded-md border px-3"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
         value={categoryId}
         onChange={e => setCategoryId(Number(e.target.value))}
       >
@@ -88,7 +115,6 @@ export const ProductEditForm: React.FC<Props> = ({
         ))}
       </select>
 
-      {/* Варианты продукта */}
       <ProductVariantsEditTable
         variants={variants}
         sizes={sizes}
@@ -96,23 +122,38 @@ export const ProductEditForm: React.FC<Props> = ({
         onChange={setVariants}
       />
 
-      {/* Выбор ингредиентов */}
-      <ProductIngredientsDashboard
+      <UniversalIngredientsSelector
+        mode="base"
+        title="Ingredienti Base"
+        description="Gli ingredienti che compongono il prodotto di default."
         availableIngredients={ingredients}
-        selectedIngredientIds={selectedIngredientIds}
-        toggleIngredient={toggleIngredient}
-        showIngredients={showIngredients}
-        setShowIngredients={setShowIngredients}
+        selectedIngredients={baseIngredients}
+        onToggleIngredient={toggleBaseIngredient}
+        onToggleRemovable={toggleRemovable}
         isCreating={false}
       />
 
-      <div className="flex gap-2">
-        <Button onClick={handleSubmit} className="flex-1 bg-green-600">
-          <Check className="w-4 h-4 mr-1" />
-          Salva
+      <UniversalIngredientsSelector
+        mode="addable"
+        title="Ingredienti Aggiuntivi"
+        description="Ingredienti extra che il cliente può aggiungere a pagamento."
+        availableIngredients={ingredients}
+        selectedIngredientIds={addableIngredientIds}
+        onToggle={toggleAddableIngredient}
+        isCreating={false}
+      />
+
+      <div className="flex gap-2 pt-4 mt-6">
+        <Button
+          onClick={handleSubmit}
+          disabled={isUploading || !name.trim() || !imageUrl.trim()}
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Check className="w-4 h-4 mr-2" />
+          Salva modifiche
         </Button>
         <Button onClick={onCancel} variant="outline" className="flex-1">
-          <X className="w-4 h-4 mr-1" />
+          <X className="w-4 h-4 mr-2" />
           Annulla
         </Button>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { OptimizedIngredient, OptimizedProductItem } from '../../../@types/prisma';
 import { Button } from '../ui/button';
@@ -75,10 +76,18 @@ export const ChooseProductForm: React.FC<Props> = ({
     >
       {/* Левая часть  */}
       <div className="w-full lg:w-[60%] h-auto min-h-[250px] sm:min-h-[300px] md:min-h-[400px] p-4 sm:p-6 flex flex-1 justify-center items-center">
-        <img
+        {/* <img
           src={imageUrl}
           alt={name}
           className="w-full h-auto max-h-[250px] sm:max-h-[300px] md:max-h-[400px] object-contain"
+        /> */}
+        <Image
+          src={imageUrl}
+          alt={name}
+          width={400}
+          height={400}
+          className="w-full h-auto max-h-[250px] sm:max-h-[300px] md:max-h-[400px] object-contain transition-all duration-300"
+          priority={true}
         />
       </div>
 

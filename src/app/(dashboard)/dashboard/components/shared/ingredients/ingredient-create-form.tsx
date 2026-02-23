@@ -2,6 +2,7 @@
 
 import { Button, Input } from '@/components/ui';
 import { ImageIcon, Plus, X } from 'lucide-react';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { ImageUpload } from '../image-upload';
 import { CreateIngredientData } from './ingredient-types';
@@ -76,7 +77,13 @@ export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = f
           <div className="flex items-center justify-center ">
             {imageUrl ? (
               <div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
-                <img src={imageUrl} alt="Preview" className=" h-50 object-cover" />
+                <Image
+                  src={imageUrl}
+                  alt="Preview"
+                  width={300}
+                  height={300}
+                  className="max-h-48 w-auto object-contain drop-shadow-md"
+                />
                 <Button
                   type="button"
                   onClick={() => setImageUrl('')}
