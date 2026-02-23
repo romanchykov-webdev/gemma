@@ -1,14 +1,18 @@
 'use client';
 
-import { Button, Input } from '@/components/ui';
-import { ImageIcon, Loader2, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { Button } from '@/components/ui';
+import { Loader2, Plus } from 'lucide-react';
+import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { ImageUpload } from '../../image-upload';
+import { slugify } from '@/lib/slugify';
 import { Category, CreateProductData, DoughType, Ingredient, ProductSize } from '../product-types';
-import { ProductIngredientsDashboard } from './product-ingredients-dashboard';
 import { ProductVariantsDashboard } from './product-variants-dashboard';
+import { UniversalIngredientsSelector } from './universal-ingredients-selector';
+
+import { useIngredientsSelection } from '@/app/(dashboard)/dashboard/hooks';
+import { LoadingOverlay } from '../../loading-overlay';
+import { ProductImageSection } from '../product-image-section';
 
 interface Props {
   categories: Category[];
@@ -29,25 +33,40 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || 0);
 
+  // ========== ЛОГИКА ДЛЯ ПУТЕЙ И ИМЕН ==========
+  const currentCategory = categories.find(c => c.id === categoryId);
+  const uploadFolder = slugify(currentCategory?.name ?? 'products');
+  const uploadFileName = name.trim() ? name : undefined;
+
   const [variants, setVariants] = useState<
-    { sizeId: number | null; doughTypeId: number | null; price: number }[]
+    { variantId: number; sizeId: number | null; typeId: number | null; price: number }[]
   >([]);
   const [showVariants, setShowVariants] = useState(false);
 
-  const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
-  const [showIngredients, setShowIngredients] = useState(false);
+  // Счетчик для новых вариантов
+  const nextVariantId = useRef(1);
+
+  const {
+    baseIngredients,
+    addableIngredientIds,
+    toggleBaseIngredient,
+    toggleRemovable,
+    toggleAddableIngredient,
+    resetIngredients,
+    enrichedBaseIngredients,
+  } = useIngredientsSelection({ availableIngredients: ingredients });
 
   const [isCreating, setIsCreating] = useState(false);
-
   const [isUploading, setIsUploading] = useState(false);
 
   const addVariant = () => {
     const defaultSizeId = sizes[0]?.id || null;
-    const defaultDoughTypeId = doughTypes[0]?.id || null;
+    const defaultTypeId = doughTypes[0]?.id || null;
     setVariants([
       ...variants,
-      { sizeId: defaultSizeId, doughTypeId: defaultDoughTypeId, price: 0 },
+      { variantId: nextVariantId.current, sizeId: defaultSizeId, typeId: defaultTypeId, price: 0 },
     ]);
+    nextVariantId.current += 1;
     setShowVariants(true);
   };
 
@@ -63,47 +82,38 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
     setVariants(updated);
   };
 
-  const toggleIngredient = (id: number) =>
-    setSelectedIngredientIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id],
-    );
-
   const handleCreate = async () => {
     if (!name.trim()) return toast.error('Inserisci il nome del prodotto');
-    if (!imageUrl.trim()) return toast.error("Inserisci l'URL dell'immagine");
-    if (!categoryId) return toast.error('Seleziona una categoria');
-    if (variants.length > 0 && variants.some(v => !v.price || v.price <= 0)) {
-      return toast.error('Inserisci un prezzo valido per tutte le varianti');
-    }
+    if (!imageUrl.trim()) return toast.error("Carica l'immagine del prodotto");
+    if (!categoryId) return toast.error('Seleziona una категория');
 
     try {
       setIsCreating(true);
+
+      const formattedVariants = variants.map(v => ({
+        variantId: v.variantId,
+        price: Number(v.price),
+        sizeId: v.sizeId ?? undefined,
+        typeId: v.typeId ?? undefined,
+      }));
 
       await onSubmit({
         name: name.trim(),
         imageUrl: imageUrl.trim(),
         categoryId,
-        ingredientIds: selectedIngredientIds.length > 0 ? selectedIngredientIds : undefined,
-        items:
-          variants.length > 0
-            ? variants.map(v => ({
-                price: v.price,
-                sizeId: v.sizeId ?? undefined,
-                doughTypeId: v.doughTypeId ?? undefined,
-              }))
-            : undefined,
+        baseIngredients: enrichedBaseIngredients.length > 0 ? enrichedBaseIngredients : undefined,
+        addableIngredientIds: addableIngredientIds.length > 0 ? addableIngredientIds : [],
+        variants: formattedVariants.length > 0 ? formattedVariants : undefined,
       });
 
-      // Очистка формы после успешного создания
       setName('');
       setImageUrl('');
       setCategoryId(categories[0]?.id || 0);
       setVariants([]);
-      setSelectedIngredientIds([]);
+      resetIngredients();
       setShowVariants(false);
-      setShowIngredients(false);
-    } catch (error: unknown) {
-      console.error('Error creating product:', error);
+    } catch (error) {
+      console.error(error);
     } finally {
       setIsCreating(false);
     }
@@ -111,66 +121,23 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
 
   return (
     <div className="bg-white p-4 rounded-lg border space-y-3 relative overflow-hidden">
-      {isUploading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500/50 flex items-center justify-center">
-          <Loader2 size={50} className=" animate-spin" />
-        </div>
-      )}
+      {/* loading overlay */}
+      <LoadingOverlay isVisible={isUploading} className="z-20" />
+
       <h3 className="font-semibold">Aggiungi nuovo prodotto</h3>
 
-      {/* Основные поля */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* form */}
-        <div className="flex flex-col gap-3">
-          <Input
-            placeholder="Nome prodotto..."
-            value={name}
-            onChange={e => setName(e.target.value)}
-            disabled={isCreating}
-          />
-          <Input
-            placeholder="URL immagine..."
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
-            disabled={isCreating}
-          />
-          <ImageUpload
-            imageUrl={imageUrl}
-            onImageChange={setImageUrl}
-            folder="products"
-            label="Immagine prodotto"
-            required
-            isUploading={isUploading}
-            setIsUploading={setIsUploading}
-          />
-        </div>
+      <ProductImageSection
+        name={name}
+        onNameChange={setName}
+        nameDisabled={isCreating}
+        imageUrl={imageUrl}
+        onImageChange={setImageUrl}
+        uploadFolder={uploadFolder}
+        uploadFileName={uploadFileName}
+        isUploading={isUploading}
+        onUploadingChange={setIsUploading}
+      />
 
-        {/* Preview */}
-        <div className="flex items-center justify-center ">
-          {imageUrl ? (
-            <div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
-              <img src={imageUrl} alt="Preview" className=" h-50 object-cover" />
-              <Button
-                type="button"
-                onClick={() => setImageUrl('')}
-                size="sm"
-                variant="destructive"
-                className="absolute top-2 right-2"
-                // disabled={disabled || isUploading}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="border-2 border-dashed w-full h-full flex flex-col items-center justify-center rounded p-8 text-center">
-              <ImageIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">Preview image</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Категории */}
       <div className="flex gap-2">
         <select
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -187,7 +154,6 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
         </select>
       </div>
 
-      {/* Варианты */}
       <ProductVariantsDashboard
         variants={variants}
         availableSizes={sizes}
@@ -201,22 +167,37 @@ export const ProductCreateFormDashboard: React.FC<Props> = ({
         isCreating={isCreating}
       />
 
-      {/* Ингредиенты */}
-      <ProductIngredientsDashboard
+      <UniversalIngredientsSelector
+        mode="base"
+        title="Ingredienti Base"
+        description="Gli ingredienti che compongono il prodotto di default."
         availableIngredients={ingredients}
-        selectedIngredientIds={selectedIngredientIds}
-        toggleIngredient={toggleIngredient}
-        showIngredients={showIngredients}
-        setShowIngredients={setShowIngredients}
+        selectedIngredients={baseIngredients}
+        onToggleIngredient={toggleBaseIngredient}
+        onToggleRemovable={toggleRemovable}
+        isCreating={isCreating}
+      />
+
+      <UniversalIngredientsSelector
+        mode="addable"
+        title="Ingredienti Aggiuntivi"
+        description="Ingredienti extra che il cliente può aggiungere a pagamento."
+        availableIngredients={ingredients}
+        selectedIngredientIds={addableIngredientIds}
+        onToggle={toggleAddableIngredient}
         isCreating={isCreating}
       />
 
       <Button
         onClick={handleCreate}
-        disabled={isCreating || !name.trim() || !imageUrl.trim() || !categoryId}
-        className="w-full"
+        disabled={isCreating || isUploading || !name.trim() || !imageUrl.trim() || !categoryId}
+        className="w-full mt-4"
       >
-        <Plus className="w-4 h-4 mr-2" />
+        {isCreating ? (
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        ) : (
+          <Plus className="w-4 h-4 mr-2" />
+        )}
         {isCreating ? 'Creazione...' : 'Aggiungi Prodotto'}
       </Button>
     </div>

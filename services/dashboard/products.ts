@@ -1,42 +1,76 @@
-import { Product } from '@/app/(dashboard)/dashboard/components/shared/products/product-types';
+import { ProductResponseDTO } from '@/app/(dashboard)/dashboard/components/shared/products/product-types';
 import { axiosInstance } from '../instance';
 
-export const getProducts = async (categoryId?: number): Promise<Product[]> => {
-  const url = categoryId ? `/dashboard/products?categoryId=${categoryId}` : '/dashboard/products';
-  const { data } = await axiosInstance.get<Product[]>(url);
-  return data;
-};
+// 🔄 Типы для API запросов
+interface BaseIngredient {
+  id: number;
+  name: string;
+  imageUrl: string;
+  removable: boolean;
+  isDisabled: boolean;
+}
 
-export const createProduct = async (productData: {
+interface ProductVariant {
+  variantId: number;
+  price: number;
+  sizeId?: number;
+  typeId?: number;
+}
+
+interface CreateProductRequest {
   name: string;
   imageUrl: string;
   categoryId: number;
-  items?: Array<{ price: number; sizeId?: number; doughTypeId?: number }>;
-  ingredientIds?: number[];
-}): Promise<Product> => {
-  const { data } = await axiosInstance.post<Product>('/dashboard/products', productData);
+  baseIngredients?: BaseIngredient[];
+  addableIngredientIds?: number[];
+  variants?: ProductVariant[];
+}
+
+interface UpdateProductRequest {
+  name?: string;
+  imageUrl?: string;
+  categoryId?: number;
+  baseIngredients?: BaseIngredient[];
+  addableIngredientIds?: number[];
+  variants?: Array<{
+    variantId: number;
+    price: number;
+    sizeId?: number | null;
+    typeId?: number | null;
+  }>;
+}
+
+// ✅ GET - Получение продуктов
+export const getProducts = async (
+  categoryId?: number,
+  options?: { signal?: AbortSignal },
+): Promise<ProductResponseDTO[]> => {
+  const url = categoryId ? `/dashboard/products?categoryId=${categoryId}` : '/dashboard/products';
+  const { data } = await axiosInstance.get<ProductResponseDTO[]>(url, { signal: options?.signal });
   return data;
 };
 
+// ✅ POST - Создание продукта
+export const createProduct = async (
+  productData: CreateProductRequest,
+): Promise<ProductResponseDTO> => {
+  const { data } = await axiosInstance.post<ProductResponseDTO>('/dashboard/products', productData);
+  return data;
+};
+
+// ✅ PATCH - Обновление продукта
 export const updateProduct = async (
   id: number,
-  productData: {
-    name?: string;
-    imageUrl?: string;
-    categoryId?: number;
-    ingredientIds?: number[];
-    items?: Array<{
-      id?: number;
-      price: number;
-      sizeId?: number | null;
-      doughTypeId?: number | null;
-    }>;
-  },
-): Promise<Product> => {
-  const { data } = await axiosInstance.patch<Product>(`/dashboard/products/${id}`, productData);
+  productData: UpdateProductRequest,
+): Promise<ProductResponseDTO> => {
+  const { data } = await axiosInstance.patch<ProductResponseDTO>(
+    `/dashboard/products/${id}`,
+    productData,
+  );
   return data;
 };
 
+// ✅ DELETE - Удаление продукта
 export const deleteProduct = async (id: number): Promise<void> => {
   await axiosInstance.delete(`/dashboard/products/${id}`);
 };

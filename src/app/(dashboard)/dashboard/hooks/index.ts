@@ -1,6 +1,7 @@
 export { useCategories } from './use-categories';
 export { useDoughTypes } from './use-dough-types';
 export { useIngredients } from './use-ingredients';
+export { useIngredientsSelection } from './use-ingredients-selection';
 export { useOrders } from './use-orders';
 export { useProductSizes } from './use-product-sizes';
 export { useProducts } from './use-products';

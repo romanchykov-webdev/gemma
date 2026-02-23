@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify'; // Убедись, что путь верный
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -15,17 +16,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * @param file - Файл для загрузки (File объект)
  * @param folder - Папка для хранения (например: 'ingredients', 'pizza', 'products/Bevande')
  * @param bucketName - Название bucket (по умолчанию 'gemma')
+ * @param customFileName - Опциональное имя файла без расширения (будет преобразовано в slug)
  * @returns URL загруженного файла или null при ошибке
- *
- * @example
- * const file = input.files[0];
- * const url = await uploadImage(file, 'ingredients');
- * if (url) console.log('Изображение загружено:', url);
  */
 export async function uploadImage(
   file: File,
   folder: string,
   bucketName: string = 'gemma',
+  customFileName?: string,
 ): Promise<string | null> {
   try {
     // Валидация файла
@@ -48,11 +46,13 @@ export async function uploadImage(
       return null;
     }
 
-    // Генерация уникального имени файла
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${timestamp}_${randomString}.${fileExtension}`;
+    // Определение расширения
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+
+    // Генерация имени файла: используем customFileName
+    const fileName = customFileName
+      ? `${slugify(customFileName)}-${Date.now().toString().slice(-5)}.${fileExtension}`
+      : `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
 
     // Формирование пути: folder/fileName
     const filePath = `${folder}/${fileName}`;
@@ -60,7 +60,7 @@ export async function uploadImage(
     // Загрузка файла в Supabase Storage
     const { error } = await supabase.storage.from(bucketName).upload(filePath, file, {
       cacheControl: '3600',
-      upsert: false,
+      upsert: true, // Изменено на true для перезаписи при совпадении имен
     });
 
     if (error) {
@@ -87,17 +87,12 @@ export async function uploadImage(
  * @param imageUrl - Полный URL изображения
  * @param bucketName - Название bucket (по умолчанию 'gemma')
  * @returns true если удаление успешно, иначе false
- *
- * @example
- * const deleted = await deleteImage('https://...supabase.co/storage/v1/object/public/images/ingredients/123.jpg');
  */
 export async function deleteImage(
   imageUrl: string,
   bucketName: string = 'gemma',
 ): Promise<boolean> {
   try {
-    // Извлечение пути из URL
-    // Пример URL: https://twjhdhfkcwoapajrkakp.supabase.co/storage/v1/object/public/gemma/products/Caffe_Latte2.webp
     const urlParts = imageUrl.split('/storage/v1/object/public/' + bucketName + '/');
     if (urlParts.length !== 2) {
       console.error('[DELETE_IMAGE] Неверный формат URL:', imageUrl);
@@ -106,7 +101,6 @@ export async function deleteImage(
 
     const filePath = urlParts[1];
 
-    // Удаление файла
     const { error } = await supabase.storage.from(bucketName).remove([filePath]);
 
     if (error) {
@@ -128,7 +122,8 @@ export async function deleteImage(
  * @param newFile - Новый файл для загрузки
  * @param oldImageUrl - URL старого изображения (для удаления)
  * @param folder - Папка для хранения
- * @param bucketName - Название bucket (по умолчанию 'images')
+ * @param bucketName - Название bucket (по умолчанию 'gemma')
+ * @param customFileName - Желаемое имя для нового файла
  * @returns URL нового изображения или null при ошибке
  */
 export async function updateImage(
@@ -136,17 +131,18 @@ export async function updateImage(
   oldImageUrl: string | null,
   folder: string,
   bucketName: string = 'gemma',
+  customFileName?: string,
 ): Promise<string | null> {
   try {
     // Загрузка нового изображения
-    const newUrl = await uploadImage(newFile, folder, bucketName);
+    const newUrl = await uploadImage(newFile, folder, bucketName, customFileName);
 
     if (!newUrl) {
       return null;
     }
 
-    // Удаление старого изображения (если есть)
-    if (oldImageUrl) {
+    // Удаление старого изображения (если есть и URL отличается от нового)
+    if (oldImageUrl && oldImageUrl !== newUrl) {
       await deleteImage(oldImageUrl, bucketName);
     }
 

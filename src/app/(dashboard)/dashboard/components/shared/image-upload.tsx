@@ -1,13 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import imageCompression from 'browser-image-compression';
 import { Loader2, Upload } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { uploadImage } from '../../lib/supabase';
+
 interface Props {
   imageUrl: string;
   onImageChange: (url: string) => void;
   folder: string;
+  customFileName?: string;
   label?: string;
   required?: boolean;
   disabled?: boolean;
@@ -19,13 +22,13 @@ export const ImageUpload: React.FC<Props> = ({
   imageUrl,
   onImageChange,
   folder,
+  customFileName,
   label = 'Изображение',
   required = false,
   disabled = false,
   isUploading,
   setIsUploading,
 }) => {
-  const [previewUrl, setPreviewUrl] = useState(imageUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,19 +38,50 @@ export const ImageUpload: React.FC<Props> = ({
     try {
       setIsUploading(true);
 
-      const url = await uploadImage(file, folder);
+      // --- ШАГ 1: Настройка сжатия ---
+      const options = {
+        maxSizeMB: 1, // Максимальный размер 1МБ
+        maxWidthOrHeight: 1920, // Уменьшаем, если фото гигантское
+        useWebWorker: true,
+        fileType: 'image/webp', // 👈 Конвертируем в WebP
+      };
+
+      console.log(`[IMAGE_UPLOAD] Исходный размер: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+
+      // --- ШАГ 2: Сжатие ---
+      const compressedBlob = await imageCompression(file, options);
+
+      // Превращаем Blob обратно в File, чтобы Supabase не ругался на отсутствие имени
+      // Если есть customFileName, используем его, иначе оставляем старое имя, но с расширением .webp
+      const finalFileName = customFileName
+        ? `${customFileName}.webp`
+        : file.name.replace(/\.[^.]+$/, '.webp');
+
+      const processedFile = new File([compressedBlob], finalFileName, {
+        type: 'image/webp',
+      });
+
+      console.log(
+        `[IMAGE_UPLOAD] Итоговый размер: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`,
+      );
+
+      // --- ШАГ 3: Загрузка ---
+      // Передаем в uploadImage уже готовый файл и customFileName
+      const url = await uploadImage(processedFile, folder, 'gemma', customFileName);
 
       if (url) {
-        setPreviewUrl(url);
+        // setPreviewUrl(url);
         onImageChange(url);
       } else {
         alert('Ошибка загрузки изображения');
       }
     } catch (error) {
       console.error('[IMAGE_UPLOAD] Ошибка:', error);
-      alert('Ошибка загрузки изображения');
+      alert('Ошибка при обработке или загрузке изображения');
     } finally {
       setIsUploading(false);
+      // Сбрасываем значение инпута, чтобы можно было выбрать тот же файл повторно
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -57,35 +91,12 @@ export const ImageUpload: React.FC<Props> = ({
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 
-      {/* Preview */}
-      {/* {previewUrl 
-			? (
-				<div className="relative w-full h-40 border rounded overflow-hidden bg-gray-100">
-					<img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-					<Button
-						type="button"
-						onClick={handleRemove}
-						size="sm"
-						variant="destructive"
-						className="absolute top-2 right-2"
-						disabled={disabled || isUploading}
-					>
-						<X className="h-4 w-4" />
-					</Button>
-				</div>
-			) : 
-			(
-				<div className="border-2 border-dashed rounded p-8 text-center">
-					<Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-					<p className="text-sm text-gray-500">Выберите изображение</p>
-				</div>
-			)} */}
-
-      {/* File Input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        // Добавляем поддержку HEIC в accept
+
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic,image/heif"
         onChange={handleFileSelect}
         className="hidden"
         disabled={disabled || isUploading}
@@ -102,17 +113,20 @@ export const ImageUpload: React.FC<Props> = ({
         {isUploading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Loading...
+            Processing & Uploading...
           </>
         ) : (
           <>
             <Upload className="h-4 w-4 mr-2" />
-            {previewUrl ? 'Change image' : 'Upload image'}
+
+            {imageUrl ? 'Change image' : 'Upload image'}
           </>
         )}
       </Button>
 
-      <p className="text-xs text-gray-500">Format: JPG, PNG, WebP, GIF.</p>
+      <p className="text-xs text-gray-500 italic">
+        I file verranno ottimizzati automaticamente (WebP, max 1MB).
+      </p>
     </div>
   );
 };

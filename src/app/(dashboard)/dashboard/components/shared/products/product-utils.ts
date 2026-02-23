@@ -1,7 +1,7 @@
 import { CreateProductData, UpdateProductData } from './product-types';
 
 /**
- * Валидация данных продукта
+ * Валидация основных данных продукта (Metadata)
  */
 export const validateProductData = (
   data: Partial<CreateProductData> | Partial<UpdateProductData>,
@@ -28,27 +28,12 @@ export const validateProductData = (
 };
 
 /**
- * Валидация вариантов продукта
- */
-export const validateProductVariants = (variants: Array<{ price: number }>): string | null => {
-  if (variants.length === 0) {
-    return 'Aggiungi almeno una variante del prodotto';
-  }
-
-  const invalidVariant = variants.find(v => !v.price || v.price <= 0);
-  if (invalidVariant) {
-    return 'Tutte le varianti devono avere un prezzo valido';
-  }
-
-  return null;
-};
-
-/**
  * Форматирование цены
  */
 export const formatPrice = (price: number | { toString(): string }): string => {
   const numericPrice = typeof price === 'number' ? price : Number(price);
-  return `${numericPrice.toFixed(2)} €`;
+
+  return `${isNaN(numericPrice) ? '0.00' : numericPrice.toFixed(2)} €`;
 };
 
 /**
@@ -64,14 +49,16 @@ export const getCategoryName = (
 
 /**
  * Получение количества вариантов
+
  */
-export const getVariantsCount = (product: { items: unknown[] }): number => {
-  return product.items?.length || 0;
+export const getVariantsCount = (product: { variants?: unknown[] }): number => {
+  return product.variants?.length || 0;
 };
 
 /**
  * Проверка наличия ингредиентов
+
  */
-export const hasIngredients = (product: { ingredients?: unknown[] }): boolean => {
-  return (product.ingredients?.length || 0) > 0;
+export const hasIngredients = (product: { baseIngredients?: unknown[] }): boolean => {
+  return (product.baseIngredients?.length || 0) > 0;
 };
