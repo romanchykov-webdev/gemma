@@ -14,90 +14,100 @@ import {
   validateCategoryData,
 } from '../components/shared/categories/category-utils';
 
+// 🔄 Утилита для безопасного извлечения сообщений об ошибках (защита от [object Object])
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (!(error instanceof Error) || !('response' in error)) return fallback;
+  const msg = (error as { response?: { data?: { message?: unknown } } }).response?.data?.message;
+  if (typeof msg === 'string') return msg;
+  if (Array.isArray(msg)) return msg.join(', ');
+  return fallback;
+};
+
+//
 interface UseCategoriesReturn {
   categories: Category[];
   loading: boolean;
   isCreating: boolean;
   loadingCategoryIds: Set<number>;
-  loadCategories: () => Promise<void>;
-  handleCreate: (data: CreateCategoryData) => Promise<void>;
-  handleUpdate: (id: number, data: UpdateCategoryData) => Promise<void>;
-  handleDelete: (id: number, productsCount: number) => Promise<void>;
+  loadCategories: (signal?: AbortSignal) => Promise<void>;
+  handleCreate: (data: CreateCategoryData) => Promise<boolean>;
+  handleUpdate: (id: number, data: UpdateCategoryData) => Promise<boolean>;
+  handleDelete: (id: number, productsCount: number) => Promise<boolean>;
 }
 
-/**
- * Кастомный хук для управления категориями
- * Изолирует всю логику работы с API и состоянием от UI компонента
- */
 export const useCategories = (): UseCategoriesReturn => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [loadingCategoryIds, setLoadingCategoryIds] = useState<Set<number>>(new Set());
 
-  // Загрузка категорий
-  const loadCategories = async () => {
+  // 🔄 Защита от Race Condition при загрузке (AbortController)
+  const loadCategories = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       const data = await Api.categories_dashboard.getCategories();
+
+      if (signal?.aborted) return;
       setCategories(data);
-    } catch (error) {
-      toast.error('Errore nel caricamento delle categorie');
+    } catch (error: unknown) {
+      // 1. Проверяем, является ли это ошибкой отмены запроса (тихо выходим)
+      if (
+        error instanceof Error &&
+        (error.name === 'CanceledError' || error.name === 'AbortError')
+      ) {
+        return;
+      }
+
+      // 2. Если это настоящая ошибка (упал сервер, нет сети), показываем тост
+      toast.error(getErrorMessage(error, 'Errore nel caricamento delle categorie'));
       console.error(error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
-  // Создание категории
-  const handleCreate = async (data: CreateCategoryData) => {
-    // Валидация
+  const handleCreate = async (data: CreateCategoryData): Promise<boolean> => {
     const validationError = validateCategoryData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
     try {
       setIsCreating(true);
       const newCategory = await Api.categories_dashboard.createCategory(data.name);
-      setCategories([...categories, newCategory]);
+
+      // 🔄  Функциональный setState защищает от потери данных при быстрых кликах
+      setCategories(prev => [...prev, newCategory]);
       toast.success('Categoria creata con successo');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : 'Errore nella creazione';
-      toast.error(message || 'Errore nella creazione');
+      toast.error(getErrorMessage(error, 'Errore nella creazione'));
+      return false;
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Обновление категории
-  const handleUpdate = async (id: number, data: UpdateCategoryData) => {
-    // Валидация
+  const handleUpdate = async (id: number, data: UpdateCategoryData): Promise<boolean> => {
     const validationError = validateCategoryData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
-    // Добавляем ID в состояние загрузки
     setLoadingCategoryIds(prev => new Set(prev).add(id));
 
     try {
       const updated = await Api.categories_dashboard.updateCategory(id, data.name);
-      setCategories(categories.map(cat => (cat.id === id ? updated : cat)));
+      // 🔄 Функциональный setState
+      setCategories(prev => prev.map(cat => (cat.id === id ? updated : cat)));
       toast.success('Categoria aggiornata');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'aggiornamento";
-      toast.error(message || "Errore nell'aggiornamento");
+      toast.error(getErrorMessage(error, "Errore nell'aggiornamento"));
+      return false;
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingCategoryIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -106,29 +116,24 @@ export const useCategories = (): UseCategoriesReturn => {
     }
   };
 
-  // Удаление категории
-  const handleDelete = async (id: number, productsCount: number) => {
-    // Проверка возможности удаления
+  const handleDelete = async (id: number, productsCount: number): Promise<boolean> => {
     if (!canDeleteCategory(productsCount)) {
       toast.error(getDeleteErrorMessage(productsCount));
-      return;
+      return false;
     }
 
-    // Добавляем ID в состояние загрузки
     setLoadingCategoryIds(prev => new Set(prev).add(id));
 
     try {
       await Api.categories_dashboard.deleteCategory(id);
-      setCategories(categories.filter(cat => cat.id !== id));
+      // 🔄 Функциональный setState
+      setCategories(prev => prev.filter(cat => cat.id !== id));
       toast.success('Categoria eliminata');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'eliminazione";
-      toast.error(message || "Errore nell'eliminazione");
+      toast.error(getErrorMessage(error, "Errore nell'eliminazione"));
+      return false;
     } finally {
-      // Удаляем ID из состояния загрузки
       setLoadingCategoryIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
@@ -137,9 +142,14 @@ export const useCategories = (): UseCategoriesReturn => {
     }
   };
 
-  // Загрузка при монтировании
+  // 🔄 Отписка при размонтировании
   useEffect(() => {
-    loadCategories();
+    const controller = new AbortController();
+    loadCategories(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   return {

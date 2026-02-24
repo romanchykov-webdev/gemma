@@ -7,8 +7,9 @@ import { Category, UpdateCategoryData } from './category-types';
 
 interface Props {
   category: Category;
-  onUpdate: (id: number, data: UpdateCategoryData) => void;
-  onDelete: (id: number, productsCount: number) => void;
+
+  onUpdate: (id: number, data: UpdateCategoryData) => Promise<boolean>;
+  onDelete: (id: number, productsCount: number) => Promise<boolean>;
   isLoading?: boolean;
 }
 
@@ -31,23 +32,36 @@ export const CategoryCard: React.FC<Props> = ({
     setEditingName(category.name);
   };
 
-  const handleUpdate = () => {
-    onUpdate(category.id, { name: editingName.trim() });
-    setIsEditing(false);
+  const handleUpdate = async () => {
+    const trimmedName = editingName.trim();
+
+    // 🛡️ ЗАЩИТА: Если имя не изменилось или стало пустым, просто отменяем редактирование без запроса
+    if (trimmedName === category.name || !trimmedName) {
+      cancelEditing();
+      return;
+    }
+
+    // ⏳ Ждем ответа от сервера. Если success === true, форма закрывается.
+    // Если false - форма остается открытой, текст не теряется!
+    const success = await onUpdate(category.id, { name: trimmedName });
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
   const handleDelete = () => {
     if (!confirm('Sei sicuro di voler eliminare questa categoria?')) {
       return;
     }
+
     onDelete(category.id, category._count?.products || 0);
   };
 
   return (
     <div className="flex items-center gap-2 p-3 bg-white border rounded-lg hover:shadow-md transition relative overflow-hidden">
       {isLoading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
-          <Loader2 className="animate-spin" size={50} />
+        <div className="absolute top-0 left-0 w-full h-full bg-white/70 z-10 flex items-center justify-center">
+          <Loader2 className="animate-spin text-blue-600" size={24} />
         </div>
       )}
       {isEditing ? (
@@ -55,14 +69,16 @@ export const CategoryCard: React.FC<Props> = ({
           <Input
             value={editingName}
             onChange={e => setEditingName(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleUpdate()}
+            onKeyDown={e => e.key === 'Enter' && !isLoading && handleUpdate()}
             className="flex-1"
             autoFocus
+            disabled={isLoading}
           />
           <Button
             size="icon"
             variant="ghost"
             onClick={handleUpdate}
+            disabled={isLoading}
             className="text-green-600 hover:text-green-700 hover:bg-green-50"
           >
             <Check className="w-4 h-4" />
@@ -71,6 +87,7 @@ export const CategoryCard: React.FC<Props> = ({
             size="icon"
             variant="ghost"
             onClick={cancelEditing}
+            disabled={isLoading}
             className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
           >
             <X className="w-4 h-4" />
@@ -86,6 +103,7 @@ export const CategoryCard: React.FC<Props> = ({
             size="icon"
             variant="ghost"
             onClick={startEditing}
+            disabled={isLoading}
             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
           >
             <Pencil className="w-4 h-4" />
@@ -94,6 +112,7 @@ export const CategoryCard: React.FC<Props> = ({
             size="icon"
             variant="outline"
             onClick={handleDelete}
+            disabled={isLoading}
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />

@@ -6,19 +6,26 @@ import React, { useState } from 'react';
 import { CreateCategoryData } from './category-types';
 
 interface Props {
-  onSubmit: (data: CreateCategoryData) => void;
+  onSubmit: (data: CreateCategoryData) => Promise<boolean>;
   isCreating?: boolean;
 }
 
 export const CategoryCreateForm: React.FC<Props> = ({ onSubmit, isCreating = false }) => {
   const [name, setName] = useState('');
 
-  const handleSubmit = () => {
-    onSubmit({ name: name.trim() });
-    setName('');
+  const handleSubmit = async () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+
+    const success = await onSubmit({ name: trimmedName });
+
+    // ✅ Очищаем инпут ТОЛЬКО если категория успешно создана
+    if (success) {
+      setName('');
+    }
   };
 
-  const isFormValid = name.trim();
+  const isFormValid = name.trim().length > 0;
 
   return (
     <div className="flex gap-2 items-center">
@@ -26,11 +33,12 @@ export const CategoryCreateForm: React.FC<Props> = ({ onSubmit, isCreating = fal
         placeholder="Nome nuova categoria..."
         value={name}
         onChange={e => setName(e.target.value)}
-        onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
+        onKeyDown={e => e.key === 'Enter' && isFormValid && !isCreating && handleSubmit()}
         disabled={isCreating}
         className="flex-1"
       />
-      <Button onClick={handleSubmit} disabled={isCreating || !isFormValid} className="h-13">
+
+      <Button onClick={handleSubmit} disabled={isCreating || !isFormValid} className="h-10">
         <Plus className="w-4 h-4 mr-2" />
         Aggiungi
       </Button>
