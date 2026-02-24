@@ -27,13 +27,19 @@ export const CategoryCreateForm: React.FC<Props> = ({ onSubmit, isCreating = fal
 
   const isFormValid = name.trim().length > 0;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && isFormValid && !isCreating) {
+      void handleSubmit();
+    }
+  };
+
   return (
     <div className="flex gap-2 items-center">
       <Input
         placeholder="Nome nuova categoria..."
         value={name}
         onChange={e => setName(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && isFormValid && !isCreating && handleSubmit()}
+        onKeyDown={handleKeyDown}
         disabled={isCreating}
         className="flex-1"
       />

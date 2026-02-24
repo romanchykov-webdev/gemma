@@ -53,7 +53,11 @@ export const CategoryCard: React.FC<Props> = ({
   const handleDelete = async () => {
     await onDelete(category.id, category._count?.products || 0);
   };
-
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isLoading) {
+      void handleUpdate();
+    }
+  };
   return (
     <div className="flex items-center gap-2 p-3 bg-white border rounded-lg hover:shadow-md transition relative overflow-hidden">
       {isLoading && (
@@ -66,7 +70,7 @@ export const CategoryCard: React.FC<Props> = ({
           <Input
             value={editingName}
             onChange={e => setEditingName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !isLoading && handleUpdate()}
+            onKeyDown={handleKeyDown}
             className="flex-1"
             autoFocus
             disabled={isLoading}
