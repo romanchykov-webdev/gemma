@@ -1,8 +1,10 @@
 import { Category } from '@/app/(dashboard)/dashboard/components/shared/categories/category-types';
 import { axiosInstance } from '../instance';
 
-export const getCategories = async (): Promise<Category[]> => {
-  const { data } = await axiosInstance.get<Category[]>('/dashboard/categories');
+export const getCategories = async (options?: { signal?: AbortSignal }): Promise<Category[]> => {
+  const { data } = await axiosInstance.get<Category[]>('/dashboard/categories', {
+    signal: options?.signal,
+  });
   return data;
 };
 

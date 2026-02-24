@@ -3,6 +3,7 @@
 import { Button, Input } from '@/components/ui';
 import { Check, Loader2, Pencil, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { ConfirmModal } from '../confirm-modal';
 import { Category, UpdateCategoryData } from './category-types';
 
 interface Props {
@@ -49,12 +50,8 @@ export const CategoryCard: React.FC<Props> = ({
     }
   };
 
-  const handleDelete = () => {
-    if (!confirm('Sei sicuro di voler eliminare questa categoria?')) {
-      return;
-    }
-
-    onDelete(category.id, category._count?.products || 0);
+  const handleDelete = async () => {
+    await onDelete(category.id, category._count?.products || 0);
   };
 
   return (
@@ -108,15 +105,20 @@ export const CategoryCard: React.FC<Props> = ({
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={handleDelete}
-            disabled={isLoading}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          <ConfirmModal
+            title="Elimina categoria"
+            description={`Vuoi davvero eliminare la categoria "${category.name}"?`}
+            onConfirm={handleDelete}
           >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              disabled={isLoading}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </ConfirmModal>
         </>
       )}
     </div>

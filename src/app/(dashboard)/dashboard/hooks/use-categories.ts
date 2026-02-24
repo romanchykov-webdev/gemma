@@ -45,7 +45,7 @@ export const useCategories = (): UseCategoriesReturn => {
   const loadCategories = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const data = await Api.categories_dashboard.getCategories();
+      const data = await Api.categories_dashboard.getCategories({ signal });
 
       if (signal?.aborted) return;
       setCategories(data);
