@@ -1,5 +1,6 @@
 'use client';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { useCategories } from '../../hooks/use-categories';
@@ -25,12 +26,10 @@ export const CategoriesDashboard: React.FC<Props> = ({ className }) => {
   // Loading state
   if (loading) {
     return (
-      <div className={cn('p-6', className)}>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded-md w-1/4"></div>
-          <div className="h-12 bg-gray-200 rounded-md"></div>
-          <div className="h-12 bg-gray-200 rounded-md"></div>
-        </div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/4" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
       </div>
     );
   }

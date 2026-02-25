@@ -1,4 +1,18 @@
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './alert-dialog';
 export { Badge } from './badge';
 export { Button } from './button';
 export { Checkbox } from './checkbox';

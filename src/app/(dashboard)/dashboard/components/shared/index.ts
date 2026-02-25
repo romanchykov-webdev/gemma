@@ -49,3 +49,5 @@ export { ImageUpload } from './image-upload';
 export { LoadingOverlay } from './loading-overlay';
 // product image section
 export { ProductImageSection } from './products/product-image-section';
+// confirm modal
+export { ConfirmModal } from './confirm-modal';
