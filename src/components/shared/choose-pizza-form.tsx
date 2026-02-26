@@ -154,11 +154,12 @@ export const ChoosePizzaForm: React.FC<Props> = ({
       {/* Правая часть - настройки */}
       <div
         className={cn(
-          'w-full lg:w-[490px] bg-surface-off-white p-4 lg:p-7 overflow-auto flex flex-col',
+          'w-full lg:w-[490px] bg-surface-off-white p-4 lg:p-7 overflow-hidden flex flex-col',
           loading && 'opacity-40 pointer-events-none',
         )}
       >
-        <div className="flex-1 pt-1">
+        {/* <div className="flex-1 pt-1"> */}
+        <div className="pt-1 shrink-0">
           <Title text={name} size="md" className="font-extrabold mb-3" />
           {/* Выбор размера */}
           {uiConfig.showSizeSelector && (
@@ -195,24 +196,26 @@ export const ChoosePizzaForm: React.FC<Props> = ({
             </div>
           )}
           {/* ✅ Ингредиенты */}
-          {ingredientView === 'addable' ? (
-            // Дополнительные ингредиенты (можно добавить)
-            <IngredientsList
-              ingredients={ingredients}
-              onClickAdd={addIngredient}
-              selectedIds={selectedIngredients}
-            />
-          ) : (
-            // ✅ Базовые ингредиенты
-            <IngredientsList
-              ingredients={baseIngredientsForUI}
-              onClickAdd={toggleBaseIngredientDisabled}
-              // ✅ показываем активные базовые ингредиенты
-              selectedIds={
-                new Set(baseIngredientsState.filter(ing => !ing.isDisabled).map(ing => ing.id))
-              }
-            />
-          )}
+          <div className="flex-1 overflow-hidden mt-4">
+            {ingredientView === 'addable' ? (
+              // Дополнительные ингредиенты (можно добавить)
+              <IngredientsList
+                ingredients={ingredients}
+                onClickAdd={addIngredient}
+                selectedIds={selectedIngredients}
+              />
+            ) : (
+              // ✅ Базовые ингредиенты
+              <IngredientsList
+                ingredients={baseIngredientsForUI}
+                onClickAdd={toggleBaseIngredientDisabled}
+                // ✅ показываем активные базовые ингредиенты
+                selectedIds={
+                  new Set(baseIngredientsState.filter(ing => !ing.isDisabled).map(ing => ing.id))
+                }
+              />
+            )}
+          </div>
         </div>
 
         {/* Кнопка добавления в корзину */}
@@ -220,7 +223,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           loading={loading}
           onClick={handleClickAdd}
           disabled={!currentItemId}
-          className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10 mb-10"
+          className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10 mb-10 shrink-0"
         >
           Aggiungi al carrello per {totalPrice.toFixed(2)} €
         </Button>

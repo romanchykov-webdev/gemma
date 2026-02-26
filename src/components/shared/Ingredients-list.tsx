@@ -17,7 +17,12 @@ export const IngredientsList: React.FC<Props> = ({
   className,
 }) => {
   return (
-    <div className={cn('grid grid-cols-3 gap-3 pb-4 scrollbar max-h-[350px] ', className)}>
+    <div
+      className={cn(
+        'grid grid-cols-3 gap-3 pb-4 overflow-y-auto scrollbar max-h-[350px] ',
+        className,
+      )}
+    >
       {ingredients.map(item => (
         <Ingredient
           onClick={() => onClickAdd(item.id)}
