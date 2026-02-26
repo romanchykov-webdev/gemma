@@ -44,12 +44,17 @@ export function enrichProductData(
   });
 
   // 3. Подготавливаем добавляемые ингредиенты для UI
-  const ingredients = allIngredients
-    .filter(ing => baseIngrsFromDB.some(bi => bi.id === ing.id))
-    .map(ing => ({
-      ...ing,
-      price: Number(ing.price),
-    }));
+  const addableIds = new Set<number>(productData.addableIngredientIds ?? []);
+
+  const ingredients =
+    addableIds.size > 0
+      ? allIngredients
+          .filter(ing => addableIds.has(ing.id))
+          .map(ing => ({
+            ...ing,
+            price: Number(ing.price),
+          }))
+      : [];
 
   // 4. Преобразуем variants в items для UI
   const items: OptimizedProductItem[] = variantsFromDB.map(v => {

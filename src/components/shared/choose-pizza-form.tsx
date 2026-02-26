@@ -54,7 +54,9 @@ export const ChoosePizzaForm: React.FC<Props> = ({
     toggleBaseIngredientDisabled,
   } = useProductOptions(items, baseIngredients);
 
-  const [ingredientView, setIngredientView] = useState<'addable' | 'default'>('addable');
+  const [ingredientView, setIngredientView] = useState<'addable' | 'default'>(() =>
+    ingredients.length > 0 ? 'addable' : 'default',
+  );
 
   // ✅ подготавливаем данные базовых ингредиентов для UI
   const baseIngredientsForUI = useMemo(() => {
@@ -180,7 +182,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           )}
           {/* ✅ Переключатель режима просмотра ингредиентов */}
           {/* Показываем только если есть ОБА типа ингредиентов */}
-          {ingredients.length > 0 && baseIngredientsForUI.length > 0 && (
+          {(ingredients.length > 0 || baseIngredientsForUI.length > 0) && (
             <div className="mb-3">
               <GroupVariants
                 items={[
