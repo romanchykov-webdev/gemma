@@ -36,6 +36,7 @@ export default async function ProductModalPage({ params }: ProductPageProps) {
         categoryId: true,
         baseIngredients: true,
         variants: true,
+        addableIngredientIds: true,
       },
     }),
     getReferences(), // ✅ Кешируется через React.cache
