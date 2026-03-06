@@ -1,25 +1,30 @@
 'use client';
 
 import { Button, Input } from '@/components/ui';
-import { Check, Loader2, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { ConfirmModal } from '../confirm-modal';
+
+import { ImageUpload } from '../image-upload';
+import { LoadingOverlay } from '../loading-overlay';
+
 import { IngredientImagePreview } from './ingredient-image-preview';
 import { Ingredient, UpdateIngredientData } from './ingredient-types';
 import { formatPrice } from './ingredient-utils';
 
 interface Props {
   ingredient: Ingredient;
-  onUpdate: (id: number, data: UpdateIngredientData) => void;
-  onDelete: (id: number) => void;
+  onUpdate: (id: number, data: UpdateIngredientData) => Promise<boolean>;
+  onDelete: (id: number) => Promise<boolean>;
   isLoading?: boolean;
 }
 
 export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete, isLoading }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingName, setEditingName] = useState(ingredient.name);
-
   const [editingPrice, setEditingPrice] = useState(Number(ingredient.price));
   const [editingImageUrl, setEditingImageUrl] = useState(ingredient.imageUrl);
+  const [isUploading, setIsUploading] = useState(false);
 
   const startEditing = () => {
     setIsEditing(true);
@@ -35,64 +40,79 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
     setEditingImageUrl(ingredient.imageUrl);
   };
 
-  const handleUpdate = () => {
-    onUpdate(ingredient.id, {
+  const handleUpdate = async () => {
+    const success = await onUpdate(ingredient.id, {
       name: editingName.trim(),
       price: editingPrice,
       imageUrl: editingImageUrl.trim(),
     });
-    setIsEditing(false);
+
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
-  const handleDelete = () => {
-    if (!confirm('Sei sicuro di voler eliminare questo ingrediente?')) {
-      return;
-    }
-    onDelete(ingredient.id);
+  const handleDelete = async () => {
+    await onDelete(ingredient.id);
   };
+
+  const isBusy = isLoading || isUploading;
 
   return (
     <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition relative ">
-      {isLoading && (
-        <div className="absolute top-0 left-0 w-full h-full bg-gray-500 opacity-50 flex items-center justify-center">
-          <Loader2 className="animate-spin" size={50} />
-        </div>
-      )}
+      <LoadingOverlay isVisible={!!isBusy} className="bg-white/60 backdrop-blur-sm z-10" />
+
       {isEditing ? (
         // 📝 Режим редактирования
         <div className="p-4 space-y-3">
           <IngredientImagePreview imageUrl={editingImageUrl} className="rounded-lg" />
+
+          <ImageUpload
+            imageUrl={editingImageUrl}
+            onImageChange={setEditingImageUrl}
+            folder="ingredients"
+            label="Cambia immagine"
+            isUploading={isUploading}
+            setIsUploading={setIsUploading}
+            classNameButton="w-full text-brand-primary border-brand-primary/50 hover:bg-brand-primary/5 hover:text-brand-primary"
+          />
 
           <Input
             value={editingName}
             onChange={e => setEditingName(e.target.value)}
             placeholder="Nome"
             autoFocus
+            disabled={isBusy}
           />
           <Input
             type="number"
-            value={editingPrice || ''} // Теперь editingPrice точно number
+            value={editingPrice || ''}
             onChange={e => setEditingPrice(Number(e.target.value))}
             placeholder="Prezzo"
             min="0"
             step="0.01"
-          />
-          <Input
-            value={editingImageUrl}
-            onChange={e => setEditingImageUrl(e.target.value)}
-            placeholder="URL immagine"
+            disabled={isBusy}
           />
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button
               size="sm"
               onClick={handleUpdate}
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              disabled={
+                isBusy || !editingName.trim() || editingPrice <= 0 || !editingImageUrl.trim()
+              }
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               <Check className="w-4 h-4 mr-1" />
               Salva
             </Button>
-            <Button size="sm" variant="outline" onClick={cancelEditing} className="flex-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cancelEditing}
+              disabled={isBusy}
+              className="flex-1"
+            >
               <X className="w-4 h-4 mr-1" />
               Annulla
             </Button>
@@ -104,7 +124,9 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
           <IngredientImagePreview imageUrl={ingredient.imageUrl} alt={ingredient.name} />
 
           <div className="p-4">
-            <h3 className="font-semibold text-lg mb-1">{ingredient.name}</h3>
+            <h3 className="font-semibold text-lg mb-1 line-clamp-2" title={ingredient.name}>
+              {ingredient.name}
+            </h3>
             <p className="text-brand-primary font-bold text-xl mb-3">
               {formatPrice(ingredient.price)}
             </p>
@@ -114,20 +136,28 @@ export const IngredientCard: React.FC<Props> = ({ ingredient, onUpdate, onDelete
                 size="sm"
                 variant="outline"
                 onClick={startEditing}
+                disabled={isBusy}
                 className="flex-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
                 <Pencil className="w-4 h-4 mr-1" />
                 Modifica
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleDelete}
-                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+
+              <ConfirmModal
+                onConfirm={handleDelete}
+                title="Elimina Ingrediente"
+                description={`Sei sicuro di voler eliminare l'ingrediente "${ingredient.name}"? Questa azione non può essere annullata.`}
               >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Elimina
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isBusy}
+                  className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Elimina
+                </Button>
+              </ConfirmModal>
             </div>
           </div>
         </>

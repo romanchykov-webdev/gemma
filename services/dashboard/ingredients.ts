@@ -1,8 +1,10 @@
 import { Ingredient } from '@/app/(dashboard)/dashboard/components/shared/ingredients/ingredient-types';
 import { axiosInstance } from '../instance';
 
-export const getIngredients = async (): Promise<Ingredient[]> => {
-  const { data } = await axiosInstance.get<Ingredient[]>('/ingredients');
+export const getIngredients = async (options?: { signal?: AbortSignal }): Promise<Ingredient[]> => {
+  const { data } = await axiosInstance.get<Ingredient[]>('/ingredients', {
+    signal: options?.signal,
+  });
   return data;
 };
 
