@@ -13,15 +13,16 @@ import {
   getDeleteErrorMessage,
   validateCategoryData,
 } from '../components/shared/categories/category-utils';
+import { getErrorMessage } from '../lib/utils/api-error';
 
-// 🔄 Утилита для безопасного извлечения сообщений об ошибках (защита от [object Object])
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (!(error instanceof Error) || !('response' in error)) return fallback;
-  const msg = (error as { response?: { data?: { message?: unknown } } }).response?.data?.message;
-  if (typeof msg === 'string') return msg;
-  if (Array.isArray(msg)) return msg.join(', ');
-  return fallback;
-};
+// // 🔄 Утилита для безопасного извлечения сообщений об ошибках (защита от [object Object])
+// const getErrorMessage = (error: unknown, fallback: string): string => {
+//   if (!(error instanceof Error) || !('response' in error)) return fallback;
+//   const msg = (error as { response?: { data?: { message?: unknown } } }).response?.data?.message;
+//   if (typeof msg === 'string') return msg;
+//   if (Array.isArray(msg)) return msg.join(', ');
+//   return fallback;
+// };
 
 //
 interface UseCategoriesReturn {

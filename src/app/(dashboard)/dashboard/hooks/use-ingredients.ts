@@ -10,15 +10,17 @@ import {
 } from '../components/shared/ingredients/ingredient-types';
 import { validateIngredientData } from '../components/shared/ingredients/ingredient-utils';
 
+import { getErrorMessage } from '../lib/utils/api-error';
+
 interface UseIngredientsReturn {
   ingredients: Ingredient[];
   loading: boolean;
   isCreating: boolean;
   loadingIngredientIds: Set<number>;
-  loadIngredients: () => Promise<void>;
-  handleCreate: (data: CreateIngredientData) => Promise<void>;
-  handleUpdate: (id: number, data: UpdateIngredientData) => Promise<void>;
-  handleDelete: (id: number) => Promise<void>;
+  loadIngredients: (signal?: AbortSignal) => Promise<void>;
+  handleCreate: (data: CreateIngredientData) => Promise<boolean>;
+  handleUpdate: (id: number, data: UpdateIngredientData) => Promise<boolean>;
+  handleDelete: (id: number) => Promise<boolean>;
 }
 
 /**
@@ -32,68 +34,60 @@ export const useIngredients = (): UseIngredientsReturn => {
   const [loadingIngredientIds, setLoadingIngredientIds] = useState<Set<number>>(new Set());
 
   // Загрузка ингредиентов
-  const loadIngredients = async () => {
+  const loadIngredients = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const data = await Api.ingredients_dashboard.getIngredients();
+      const data = await Api.ingredients_dashboard.getIngredients({ signal });
       setIngredients(data);
     } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return;
       toast.error('Errore nel caricamento degli ingredienti');
       console.error(error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
   // Создание нового ингредиента
-  const handleCreate = async (data: CreateIngredientData) => {
-    // Валидация
+  const handleCreate = async (data: CreateIngredientData): Promise<boolean> => {
     const validationError = validateIngredientData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
     try {
       setIsCreating(true);
       const newIngredient = await Api.ingredients_dashboard.createIngredient(data);
-      setIngredients([newIngredient, ...ingredients]);
+      setIngredients(prev => [newIngredient, ...prev]);
       toast.success('Ingrediente creato con successo');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : 'Errore nella creazione';
-      toast.error(message || 'Errore nella creazione');
+      toast.error(getErrorMessage(error, 'Errore nella creazione'));
+      return false;
     } finally {
       setIsCreating(false);
     }
   };
 
   // Обновление ингредиента
-  const handleUpdate = async (id: number, data: UpdateIngredientData) => {
-    // Валидация
+  const handleUpdate = async (id: number, data: UpdateIngredientData): Promise<boolean> => {
     const validationError = validateIngredientData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
     try {
-      // Добавляем ID в список загружающихся
       setLoadingIngredientIds(prev => new Set(prev).add(id));
-
       const updated = await Api.ingredients_dashboard.updateIngredient(id, data);
-      setIngredients(ingredients.map(ing => (ing.id === id ? updated : ing)));
+      setIngredients(prev => prev.map(ing => (ing.id === id ? updated : ing)));
       toast.success('Ingrediente aggiornato');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'aggiornamento";
-      toast.error(message || "Errore nell'aggiornamento");
+      toast.error(getErrorMessage(error, "Errore nell'aggiornamento"));
+      return false;
     } finally {
-      // Убираем ID из списка загружающихся
       setLoadingIngredientIds(prev => {
         const next = new Set(prev);
         next.delete(id);
@@ -103,22 +97,17 @@ export const useIngredients = (): UseIngredientsReturn => {
   };
 
   // Удаление ингредиента
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number): Promise<boolean> => {
     try {
-      // Добавляем ID в список загружающихся
       setLoadingIngredientIds(prev => new Set(prev).add(id));
-
       await Api.ingredients_dashboard.deleteIngredient(id);
-      setIngredients(ingredients.filter(ing => ing.id !== id));
+      setIngredients(prev => prev.filter(ing => ing.id !== id));
       toast.success('Ingrediente eliminato');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'eliminazione";
-      toast.error(message || "Errore nell'eliminazione");
+      toast.error(getErrorMessage(error, "Errore nell'eliminazione"));
+      return false;
     } finally {
-      // Убираем ID из списка загружающихся
       setLoadingIngredientIds(prev => {
         const next = new Set(prev);
         next.delete(id);
@@ -127,16 +116,18 @@ export const useIngredients = (): UseIngredientsReturn => {
     }
   };
 
-  // Загрузка при монтировании
+  // Загрузка при монтировании с AbortController
   useEffect(() => {
-    loadIngredients();
+    const controller = new AbortController();
+    loadIngredients(controller.signal);
+    return () => controller.abort();
   }, []);
 
   return {
     ingredients,
     loading,
     isCreating,
-    loadingIngredientIds, // Добавить
+    loadingIngredientIds,
     loadIngredients,
     handleCreate,
     handleUpdate,
