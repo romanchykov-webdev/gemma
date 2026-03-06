@@ -5,10 +5,11 @@ import { ImageIcon, Plus, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { ImageUpload } from '../image-upload';
+import { LoadingOverlay } from '../loading-overlay';
 import { CreateIngredientData } from './ingredient-types';
 
 interface Props {
-  onSubmit: (data: CreateIngredientData) => void;
+  onSubmit: (data: CreateIngredientData) => Promise<boolean>;
   isCreating?: boolean;
 }
 
@@ -18,100 +19,115 @@ export const IngredientCreateForm: React.FC<Props> = ({ onSubmit, isCreating = f
   const [imageUrl, setImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleSubmit = () => {
-    onSubmit({
+  const handleSubmit = async () => {
+    const success = await onSubmit({
       name: name.trim(),
       price: price,
       imageUrl: imageUrl.trim(),
     });
 
-    // Очищаем форму после успешной отправки
-    setName('');
-    setPrice(0);
-    setImageUrl('');
+    if (success) {
+      setName('');
+      setPrice(0);
+      setImageUrl('');
+    }
   };
-  const upLoading = (item: string) => {
-    setImageUrl(item);
-  };
+
   const isFormValid = name.trim() && price > 0 && imageUrl.trim();
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && isFormValid && !isCreating && !isUploading) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg border space-y-3">
-      <h3 className="font-semibold">Aggiungi nuovo ingrediente</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Input
-          placeholder="Nome ingrediente..."
-          value={name}
-          onChange={e => setName(e.target.value)}
-          disabled={isCreating}
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
-        />
-        <Input
-          type="number"
-          placeholder="Prezzo (€)..."
-          value={price || ''}
-          onChange={e => setPrice(Number(e.target.value))}
-          disabled={isCreating}
-          min="0"
-          step="0.01"
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
-        />
-        <Input
-          placeholder="URL immagine..."
-          value={imageUrl}
-          onChange={e => upLoading(e.target.value)}
-          disabled={isCreating}
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
-        />
-        <ImageUpload
-          imageUrl={imageUrl}
-          onImageChange={setImageUrl}
-          folder="products"
-          label="Immagine prodotto"
-          required
-          isUploading={isUploading}
-          setIsUploading={setIsUploading}
-        />
-        <div>
-          {/* Preview */}
-          <div className="flex items-center justify-center ">
+    <div className="bg-white p-5 rounded-lg border relative overflow-hidden">
+      <LoadingOverlay isVisible={!!isCreating || isUploading} />
+
+      <h3 className="font-semibold text-lg mb-4">Aggiungi nuovo ingrediente</h3>
+
+      <div className="flex flex-col gap-5">
+        {/* ✅ СТРОКА 1: Инпуты  */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            placeholder="Nome ingrediente..."
+            value={name}
+            onChange={e => setName(e.target.value)}
+            disabled={isCreating || isUploading}
+            onKeyDown={handleKeyDown}
+            className="h-11"
+          />
+          <Input
+            type="number"
+            placeholder="Prezzo (€)..."
+            value={price || ''}
+            onChange={e => setPrice(Number(e.target.value))}
+            disabled={isCreating || isUploading}
+            min="0"
+            step="0.01"
+            onKeyDown={handleKeyDown}
+            className="h-11"
+          />
+        </div>
+
+        {/* ✅ СТРОКА 2: Медиа (Загрузчик + Превью во всю ширину) */}
+        <div className="space-y-4">
+          {/* Загрузчик */}
+          <div className="w-full">
+            <ImageUpload
+              imageUrl={imageUrl}
+              onImageChange={setImageUrl}
+              folder="ingredients"
+              label="Immagine ingrediente"
+              required
+              isUploading={isUploading}
+              setIsUploading={setIsUploading}
+              classNameButton="w-full text-brand-primary border-brand-primary/50 hover:bg-brand-primary/5 hover:text-brand-primary"
+            />
+          </div>
+
+          {/* Превью во всю ширину */}
+          <div className="w-full">
             {imageUrl ? (
-              <div className="relative flex p-5 w-full item-center justify-center h-60 border rounded overflow-hidden bg-gray-100">
+              <div className="relative flex items-center justify-center w-full h-48 border border-gray-200 bg-gray-50 rounded-lg overflow-hidden">
                 <Image
                   src={imageUrl}
                   alt="Preview"
-                  width={300}
-                  height={300}
-                  className="max-h-48 w-auto object-contain drop-shadow-md"
+                  fill
+                  className="object-contain p-4 drop-shadow-sm"
                 />
                 <Button
                   type="button"
                   onClick={() => setImageUrl('')}
-                  size="sm"
+                  size="icon"
                   variant="destructive"
-                  className="absolute top-2 right-2"
-                  // disabled={disabled || isUploading}
+                  className="absolute top-3 right-3 h-8 w-8 rounded-full shadow-md hover:scale-105 transition-transform"
+                  disabled={isCreating || isUploading}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <div className="border-2 border-dashed w-full h-full flex flex-col items-center justify-center rounded p-8 text-center">
-                <ImageIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Preview image</p>
+              <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-lg text-gray-400">
+                <ImageIcon className="h-10 w-10 mb-2 opacity-50 text-gray-400" />
+                <span className="text-sm font-medium">Anteprima immagine</span>
               </div>
             )}
           </div>
         </div>
+
+        {/* ✅ кнопка сохранения */}
+        <Button
+          onClick={handleSubmit}
+          disabled={isCreating || !isFormValid || isUploading}
+          className="w-full h-12 text-base mt-2"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Aggiungi Ingrediente
+        </Button>
       </div>
-      <Button
-        onClick={handleSubmit}
-        disabled={isCreating || !isFormValid}
-        className="w-full md:w-auto"
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        Aggiungi Ingrediente
-      </Button>
     </div>
   );
 };

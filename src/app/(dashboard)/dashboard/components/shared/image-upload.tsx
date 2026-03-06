@@ -1,10 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import imageCompression from 'browser-image-compression';
 import { Loader2, Upload } from 'lucide-react';
 import React, { useRef } from 'react';
 import { uploadImage } from '../../lib/supabase';
+
+import { toast } from 'react-hot-toast';
 
 interface Props {
   imageUrl: string;
@@ -12,6 +15,7 @@ interface Props {
   folder: string;
   customFileName?: string;
   label?: string;
+  classNameButton?: string;
   required?: boolean;
   disabled?: boolean;
   isUploading: boolean;
@@ -24,6 +28,7 @@ export const ImageUpload: React.FC<Props> = ({
   folder,
   customFileName,
   label = 'Изображение',
+  classNameButton,
   required = false,
   disabled = false,
   isUploading,
@@ -46,7 +51,7 @@ export const ImageUpload: React.FC<Props> = ({
         fileType: 'image/webp', // 👈 Конвертируем в WebP
       };
 
-      console.log(`[IMAGE_UPLOAD] Исходный размер: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+      // console.log(`[IMAGE_UPLOAD] Исходный размер: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
 
       // --- ШАГ 2: Сжатие ---
       const compressedBlob = await imageCompression(file, options);
@@ -61,9 +66,9 @@ export const ImageUpload: React.FC<Props> = ({
         type: 'image/webp',
       });
 
-      console.log(
-        `[IMAGE_UPLOAD] Итоговый размер: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`,
-      );
+      // console.log(
+      //   `[IMAGE_UPLOAD] Итоговый размер: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`,
+      // );
 
       // --- ШАГ 3: Загрузка ---
       // Передаем в uploadImage уже готовый файл и customFileName
@@ -73,11 +78,11 @@ export const ImageUpload: React.FC<Props> = ({
         // setPreviewUrl(url);
         onImageChange(url);
       } else {
-        alert('Ошибка загрузки изображения');
+        toast.error(`Errore durante il caricamento dell'immagine`);
       }
     } catch (error) {
       console.error('[IMAGE_UPLOAD] Ошибка:', error);
-      alert('Ошибка при обработке или загрузке изображения');
+      toast.error("Errore durante l'elaborazione dell'immagine");
     } finally {
       setIsUploading(false);
       // Сбрасываем значение инпута, чтобы можно было выбрать тот же файл повторно
@@ -107,7 +112,7 @@ export const ImageUpload: React.FC<Props> = ({
         type="button"
         onClick={() => fileInputRef.current?.click()}
         variant="outline"
-        className="w-full"
+        className={cn('w-full', classNameButton)}
         disabled={disabled || isUploading}
       >
         {isUploading ? (
