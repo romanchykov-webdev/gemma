@@ -5,8 +5,10 @@ import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { CreateProductSizeData } from './product-size-types';
 
+import { LoadingOverlay } from '../loading-overlay';
+
 interface Props {
-  onSubmit: (data: CreateProductSizeData) => void;
+  onSubmit: (data: CreateProductSizeData) => Promise<boolean>;
   isCreating?: boolean;
 }
 
@@ -15,23 +17,28 @@ export const ProductSizeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = 
   const [value, setValue] = useState<number>(0);
   const [sortOrder, setSortOrder] = useState<number>(0);
 
-  const handleSubmit = () => {
-    onSubmit({
+  const isFormValid = name.trim() && value > 0;
+
+  const handleSubmit = async () => {
+    if (!isFormValid || isCreating) return;
+
+    const success = await onSubmit({
       name: name.trim(),
       value: value,
       sortOrder: sortOrder,
     });
 
-    // Очистка формы после успешного создания
-    setName('');
-    setValue(0);
-    setSortOrder(0);
+    if (success) {
+      setName('');
+      setValue(0);
+      setSortOrder(0);
+    }
   };
 
-  const isFormValid = name.trim() && value > 0;
-
   return (
-    <div className="bg-white p-4 rounded-lg border space-y-3">
+    <div className="bg-white p-4 rounded-lg border space-y-3 relative overflow-hidden">
+      <LoadingOverlay isVisible={isCreating} />
+
       <h3 className="font-semibold">Aggiungi nuova dimensione</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Input
@@ -39,7 +46,7 @@ export const ProductSizeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = 
           value={name}
           onChange={e => setName(e.target.value)}
           disabled={isCreating}
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
+          onKeyDown={e => e.key === 'Enter' && isFormValid && handleSubmit()}
         />
         <Input
           type="number"
@@ -48,7 +55,7 @@ export const ProductSizeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = 
           onChange={e => setValue(Number(e.target.value))}
           disabled={isCreating}
           min="1"
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
+          onKeyDown={e => e.key === 'Enter' && isFormValid && handleSubmit()}
         />
         <Input
           type="number"
@@ -56,7 +63,7 @@ export const ProductSizeCreateForm: React.FC<Props> = ({ onSubmit, isCreating = 
           value={sortOrder || ''}
           onChange={e => setSortOrder(Number(e.target.value))}
           disabled={isCreating}
-          onKeyPress={e => e.key === 'Enter' && isFormValid && handleSubmit()}
+          onKeyDown={e => e.key === 'Enter' && isFormValid && handleSubmit()}
         />
       </div>
       <Button

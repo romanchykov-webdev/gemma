@@ -1,7 +1,7 @@
 'use client';
 
 import { Api } from '@/../services/api-client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import {
   CreateProductSizeData,
@@ -10,9 +10,10 @@ import {
 } from '../components/shared/product-sizes/product-size-types';
 import {
   isDuplicateName,
-  isDuplicateValue,
   validateProductSizeData,
 } from '../components/shared/product-sizes/product-size-utils';
+
+import { getErrorMessage } from '../lib/utils/api-error';
 
 interface UseProductSizesReturn {
   sizes: ProductSize[];
@@ -20,106 +21,95 @@ interface UseProductSizesReturn {
   isCreating: boolean;
   loadingProductSizeIds: Set<number>;
   loadSizes: () => Promise<void>;
-  handleCreate: (data: CreateProductSizeData) => Promise<void>;
-  handleUpdate: (id: number, data: UpdateProductSizeData) => Promise<void>;
-  handleDelete: (id: number) => Promise<void>;
+  handleCreate: (data: CreateProductSizeData) => Promise<boolean>;
+  handleUpdate: (id: number, data: UpdateProductSizeData) => Promise<boolean>;
+  handleDelete: (id: number) => Promise<boolean>;
 }
 
-/**
- * Кастомный хук для управления размерами продуктов
- * Изолирует всю логику работы с API и состоянием от UI компонента
- */
 export const useProductSizes = (): UseProductSizesReturn => {
   const [sizes, setSizes] = useState<ProductSize[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [loadingProductSizeIds, setLoadingProductSizeIds] = useState<Set<number>>(new Set());
 
-  // Загрузка размеров
-  const loadSizes = async () => {
+  const loadSizes = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const data = await Api.product_sizes_dashboard.getProductSizes();
-      setSizes(data);
-    } catch (error) {
-      toast.error('Errore nel caricamento delle dimensioni');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Создание размера
-  const handleCreate = async (data: CreateProductSizeData) => {
-    // Валидация
+      const data = await Api.product_sizes_dashboard.getProductSizes({ signal });
+      if (!signal?.aborted) {
+        setSizes(data);
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'CanceledError') return;
+      if (!signal?.aborted) {
+        toast.error('Errore nel caricamento delle dimensioni');
+        console.error(error);
+      }
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
+  const sizesRef = useRef(sizes);
+  useEffect(() => {
+    sizesRef.current = sizes;
+  }, [sizes]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadSizes(controller.signal);
+    return () => controller.abort();
+  }, [loadSizes]);
+
+  const handleCreate = async (data: CreateProductSizeData): Promise<boolean> => {
     const validationError = validateProductSizeData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
-    // Проверка на дубликаты
-    if (isDuplicateName(data.name, sizes)) {
+    if (isDuplicateName(data.name, sizesRef.current)) {
       toast.error('Esiste già una dimensione con questo nome');
-      return;
-    }
-
-    if (isDuplicateValue(data.value, sizes)) {
-      toast.error('Esiste già una dimensione con questo valore');
-      return;
+      return false;
     }
 
     try {
       setIsCreating(true);
       const created = await Api.product_sizes_dashboard.createProductSize(data);
-      setSizes([created, ...sizes]);
+      setSizes(prev => [created, ...prev]);
       toast.success('Dimensione creata con successo');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : 'Errore nella creazione';
-      toast.error(message || 'Errore nella creazione');
+      toast.error(getErrorMessage(error, 'Errore nella creazione della dimensione'));
+      return false;
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Обновление размера
-  const handleUpdate = async (id: number, data: UpdateProductSizeData) => {
-    // Валидация
+  const handleUpdate = async (id: number, data: UpdateProductSizeData): Promise<boolean> => {
     const validationError = validateProductSizeData(data);
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
-    // Проверка на дубликаты (исключая текущий элемент)
-    if (isDuplicateName(data.name, sizes, id)) {
+    if (isDuplicateName(data.name, sizesRef.current, id)) {
       toast.error('Esiste già una dimensione con questo nome');
-      return;
-    }
-
-    if (isDuplicateValue(data.value, sizes, id)) {
-      toast.error('Esiste già una dimensione con questo valore');
-      return;
+      return false;
     }
 
     try {
-      // Добавляем ID в список загружающихся
       setLoadingProductSizeIds(prev => new Set(prev).add(id));
-
       const updated = await Api.product_sizes_dashboard.updateProductSize(id, data);
-      setSizes(sizes.map(s => (s.id === id ? updated : s)));
+      setSizes(prev => prev.map(s => (s.id === id ? updated : s)));
       toast.success('Dimensione aggiornata');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'aggiornamento";
-      toast.error(message || "Errore nell'aggiornamento");
+      toast.error(getErrorMessage(error, "Errore nell'aggiornamento"));
+      return false;
     } finally {
-      // Убираем ID из списка загружающихся
       setLoadingProductSizeIds(prev => {
         const next = new Set(prev);
         next.delete(id);
@@ -128,23 +118,17 @@ export const useProductSizes = (): UseProductSizesReturn => {
     }
   };
 
-  // Удаление размера
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number): Promise<boolean> => {
     try {
-      // Добавляем ID в список загружающихся
       setLoadingProductSizeIds(prev => new Set(prev).add(id));
-
       await Api.product_sizes_dashboard.deleteProductSize(id);
-      setSizes(sizes.filter(s => s.id !== id));
+      setSizes(prev => prev.filter(s => s.id !== id));
       toast.success('Dimensione eliminata');
+      return true;
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : "Errore nell'eliminazione";
-      toast.error(message || "Errore nell'eliminazione");
+      toast.error(getErrorMessage(error, "Errore nell'eliminazione"));
+      return false;
     } finally {
-      // Убираем ID из списка загружающихся
       setLoadingProductSizeIds(prev => {
         const next = new Set(prev);
         next.delete(id);
@@ -152,17 +136,13 @@ export const useProductSizes = (): UseProductSizesReturn => {
       });
     }
   };
-
-  // Загрузка при монтировании
-  useEffect(() => {
-    loadSizes();
-  }, []);
 
   return {
     sizes,
     loading,
     isCreating,
-    loadingProductSizeIds, // Добавить
+    loadingProductSizeIds,
+
     loadSizes,
     handleCreate,
     handleUpdate,
