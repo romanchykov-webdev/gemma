@@ -96,6 +96,7 @@ export const ProductSizeCard: React.FC<Props> = ({ size, onUpdate, onDelete, isL
             onClick={handleUpdate}
             disabled={isLoading || !editingName.trim() || editingValue <= 0}
             className="bg-green-600 hover:bg-green-700"
+            aria-label="Salva modifiche"
           >
             <Check className="w-4 h-4" />
           </Button>
