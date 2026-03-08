@@ -25,7 +25,13 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     }
 
     const updateData: { name?: string; value?: number; sortOrder?: number } = {};
-    if (data.name) updateData.name = data.name.trim();
+    // if (data.name) updateData.name = data.name.trim();
+    if (data.name !== undefined) {
+      if (!data.name.trim()) {
+        return NextResponse.json({ message: 'Il nome не può essere vuoto' }, { status: 400 });
+      }
+      updateData.name = data.name.trim();
+    }
     if (data.value !== undefined) updateData.value = Number(data.value);
     if (data.sortOrder !== undefined) updateData.sortOrder = Number(data.sortOrder);
 
@@ -39,8 +45,17 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     await revalidateProductVariants();
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[PRODUCT_SIZE_PATCH] Error:', error);
+
+    // ✅ Защита от дубликатов имен при обновлении
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+      return NextResponse.json(
+        { message: 'Un formato con questo nome esiste già' },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json({ message: "Errore nell'aggiornamento" }, { status: 500 });
   }
 }

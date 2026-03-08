@@ -21,11 +21,6 @@ export async function GET() {
         name: true,
         value: true,
         sortOrder: true,
-        // _count: {
-        // 	select: {
-        // 		productItems: true,
-        // 	},
-        // },
       },
     });
 
@@ -50,7 +45,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!data.value || isNaN(Number(data.value))) {
-      return NextResponse.json({ message: 'Il valore (in cm) è obbligatorio' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Il valore del formato è obbligatorio' },
+        { status: 400 },
+      );
     }
 
     // Проверка на дубликат по имени
@@ -61,18 +59,6 @@ export async function POST(req: NextRequest) {
     if (existingByName) {
       return NextResponse.json(
         { message: 'Un formato con questo nome esiste già' },
-        { status: 409 },
-      );
-    }
-
-    // Проверка на дубликат по значению
-    const existingByValue = await prisma.size.findUnique({
-      where: { value: Number(data.value) },
-    });
-
-    if (existingByValue) {
-      return NextResponse.json(
-        { message: 'Un formato con questo valore esiste già' },
         { status: 409 },
       );
     }
@@ -89,11 +75,6 @@ export async function POST(req: NextRequest) {
         name: true,
         value: true,
         sortOrder: true,
-        // _count: {
-        // 	select: {
-        // 		productItems: true,
-        // 	},
-        // },
       },
     });
 

@@ -21,22 +21,12 @@ export const validateProductSizeData = (
  * Форматирование значения размера
  */
 export const formatSizeValue = (value: number): string => {
-  return `${value} cm`;
-};
-
-/**
- * Проверка уникальности значения
- */
-export const isDuplicateValue = (
-  value: number,
-  sizes: Array<{ value: number; id: number }>,
-  excludeId?: number,
-): boolean => {
-  return sizes.some(size => size.value === value && size.id !== excludeId);
+  return value.toString();
 };
 
 /**
  * Проверка уникальности имени
+ * ✅ Оставляем: Имя должно быть уникальным (Piccola Pizza, Piccola Bibita)
  */
 export const isDuplicateName = (
   name: string,
